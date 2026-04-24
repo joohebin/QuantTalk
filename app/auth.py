@@ -1,8 +1,8 @@
-import hashlib
+from typing import Optional
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
 from passlib.context import CryptContext
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 from app.config import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
@@ -37,10 +37,10 @@ def get_current_user(
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id = int(payload.get("sub"))
     except (JWTError, ValueError):
-        raise HTTPException(status_code=401, detail="无效的认证凭�?)
+        raise HTTPException(status_code=401, detail="invalid credentials")
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
-        raise HTTPException(status_code=401, detail="用户不存�?)
+        raise HTTPException(status_code=401, detail="user not found")
     return user
 
 
