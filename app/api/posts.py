@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
+from typing import Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import desc, or_
 from app.database import get_db
@@ -12,10 +13,10 @@ router = APIRouter()
 def get_posts(
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=50),
-    tag: str = Query("", description="按标签筛选"),
-    user_id: int = Query(None, description="按用户筛选"),
-    q: str = Query("", description="搜索关键词"),
-    current_user: User | None = Depends(get_optional_user),
+    tag: str = Query("", description="按标签筛�?),
+    user_id: int = Query(None, description="按用户筛�?),
+    q: str = Query("", description="搜索关键�?),
+    current_user: Optional[User] = Depends(get_optional_user),
     db: Session = Depends(get_db),
 ):
     query = db.query(Post)
@@ -49,10 +50,10 @@ def get_feed(
 
 
 @router.get("/{post_id}")
-def get_post(post_id: int, current_user: User | None = Depends(get_optional_user), db: Session = Depends(get_db)):
+def get_post(post_id: int, current_user: Optional[User] = Depends(get_optional_user), db: Session = Depends(get_db)):
     post = db.query(Post).filter(Post.id == post_id).first()
     if not post:
-        raise HTTPException(404, "帖子不存在")
+        raise HTTPException(404, "帖子不存�?)
     post.views += 1
     db.commit()
     return _post_to_dict(post, current_user, db)
@@ -95,7 +96,7 @@ def delete_post(post_id: int, current_user: User = Depends(get_current_user), db
 def toggle_like(post_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     post = db.query(Post).filter(Post.id == post_id).first()
     if not post:
-        raise HTTPException(404, "帖子不存在")
+        raise HTTPException(404, "帖子不存�?)
     existing = db.query(post_likes).filter_by(user_id=current_user.id, post_id=post_id).first()
     if existing:
         db.execute(post_likes.delete().where(post_likes.c.user_id == current_user.id, post_likes.c.post_id == post_id))
@@ -123,13 +124,13 @@ def get_comments(post_id: int, db: Session = Depends(get_db)):
 def create_comment(post_id: int, data: dict, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     post = db.query(Post).filter(Post.id == post_id).first()
     if not post:
-        raise HTTPException(404, "帖子不存在")
+        raise HTTPException(404, "帖子不存�?)
     comment = Comment(content=data.get("content", ""), post_id=post_id, author_id=current_user.id)
     db.add(comment)
     if post.author_id != current_user.id:
         from app.models import Notification
         db.add(Notification(user_id=post.author_id, type="comment",
-                           content=f"{current_user.username} 评论了你的帖子: {data.get('content','')[:50]}", from_user_id=current_user.id, post_id=post_id))
+                           content=f"{current_user.username} 评论了你的帖�? {data.get('content','')[:50]}", from_user_id=current_user.id, post_id=post_id))
     db.commit()
     db.refresh(comment)
     return {"id": comment.id, "message": "评论成功"}

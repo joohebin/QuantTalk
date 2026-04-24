@@ -37,17 +37,17 @@ def get_current_user(
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id = int(payload.get("sub"))
     except (JWTError, ValueError):
-        raise HTTPException(status_code=401, detail="无效的认证凭据")
+        raise HTTPException(status_code=401, detail="无效的认证凭�?)
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
-        raise HTTPException(status_code=401, detail="用户不存在")
+        raise HTTPException(status_code=401, detail="用户不存�?)
     return user
 
 
 def get_optional_user(
     credentials: HTTPAuthorizationCredentials = Depends(optional_security),
     db: Session = Depends(get_db)
-) -> User | None:
+) -> Optional[User]:
     if not credentials:
         return None
     try:

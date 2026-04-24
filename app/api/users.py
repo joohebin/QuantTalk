@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from typing import Optional
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import User, Notification
@@ -9,7 +9,7 @@ router = APIRouter()
 
 
 @router.get("/profile/{username}")
-def get_user_profile(username: str, current_user: User | None = None, db: Session = Depends(get_db)):
+def get_user_profile(username: str, current_user: Optional[User] = None, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.username == username).first()
     if not user:
         raise HTTPException(404, "用户不存在")
