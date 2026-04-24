@@ -33,7 +33,6 @@ app.include_router(ws.router, tags=["WebSocket"])
 
 # Static files must be mounted LAST to avoid catching API routes
 app.mount("/", StaticFiles(directory="static", html=True), name="static")
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8080)
