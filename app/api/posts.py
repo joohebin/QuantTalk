@@ -1,5 +1,5 @@
+from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, Query
-from typing import Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import desc, or_
 from app.database import get_db
@@ -16,7 +16,7 @@ def get_posts(
     tag: str = Query(""),
     user_id: int = Query(None),
     q: str = Query(""),
-    current_user: Optional[User] = Depends(get_optional_user),
+    current_user: Any = Depends(get_optional_user),
     db: Session = Depends(get_db),
 ):
     query = db.query(Post)
@@ -35,7 +35,7 @@ def get_posts(
 def get_feed(
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=50),
-    current_user: User = Depends(get_current_user),
+    current_user: Any = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     following_ids = [u.id for u in current_user.following]
@@ -48,7 +48,7 @@ def get_feed(
 
 
 @router.get("/{post_id}")
-def get_post(post_id: int, current_user: Optional[User] = Depends(get_optional_user), db: Session = Depends(get_db)):
+def get_post(post_id: int, current_user: Any = Depends(get_optional_user), db: Session = Depends(get_db)):
     post = db.query(Post).filter(Post.id == post_id).first()
     if not post:
         raise HTTPException(404, "post not found")
@@ -58,7 +58,7 @@ def get_post(post_id: int, current_user: Optional[User] = Depends(get_optional_u
 
 
 @router.post("/")
-def create_post(data: dict, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+def create_post(data: dict, current_user: Any = Depends(get_current_user), db: Session = Depends(get_db)):
     post = Post(title=data.get("title", ""), content=data.get("content", ""),
                 tags=data.get("tags", ""), image_url=data.get("image_url", ""),
                 author_id=current_user.id)
@@ -69,7 +69,7 @@ def create_post(data: dict, current_user: User = Depends(get_current_user), db: 
 
 
 @router.put("/{post_id}")
-def update_post(post_id: int, data: dict, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+def update_post(post_id: int, data: dict, current_user: Any = Depends(get_current_user), db: Session = Depends(get_db)):
     post = db.query(Post).filter(Post.id == post_id, Post.author_id == current_user.id).first()
     if not post:
         raise HTTPException(404, "post not found")
@@ -81,7 +81,7 @@ def update_post(post_id: int, data: dict, current_user: User = Depends(get_curre
 
 
 @router.delete("/{post_id}")
-def delete_post(post_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+def delete_post(post_id: int, current_user: Any = Depends(get_current_user), db: Session = Depends(get_db)):
     post = db.query(Post).filter(Post.id == post_id, Post.author_id == current_user.id).first()
     if not post:
         raise HTTPException(404, "post not found")
@@ -91,7 +91,7 @@ def delete_post(post_id: int, current_user: User = Depends(get_current_user), db
 
 
 @router.post("/{post_id}/like")
-def toggle_like(post_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+def toggle_like(post_id: int, current_user: Any = Depends(get_current_user), db: Session = Depends(get_db)):
     post = db.query(Post).filter(Post.id == post_id).first()
     if not post:
         raise HTTPException(404, "post not found")
@@ -118,7 +118,7 @@ def get_comments(post_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/{post_id}/comments")
-def create_comment(post_id: int, data: dict, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+def create_comment(post_id: int, data: dict, current_user: Any = Depends(get_current_user), db: Session = Depends(get_db)):
     post = db.query(Post).filter(Post.id == post_id).first()
     if not post:
         raise HTTPException(404, "post not found")

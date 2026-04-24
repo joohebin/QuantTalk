@@ -1,5 +1,5 @@
+from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, Query
-from typing import Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
 from app.database import get_db
@@ -15,7 +15,7 @@ def list_communities(
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=50),
     q: str = Query(""),
-    current_user: Optional[User] = Depends(get_current_user),
+    current_user: Any = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     query = db.query(Community).filter(Community.is_public == True)
@@ -75,7 +75,7 @@ def my_communities(current_user: User = Depends(get_current_user), db: Session =
 
 
 @router.get("/{community_id}")
-def get_community(community_id: int, current_user: Optional[User] = None, db: Session = Depends(get_db)):
+def get_community(community_id: int, current_user: Any = None, db: Session = Depends(get_db)):
     c = db.query(Community).filter(Community.id == community_id).first()
     if not c:
         raise HTTPException(404, "community not found")

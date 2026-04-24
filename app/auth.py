@@ -31,7 +31,7 @@ def create_access_token(user_id: int, username: str) -> str:
 def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),
     db: Session = Depends(get_db)
-) -> User:
+):
     token = credentials.credentials
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
@@ -47,7 +47,7 @@ def get_current_user(
 def get_optional_user(
     credentials: HTTPAuthorizationCredentials = Depends(optional_security),
     db: Session = Depends(get_db)
-) -> Optional[User]:
+):
     if not credentials:
         return None
     try:
