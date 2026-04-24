@@ -5,7 +5,7 @@ FastAPI Application Entry Point
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
-from app.api import auth, posts, users, market, notifications, communities, ws
+from app.api import auth, posts, users, market, notifications, communities, ws, messages, upload, quantai
 from app.database import engine, Base
 import uvicorn
 
@@ -27,10 +27,14 @@ app.include_router(users.router, prefix="/api/users", tags=["用户"])
 app.include_router(notifications.router, prefix="/api/notifications", tags=["通知"])
 app.include_router(communities.router, prefix="/api/communities", tags=["社区"])
 app.include_router(market.router, prefix="/api/market", tags=["行情"])
+app.include_router(messages.router, prefix="/api/messages", tags=["私信"])
+app.include_router(quantai.router, prefix="/api/quantai", tags=["QuantAI 交易广场"])
+app.include_router(upload.router, tags=["上传"])
 app.include_router(ws.router, tags=["WebSocket"])
 
 # Static files must be mounted LAST to avoid catching API routes
 app.mount("/", StaticFiles(directory="static", html=True), name="static")
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8080)

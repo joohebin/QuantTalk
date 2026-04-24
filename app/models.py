@@ -22,6 +22,12 @@ community_members = Table(
     Column("role", String(20), default="member"),
 )
 
+signal_likes = Table(
+    "signal_likes", Base.metadata,
+    Column("user_id", Integer, ForeignKey("users.id"), primary_key=True),
+    Column("signal_id", Integer, ForeignKey("trading_signals.id"), primary_key=True),
+)
+
 
 class User(Base):
     __tablename__ = "users"
@@ -44,6 +50,10 @@ class User(Base):
                              secondaryjoin=id == follows.c.following_id, backref="followers")
     liked_posts = relationship("Post", secondary=post_likes, back_populates="likes")
     communities = relationship("Community", secondary=community_members, back_populates="members")
+    sent_messages = relationship("PrivateMessage", foreign_keys="PrivateMessage.sender_id", back_populates="sender", cascade="all, delete-orphan")
+    received_messages = relationship("PrivateMessage", foreign_keys="PrivateMessage.receiver_id", back_populates="receiver", cascade="all, delete-orphan")
+    trading_signals = relationship("TradingSignal", back_populates="author", cascade="all, delete-orphan")
+    portfolio_positions = relationship("PortfolioPosition", back_populates="user", cascade="all, delete-orphan")
 
 
 class Post(Base):
@@ -129,3 +139,77 @@ class ChannelMessage(Base):
 
     channel = relationship("Channel", back_populates="messages")
     author = relationship("User")
+
+
+class PrivateMessage(Base):
+    """私信模型"""
+    __tablename__ = "private_messages"
+    id = Column(Integer, primary_key=True, index=True)
+    sender_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    receiver_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    content = Column(Text, nullable=False)
+    is_read = Column(Boolean, default=False)
+    created_at = Column(DateTime, server_default=func.now())
+
+    sender = relationship("User", foreign_keys=[sender_id])
+    receiver = relationship("User", foreign_keys=[receiver_id])
+
+
+class TradingSignal(Base):
+    """交易信号（QuantAI 交易广场）"""
+    __tablename__ = "trading_signals"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    symbol = Column(String(20), nullable=False, index=True)
+    direction = Column(String(10), nullable=False)  # LONG / SHORT
+    entry_price = Column(Float, nullable=False)
+    stop_loss = Column(Float, nullable=True)
+    take_profit = Column(Float, nullable=True)
+    signal_type = Column(String(20), default="MANUAL")  # MANUAL / STRATEGY / AUTO / QUANTAI
+    strategy_name = Column(String(100), default="")
+    timeframe = Column(String(10), default="1h")
+    notes = Column(Text, default="")
+    tags = Column(String(500), default="")
+    status = Column(String(20), default="ACTIVE")  # ACTIVE / CLOSED / CANCELLED
+    pnl_pct = Column(Float, nullable=True)
+    closed_at = Column(DateTime, nullable=True)
+    likes_count = Column(Integer, default=0)
+    comments_count = Column(Integer, default=0)
+    is_liked = Column(Boolean, default=False)
+    source = Column(String(20), default="quanttalk")  # quanttalk / quantai
+    created_at = Column(DateTime, server_default=func.now())
+
+    author = relationship("User", back_populates="trading_signals")
+    likes = relationship("User", secondary=signal_likes)
+    comments = relationship("SignalComment", back_populates="signal", cascade="all, delete-orphan")
+
+
+class SignalComment(Base):
+    """信号评论"""
+    __tablename__ = "signal_comments"
+    id = Column(Integer, primary_key=True, index=True)
+    signal_id = Column(Integer, ForeignKey("trading_signals.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    content = Column(Text, nullable=False)
+    created_at = Column(DateTime, server_default=func.now())
+
+    signal = relationship("TradingSignal", back_populates="comments")
+    author = relationship("User")
+
+
+class PortfolioPosition(Base):
+    """持仓（QuantAI 同步）"""
+    __tablename__ = "portfolio_positions"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    symbol = Column(String(20), nullable=False)
+    direction = Column(String(10), nullable=False)
+    quantity = Column(Float, nullable=False)
+    entry_price = Column(Float, nullable=False)
+    current_price = Column(Float, nullable=False)
+    unrealized_pnl = Column(Float, default=0)
+    unrealized_pnl_pct = Column(Float, default=0)
+    source = Column(String(20), default="manual")
+    created_at = Column(DateTime, server_default=func.now())
+
+    user = relationship("User", back_populates="portfolio_positions")

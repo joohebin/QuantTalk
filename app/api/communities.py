@@ -148,3 +148,27 @@ def get_messages(community_id: int, channel_id: int, limit: int = Query(50, ge=1
     msgs = db.query(ChannelMessage).filter(ChannelMessage.channel_id == channel_id).order_by(ChannelMessage.created_at).limit(limit).all()
     return [{"id": m.id, "content": m.content, "author_id": m.author_id, "created_at": m.created_at.isoformat(),
              "author": {"id": m.author.id, "username": m.author.username, "avatar": m.author.avatar}} for m in msgs]
+
+
+@router.get("/{community_id}/members")
+def get_community_members(community_id: int, db: Session = Depends(get_db)):
+    """获取社区成员列表（含在线状态）"""
+    c = db.query(Community).filter(Community.id == community_id).first()
+    if not c:
+        raise HTTPException(404, "community not found")
+
+    rows = db.query(community_members).filter(community_members.c.community_id == community_id).all()
+
+    members = []
+    for row in rows:
+        user = db.query(User).filter(User.id == row.user_id).first()
+        if user:
+            members.append({
+                "user_id": user.id,
+                "username": user.username,
+                "avatar": user.avatar,
+                "role": row.role,
+                "is_online": user.is_online,
+            })
+
+    return {"members": members, "count": len(members)}
