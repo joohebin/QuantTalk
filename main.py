@@ -5,7 +5,7 @@ FastAPI Application Entry Point
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
-from app.api import auth, posts, users, market, notifications, communities, ws, messages, upload, quantai
+from app.api import auth, posts, users, market, notifications, communities, ws, messages, quantai
 from app.database import engine, Base
 import uvicorn
 
@@ -29,7 +29,6 @@ app.include_router(communities.router, prefix="/api/communities", tags=["社区"
 app.include_router(market.router, prefix="/api/market", tags=["行情"])
 app.include_router(messages.router, prefix="/api/messages", tags=["私信"])
 app.include_router(quantai.router, prefix="/api/quantai", tags=["QuantAI 交易广场"])
-app.include_router(upload.router, tags=["上传"])
 app.include_router(ws.router, tags=["WebSocket"])
 
 # Static files must be mounted LAST to avoid catching API routes
