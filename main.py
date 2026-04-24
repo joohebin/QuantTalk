@@ -29,6 +29,7 @@ app.include_router(communities.router, prefix="/api/communities", tags=["社区"
 app.include_router(market.router, prefix="/api/market", tags=["行情"])
 app.include_router(ws.router, tags=["WebSocket"])
 
+# Static files must be mounted LAST to avoid catching API routes
 app.mount("/", StaticFiles(directory="static", html=True), name="static")
 
 if __name__ == "__main__":

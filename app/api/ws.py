@@ -1,8 +1,6 @@
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from app.database import SessionLocal
-from app.models import ChannelMessage, Channel, User
-from app.auth import decode_token_no_user
+from app.models import ChannelMessage
 import json
 from datetime import datetime
 
