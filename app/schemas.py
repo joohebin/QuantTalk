@@ -1,19 +1,17 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
 
 
-# Auth schemas
+# === Auth ===
 class UserRegister(BaseModel):
     username: str
     email: str
     password: str
 
-
 class UserLogin(BaseModel):
     username: str
     password: str
-
 
 class Token(BaseModel):
     access_token: str
@@ -21,35 +19,34 @@ class Token(BaseModel):
     user: dict
 
 
-# User schemas
+# === User ===
 class UserResponse(BaseModel):
     id: int
     username: str
     email: str
     avatar: str = ""
     bio: str = "量化交易爱好者"
-    is_verified: bool = False
+    is_online: bool = False
     created_at: datetime
     followers_count: int = 0
     following_count: int = 0
     posts_count: int = 0
-
     class Config:
         from_attributes = True
-
 
 class UserUpdate(BaseModel):
     avatar: Optional[str] = None
     bio: Optional[str] = None
+    old_password: Optional[str] = None
+    new_password: Optional[str] = None
 
 
-# Post schemas
+# === Post ===
 class PostCreate(BaseModel):
     title: Optional[str] = ""
     content: str
     tags: Optional[str] = ""
     image_url: Optional[str] = ""
-
 
 class PostUpdate(BaseModel):
     title: Optional[str] = None
@@ -57,36 +54,81 @@ class PostUpdate(BaseModel):
     tags: Optional[str] = None
 
 
-class PostResponse(BaseModel):
-    id: int
-    title: str
-    content: str
-    tags: str = ""
-    image_url: str = ""
-    author_id: int
-    views: int = 0
-    likes_count: int = 0
-    comments_count: int = 0
-    is_liked: bool = False
-    created_at: datetime
-    author: Optional[UserResponse] = None
-
-    class Config:
-        from_attributes = True
-
-
-# Comment schemas
+# === Comment ===
 class CommentCreate(BaseModel):
     content: str
 
 
-class CommentResponse(BaseModel):
+# === Notification ===
+class NotificationResponse(BaseModel):
     id: int
+    type: str
     content: str
-    post_id: int
-    author_id: int
+    from_user_id: Optional[int] = None
+    post_id: Optional[int] = None
+    is_read: bool = False
     created_at: datetime
-    author: Optional[UserResponse] = None
+    from_username: Optional[str] = None
+    from_avatar: Optional[str] = None
+    class Config:
+        from_attributes = True
 
+
+# === Community ===
+class CommunityCreate(BaseModel):
+    name: str
+    display_name: str
+    description: Optional[str] = ""
+    icon: Optional[str] = ""
+
+class CommunityUpdate(BaseModel):
+    display_name: Optional[str] = None
+    description: Optional[str] = None
+    icon: Optional[str] = None
+
+class CommunityResponse(BaseModel):
+    id: int
+    name: str
+    display_name: str
+    description: str = ""
+    icon: str = ""
+    owner_id: int
+    is_public: bool = True
+    members_count: int = 0
+    channels_count: int = 0
+    created_at: datetime
+    class Config:
+        from_attributes = True
+
+
+# === Channel ===
+class ChannelCreate(BaseModel):
+    name: str
+    channel_type: str = "text"
+    description: Optional[str] = ""
+
+class ChannelResponse(BaseModel):
+    id: int
+    name: str
+    channel_type: str = "text"
+    description: str = ""
+    sort_order: int = 0
+    created_at: datetime
+    class Config:
+        from_attributes = True
+
+
+# === Channel Message ===
+class ChannelMessageCreate(BaseModel):
+    content: str
+
+class ChannelMessageResponse(BaseModel):
+    id: int
+    channel_id: int
+    author_id: int
+    content: str
+    created_at: datetime
+    author_username: Optional[str] = None
+    author_avatar: Optional[str] = None
     class Config:
         from_attributes = True

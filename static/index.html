@@ -1,515 +1,406 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QuantTalk - 量化交易社交平台</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        dark: { 50:'#f8fafc', 100:'#e2e8f0', 200:'#cbd5e1', 300:'#94a3b8', 400:'#64748b', 500:'#475569', 600:'#334155', 700:'#1e293b', 800:'#141c2e', 900:'#0b1120', 950:'#060a14' },
-                        accent: { 400:'#38bdf8', 500:'#0ea5e9', 600:'#0284c7' },
-                        gain: '#22c55e', loss: '#ef4444',
-                    },
-                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] }
-                }
-            }
-        }
-    </script>
-    <style>
-        * { scrollbar-width: thin; scrollbar-color: #334155 transparent; }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
-        body { background: #060a14; color: #e2e8f0; font-family: 'Inter', sans-serif; }
-        .glass { background: rgba(20, 28, 46, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(100,116,139,0.15); }
-        .glow { box-shadow: 0 0 20px rgba(14,165,233,0.15); }
-        .tag { background: rgba(14,165,233,0.15); color: #38bdf8; border: 1px solid rgba(14,165,233,0.25); }
-        .gain-text { color: #22c55e; }
-        .loss-text { color: #ef4444; }
-        .btn-primary { background: linear-gradient(135deg, #0ea5e9, #0284c7); transition: all 0.2s; }
-        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(14,165,233,0.4); }
-        .fade-in { animation: fadeIn 0.3s ease-in; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-        .modal-overlay { background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); }
-        textarea:focus, input:focus { outline: none; border-color: #0ea5e9; box-shadow: 0 0 0 2px rgba(14,165,233,0.2); }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>QuantTalk - 量化交易社交平台</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{scrollbar-width:thin;scrollbar-color:#334155 transparent}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:#334155;border-radius:3px}
+body{background:#060a14;color:#e2e8f0;font-family:'Inter',sans-serif;margin:0}
+.glass{background:rgba(20,28,46,.85);backdrop-filter:blur(12px);border:1px solid rgba(100,116,139,.15)}
+.glass2{background:rgba(30,41,59,.6);border:1px solid rgba(100,116,139,.1)}
+.tag{background:rgba(14,165,233,.12);color:#38bdf8;border:1px solid rgba(14,165,233,.2);border-radius:9999px;padding:2px 10px;font-size:12px;cursor:pointer;white-space:nowrap}
+.btn{padding:6px 16px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;border:none;color:#fff}
+.btn-primary{background:linear-gradient(135deg,#0ea5e9,#0284c7)}.btn-primary:hover{box-shadow:0 4px 14px rgba(14,165,233,.4);transform:translateY(-1px)}
+.btn-ghost{background:transparent;color:#94a3b8;border:1px solid #334155}.btn-ghost:hover{color:#fff;border-color:#475569}
+.btn-danger{background:rgba(239,68,68,.15);color:#f87171;border:1px solid rgba(239,68,68,.2)}.btn-danger:hover{background:rgba(239,68,68,.25)}
+.gain{color:#22c55e}.loss{color:#ef4444}
+.avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:#fff;flex-shrink:0;background:linear-gradient(135deg,#0ea5e9,#8b5cf6)}
+.avatar-sm{width:28px;height:28px;font-size:11px}
+.avatar-lg{width:56px;height:56px;font-size:22px}
+.input{width:100%;background:#0f172a;border:1px solid #1e293b;border-radius:8px;padding:8px 12px;color:#e2e8f0;font-size:13px;outline:none;transition:border .2s}
+.input:focus{border-color:#0ea5e9;box-shadow:0 0 0 2px rgba(14,165,233,.15)}
+.fade-in{animation:fadeIn .25s ease}@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(4px);z-index:100;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal{background:#141c2e;border:1px solid rgba(100,116,139,.2);border-radius:16px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;padding:24px}
+.toast-wrap{position:fixed;top:70px;right:16px;z-index:200}
+.toast{padding:10px 18px;border-radius:10px;color:#fff;font-size:13px;margin-bottom:8px;animation:fadeIn .2s}
+.badge{position:absolute;top:-4px;right:-4px;background:#ef4444;color:#fff;font-size:10px;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700}
+.divider{height:1px;background:rgba(100,116,139,.12);margin:12px 0}
+</style>
 </head>
-<body class="min-h-screen">
-    <!-- Nav -->
-    <nav class="glass sticky top-0 z-50 border-b border-dark-700/50">
-        <div class="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
-            <div class="flex items-center gap-8">
-                <a href="#" onclick="navigate('feed')" class="flex items-center gap-2 text-xl font-bold">
-                    <span class="text-accent-400">⚡</span> QuantTalk
-                </a>
-                <div class="hidden md:flex items-center gap-6 text-sm">
-                    <a href="#" onclick="navigate('feed')" class="nav-link text-dark-300 hover:text-white transition" data-page="feed">首页</a>
-                    <a href="#" onclick="navigate('market')" class="nav-link text-dark-300 hover:text-white transition" data-page="market">行情</a>
-                    <a href="#" onclick="navigate('discover')" class="nav-link text-dark-300 hover:text-white transition" data-page="discover">发现</a>
-                </div>
-            </div>
-            <div id="nav-auth" class="flex items-center gap-3">
-                <!-- Dynamic auth buttons -->
-            </div>
-        </div>
-    </nav>
+<body>
+<!-- NAV -->
+<nav class="glass sticky top-0 z-50" style="border-bottom:1px solid rgba(100,116,139,.1)">
+<div class="max-w-[1200px] mx-auto px-4 h-14 flex items-center justify-between">
+<div class="flex items-center gap-6">
+<a href="#" onclick="nav('feed')" class="flex items-center gap-2 text-lg font-bold text-white no-underline"><span style="color:#38bdf8">⚡</span>QuantTalk</a>
+<div class="hidden md:flex items-center gap-1" id="nav-links"></div>
+</div>
+<div class="flex items-center gap-3" id="nav-right"></div>
+</div>
+</nav>
 
-    <!-- Main Content -->
-    <main class="max-w-6xl mx-auto px-4 py-6">
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            <!-- Left Sidebar -->
-            <aside class="hidden lg:block lg:col-span-1 order-2 lg:order-1 space-y-4" id="sidebar-left">
-                <!-- User card (logged in) -->
-                <div id="user-card" class="hidden"></div>
-                <!-- Trending tags -->
-                <div class="glass rounded-xl p-4">
-                    <h3 class="font-semibold text-sm text-dark-300 mb-3">🔥 热门标签</h3>
-                    <div id="trending-tags" class="flex flex-wrap gap-2">
-                        <span class="tag text-xs px-2.5 py-1 rounded-full">加载中...</span>
-                    </div>
-                </div>
-                <!-- Quick links -->
-                <div class="glass rounded-xl p-4 text-sm text-dark-400 space-y-2">
-                    <p>📊 QuantTalk v2.0</p>
-                    <p>量化交易者的社交平台</p>
-                    <p class="text-xs text-dark-500">© 2024 QuantTalk</p>
-                </div>
-            </aside>
+<!-- MAIN -->
+<div class="max-w-[1200px] mx-auto px-4 py-5 flex gap-5">
+<!-- LEFT SIDEBAR -->
+<aside class="hidden lg:block w-[240px] flex-shrink-0 space-y-4" id="sidebar-l"></aside>
+<!-- CENTER -->
+<div class="flex-1 min-w-0" id="app"></div>
+<!-- RIGHT SIDEBAR -->
+<aside class="hidden xl:block w-[260px] flex-shrink-0 space-y-4" id="sidebar-r"></aside>
+</div>
 
-            <!-- Center Feed -->
-            <div class="lg:col-span-2 order-1 lg:order-2" id="main-content">
-                <!-- Dynamic content loaded here -->
-            </div>
+<!-- MODAL -->
+<div id="modal" class="modal-bg" style="display:none" onclick="if(event.target===this)closeModal()">
+<div class="modal fade-in" id="modal-body"></div>
+</div>
+<!-- TOASTS -->
+<div class="toast-wrap" id="toasts"></div>
 
-            <!-- Right Sidebar -->
-            <aside class="hidden lg:block lg:col-span-1 order-3 space-y-4" id="sidebar-right">
-                <!-- Market Overview -->
-                <div class="glass rounded-xl p-4">
-                    <h3 class="font-semibold text-sm text-dark-300 mb-3">📈 市场概况</h3>
-                    <div id="market-mini" class="space-y-2 text-sm">
-                        <p class="text-dark-500">加载中...</p>
-                    </div>
-                </div>
-                <!-- Hot stocks -->
-                <div class="glass rounded-xl p-4">
-                    <h3 class="font-semibold text-sm text-dark-300 mb-3">🏷️ 热门股票</h3>
-                    <div id="hot-stocks-mini" class="space-y-2 text-sm">
-                        <p class="text-dark-500">加载中...</p>
-                    </div>
-                </div>
-            </aside>
-        </div>
-    </main>
+<script>
+const S={token:localStorage.getItem('qt_token')||'',user:JSON.parse(localStorage.getItem('qt_user')||'null'),page:'feed',ws:null,channelId:null,communityId:null};
+const A='/api';
 
-    <!-- Modal Container -->
-    <div id="modal-container" class="hidden fixed inset-0 z-[100] modal-overlay flex items-center justify-center p-4">
-        <div class="glass rounded-2xl w-full max-w-md p-6 fade-in" id="modal-content"></div>
-    </div>
+// ===== UTILS =====
+async function api(p,o={}){
+const h={'Content-Type':'application/json',...(o.headers||{})};
+if(S.token)h.Authorization='Bearer '+S.token;
+const r=await fetch(A+p,{...o,headers:h});
+if(r.status===401&&!p.includes('/auth/')){doLogout();return null}
+return r.json();
+}
+function toast(msg,type='info'){const c={info:'#0ea5e9',success:'#22c55e',error:'#ef4444'};const d=document.createElement('div');d.className='toast';d.style.background=c[type]||c.info;d.textContent=msg;document.getElementById('toasts').appendChild(d);setTimeout(()=>d.remove(),3000)}
+function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML}
+function timeAgo(t){const d=Date.now()-new Date(t).getTime();const m=Math.floor(d/60000);if(m<1)return'刚刚';if(m<60)return m+'分钟前';const h=Math.floor(m/60);if(h<24)return h+'小时前';return Math.floor(h/24)+'天前'}
+function openModal(html){document.getElementById('modal-body').innerHTML=html;document.getElementById('modal').style.display='flex'}
+function closeModal(){document.getElementById('modal').style.display='none'}
 
-    <!-- Toast Container -->
-    <div id="toast-container" class="fixed top-20 right-4 z-[200] space-y-2"></div>
+// ===== AUTH =====
+function doLogout(){S.token='';S.user=null;localStorage.removeItem('qt_token');localStorage.removeItem('qt_user');renderAll()}
+function showAuth(tab='login'){
+openModal(`
+<div class="flex gap-4 mb-5 border-b border-gray-700/50 pb-3">
+<button onclick="showAuth('login')" class="text-sm font-medium pb-1 ${tab==='login'?'text-sky-400 border-b-2 border-sky-400':'text-gray-500'}">登录</button>
+<button onclick="showAuth('register')" class="text-sm font-medium pb-1 ${tab==='register'?'text-sky-400 border-b-2 border-sky-400':'text-gray-500'}">注册</button>
+</div>
+<form onsubmit="handleAuth(event,'${tab}')" class="space-y-3">
+${tab==='register'?'<input name="email" type="email" required class="input" placeholder="邮箱">':''}
+<input name="username" required class="input" placeholder="用户名">
+<input name="password" type="password" required class="input" placeholder="密码">
+<button type="submit" class="btn btn-primary w-full">${tab==='login'?'登录':'注册'}</button>
+</form>`);
+}
+async function handleAuth(e,mode){
+e.preventDefault();const fd=new FormData(e.target);const data=Object.fromEntries(fd);
+const r=await api('/auth/'+mode,{method:'POST',body:JSON.stringify(data)});
+if(r?.access_token){S.token=r.access_token;S.user=r.user;localStorage.setItem('qt_token',S.token);localStorage.setItem('qt_user',JSON.stringify(S.user));closeModal();toast(mode==='login'?'欢迎回来！':'注册成功！','success');renderAll()}else{toast(r?.detail||'失败','error')}
+}
 
-    <script>
-    // ============ State ============
-    const state = {
-        token: localStorage.getItem('qt_token') || null,
-        user: JSON.parse(localStorage.getItem('qt_user') || 'null'),
-        currentPage: 'feed',
-        posts: [],
-        page: 1,
-    };
+// ===== NAV =====
+const NAV_ITEMS=[{id:'feed',icon:'🏠',label:'首页'},{id:'discover',icon:'🔍',label:'发现'},{id:'market',icon:'📈',label:'行情'},{id:'communities',icon:'🌐',label:'社区'}];
+function renderNav(){
+document.getElementById('nav-links').innerHTML=NAV_ITEMS.map(n=>`<a href="#" onclick="nav('${n.id}')" class="px-3 py-1.5 rounded-lg text-sm no-underline transition ${S.page===n.id?'bg-white/10 text-white font-medium':'text-gray-400 hover:text-white'}">${n.icon} ${n.label}</a>`).join('');
+const nr=document.getElementById('nav-right');
+if(S.user){nr.innerHTML=`<div class="relative"><button onclick="toggleNotif()" class="relative p-2 rounded-lg hover:bg-white/5 transition text-gray-400">🔔<span id="notif-badge" class="badge" style="display:none">0</span></button></div><span class="text-sm text-gray-400 hidden md:inline">${S.user.username}</span><button onclick="doLogout()" class="btn btn-ghost text-xs">退出</button>`}else{nr.innerHTML=`<button onclick="showAuth('login')" class="btn btn-ghost text-sm">登录</button><button onclick="showAuth('register')" class="btn btn-primary text-sm">注册</button>`}
+loadNotifCount();
+}
 
-    const API = '/api';
+// ===== NOTIFICATIONS =====
+async function loadNotifCount(){
+if(!S.user)return;const r=await api('/notifications/');if(!r)return;
+const b=document.getElementById('notif-badge');if(r.unread_count>0){b.style.display='flex';b.textContent=r.unread_count}else{b.style.display='none'}
+}
+function toggleNotif(){
+openModal('<h3 class="font-semibold mb-3">通知</h3><div id="notif-list" class="space-y-2"><p class="text-gray-500 text-sm">加载中...</p></div>');
+loadNotifs();
+}
+async function loadNotifs(){
+const r=await api('/notifications/');if(!r)return;
+const el=document.getElementById('notif-list');
+if(!r.notifications.length){el.innerHTML='<p class="text-gray-500 text-sm">暂无通知</p>';return}
+el.innerHTML=r.notifications.map(n=>`<div class="p-3 rounded-lg ${n.is_read?'glass2':'glass'} cursor-pointer hover:bg-white/5 transition" onclick="readNotif(${n.id})"><div class="text-sm">${esc(n.content)}</div><div class="text-xs text-gray-500 mt-1">${timeAgo(n.created_at)}</div></div>`).join('');
+api('/notifications/read-all',{method:'POST'});loadNotifCount();
+}
+async function readNotif(id){await api('/notifications/'+id+'/read',{method:'POST'});loadNotifs();loadNotifCount()}
 
-    // ============ API Helpers ============
-    async function api(path, options = {}) {
-        const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
-        if (state.token) headers['Authorization'] = `Bearer ${state.token}`;
-        const res = await fetch(API + path, { ...options, headers });
-        if (res.status === 401 && !path.includes('/auth/login')) {
-            logout();
-            return null;
-        }
-        return res.json();
-    }
+// ===== SIDEBARS =====
+async function renderSidebars(){
+// Left
+const sl=document.getElementById('sidebar-l');
+if(S.user){sl.innerHTML=`<div class="glass rounded-xl p-4"><div class="flex items-center gap-3 mb-3"><div class="avatar avatar-lg">${S.user.username[0].toUpperCase()}</div><div><div class="font-semibold">${S.user.username}</div><div class="text-xs text-gray-500">${S.user.bio||''}</div></div></div><button onclick="showProfileEdit()" class="btn btn-ghost w-full text-xs">编辑资料</button></div>`}else{sl.innerHTML=`<div class="glass rounded-xl p-5 text-center"><div class="text-gray-500 text-sm mb-3">加入 QuantTalk</div><button onclick="showAuth('register')" class="btn btn-primary w-full text-sm">注册</button></div>`}
+sl.innerHTML+=`<div class="glass rounded-xl p-4"><h3 class="text-xs font-semibold text-gray-500 mb-3">🔥 热门标签</h3><div id="sidebar-tags" class="flex flex-wrap gap-1.5"><span class="text-gray-600 text-xs">加载中</span></div></div>`;
 
-    function toast(msg, type = 'info') {
-        const el = document.createElement('div');
-        const colors = { info: 'bg-accent-600', success: 'bg-gain', error: 'bg-loss' };
-        el.className = `${colors[type] || colors.info} text-white px-4 py-2 rounded-lg shadow-lg text-sm fade-in`;
-        el.textContent = msg;
-        document.getElementById('toast-container').appendChild(el);
-        setTimeout(() => el.remove(), 3000);
-    }
+// Right
+const sr=document.getElementById('sidebar-r');
+sr.innerHTML=`<div class="glass rounded-xl p-4"><h3 class="text-xs font-semibold text-gray-500 mb-3">📈 市场概况</h3><div id="sidebar-market" class="space-y-2 text-sm"><span class="text-gray-600">加载中</span></div></div><div class="glass rounded-xl p-4"><h3 class="text-xs font-semibold text-gray-500 mb-3">🏷️ 热门</h3><div id="sidebar-stocks" class="space-y-2 text-sm"><span class="text-gray-600">加载中</span></div></div>`;
 
-    // ============ Auth ============
-    function logout() {
-        state.token = null;
-        state.user = null;
-        localStorage.removeItem('qt_token');
-        localStorage.removeItem('qt_user');
-        renderNav();
-        navigate(state.currentPage);
-    }
+// Load data
+try{
+const [m,s,t]=await Promise.all([api('/market/indices'),api('/market/hot-stocks'),api('/market/trending-tags')]);
+if(m?.indices)document.getElementById('sidebar-market').innerHTML=m.indices.slice(0,4).map(i=>`<div class="flex justify-between"><span class="text-gray-400">${i.name}</span><span class="${i.change>=0?'gain':'loss'}">${i.change_pct>=0?'+':''}${i.change_pct.toFixed(2)}%</span></div>`).join('');
+if(s?.stocks)document.getElementById('sidebar-stocks').innerHTML=s.stocks.slice(0,5).map(i=>`<div class="flex justify-between"><span class="text-gray-400">${i.name}</span><span class="${i.change_pct>=0?'gain':'loss'}">${i.change_pct>=0?'+':''}${i.change_pct.toFixed(2)}%</span></div>`).join('');
+if(t?.tags)document.getElementById('sidebar-tags').innerHTML=t.tags.slice(0,10).map(i=>`<span class="tag" onclick="searchByTag('${i.name}')">${i.name}</span>`).join('');
+}catch(e){}
+}
 
-    function showModal(html) {
-        document.getElementById('modal-content').innerHTML = html;
-        document.getElementById('modal-container').classList.remove('hidden');
-    }
+// ===== PAGE ROUTER =====
+function nav(page){S.page=page;renderNav();renderPage()}
+function renderPage(){
+const app=document.getElementById('app');
+switch(S.page){
+case'feed':renderFeed(app);break;
+case'discover':renderDiscover(app);break;
+case'market':renderMarket(app);break;
+case'communities':renderCommunities(app);break;
+case'profile':renderProfile(app);break;
+case'community':renderCommunityView(app);break;
+default:renderFeed(app);
+}
+}
+function renderAll(){renderNav();renderSidebars();renderPage()}
 
-    function hideModal() {
-        document.getElementById('modal-container').classList.add('hidden');
-    }
+// ===== POST CARD =====
+function postCard(p){
+const a=p.author||{};const tags=p.tags?p.tags.split(',').map(t=>t.trim()).filter(Boolean).map(t=>`<span class="tag" onclick="searchByTag('${t}')">${t}</span>`).join(' '):'';
+return`<article class="glass rounded-xl p-4 fade-in">
+<div class="flex gap-3">
+<div class="avatar cursor-pointer" onclick="viewProfile(${a.id})">${(a.username||'?')[0].toUpperCase()}</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center gap-2"><span class="font-semibold text-sm cursor-pointer hover:text-sky-400" onclick="viewProfile(${a.id})">${a.username||'匿名'}</span><span class="text-xs text-gray-600">${timeAgo(p.created_at)}</span></div>
+${p.title?`<div class="font-semibold mt-1.5">${esc(p.title)}</div>`:''}
+<p class="mt-1 text-sm text-gray-300 leading-relaxed whitespace-pre-wrap">${esc(p.content)}</p>
+${tags?`<div class="flex flex-wrap gap-1.5 mt-2.5">${tags}</div>`:''}
+<div class="flex items-center gap-4 mt-3 text-sm text-gray-500">
+<button onclick="likePost(${p.id})" class="hover:text-red-400 transition flex items-center gap-1">${p.is_liked?'❤️':'🤍'} ${p.likes_count||0}</button>
+<button onclick="toggleComments(${p.id})" class="hover:text-sky-400 transition flex items-center gap-1">💬 ${p.comments_count||0}</button>
+<span class="flex items-center gap-1">👁 ${p.views||0}</span>
+</div>
+<div id="comments-${p.id}" class="hidden mt-3 pt-3 border-t border-gray-700/30"></div>
+</div></div></article>`;
+}
 
-    document.getElementById('modal-container').addEventListener('click', (e) => {
-        if (e.target.id === 'modal-container') hideModal();
-    });
+// ===== FEED =====
+async function renderFeed(el){
+let form='';
+if(S.user)form=`<div class="glass rounded-xl p-4 mb-4 fade-in"><textarea id="post-box" class="input" rows="3" placeholder="分享你的交易策略、市场观点..."></textarea><div class="flex items-center justify-between mt-2"><input id="post-tags" class="input" style="width:200px" placeholder="标签，逗号分隔"><button onclick="submitPost()" class="btn btn-primary">发布</button></div></div>`;
+const r=await api(S.user?'/posts/feed':'/posts/');const posts=r?.posts||[];
+el.innerHTML=form+(posts.length?`<div class="space-y-3">${posts.map(postCard).join('')}</div>`:'<div class="glass rounded-xl p-12 text-center text-gray-500">暂无动态</div>');
+}
 
-    // ============ Auth Modal ============
-    function showAuthModal(tab = 'login') {
-        showModal(`
-            <div class="flex gap-4 mb-6 border-b border-dark-700 pb-3">
-                <button onclick="showAuthModal('login')" class="pb-2 font-medium text-sm ${tab==='login'?'text-accent-400 border-b-2 border-accent-400':'text-dark-400'}">登录</button>
-                <button onclick="showAuthModal('register')" class="pb-2 font-medium text-sm ${tab==='register'?'text-accent-400 border-b-2 border-accent-400':'text-dark-400'}">注册</button>
-            </div>
-            <form onsubmit="handleAuth(event, '${tab}')" class="space-y-4">
-                ${tab==='register'?'<div><label class="text-xs text-dark-400 block mb-1">用户名</label><input name="username" required class="w-full bg-dark-800 border border-dark-700 rounded-lg px-3 py-2 text-sm" placeholder="取一个独特的名字"></div>':''}
-                ${tab==='register'?'<div><label class="text-xs text-dark-400 block mb-1">邮箱</label><input name="email" type="email" required class="w-full bg-dark-800 border border-dark-700 rounded-lg px-3 py-2 text-sm" placeholder="your@email.com"></div>':''}
-                <div><label class="text-xs text-dark-400 block mb-1">用户名</label><input name="username" required class="w-full bg-dark-800 border border-dark-700 rounded-lg px-3 py-2 text-sm" placeholder="输入用户名"></div>
-                <div><label class="text-xs text-dark-400 block mb-1">密码</label><input name="password" type="password" required class="w-full bg-dark-800 border border-dark-700 rounded-lg px-3 py-2 text-sm" placeholder="输入密码"></div>
-                <button type="submit" class="btn-primary w-full py-2.5 rounded-lg text-white font-medium text-sm">${tab==='login'?'登录':'注册'}</button>
-            </form>
-        `);
-    }
+async function submitPost(){
+const c=document.getElementById('post-box')?.value?.trim();if(!c)return toast('请输入内容','error');
+const t=document.getElementById('post-tags')?.value?.trim()||'';
+const r=await api('/posts/',{method:'POST',body:JSON.stringify({content:c,tags:t})});
+if(r?.id){toast('发布成功','success');renderPage()}else toast(r?.detail||'失败','error');
+}
+async function likePost(id){const r=await api('/posts/'+id+'/like',{method:'POST'});if(r)renderPage()}
+async function toggleComments(id){
+const el=document.getElementById('comments-'+id);if(el.classList.contains('hidden')){el.classList.remove('hidden');
+el.innerHTML='<p class="text-gray-600 text-sm">加载中...</p>';
+const r=await api('/posts/'+id+'/comments');const comments=r||[];
+el.innerHTML=(comments.length?comments.map(c=>`<div class="flex gap-2 mb-2 text-sm"><div class="avatar avatar-sm">${(c.author?.username||'?')[0].toUpperCase()}</div><div><span class="font-medium text-xs">${c.author?.username||'匿名'}</span> <span class="text-gray-600 text-xs">${timeAgo(c.created_at)}</span><p class="text-gray-300 mt-0.5">${esc(c.content)}</p></div></div>`).join(''):'<p class="text-gray-600 text-sm">暂无评论</p>')+(S.user?`<form onsubmit="submitComment(event,${id})" class="flex gap-2 mt-2"><input name="content" required class="input flex-1" placeholder="写评论..."><button type="submit" class="btn btn-primary text-xs">发送</button></form>`:'<p class="text-gray-600 text-xs mt-2">登录后可评论</p>');
+}else{el.classList.add('hidden')}
+}
+async function submitComment(e,id){
+e.preventDefault();const fd=new FormData(e.target);
+const r=await api('/posts/'+id+'/comments',{method:'POST',body:JSON.stringify({content:fd.get('content')})});
+if(r?.id){toast('评论成功','success');toggleComments(id);setTimeout(()=>toggleComments(id),100)}else toast('失败','error');
+}
 
-    async function handleAuth(e, mode) {
-        e.preventDefault();
-        const fd = new FormData(e.target);
-        const data = Object.fromEntries(fd);
-        try {
-            const res = await api(`/auth/${mode}`, { method: 'POST', body: JSON.stringify(data) });
-            if (res.access_token) {
-                state.token = res.access_token;
-                state.user = res.user;
-                localStorage.setItem('qt_token', res.access_token);
-                localStorage.setItem('qt_user', JSON.stringify(res.user));
-                hideModal();
-                renderNav();
-                navigate(state.currentPage);
-                toast(mode === 'login' ? '登录成功' : '注册成功，欢迎加入！', 'success');
-            } else {
-                toast(res.detail || '操作失败', 'error');
-            }
-        } catch (err) {
-            toast('网络错误', 'error');
-        }
-    }
+// ===== SEARCH =====
+function showSearch(){
+openModal(`<h3 class="font-semibold mb-3">🔍 搜索</h3><input id="search-input" class="input mb-3" placeholder="搜索帖子、用户..." oninput="doSearch(this.value)"><div id="search-results" class="space-y-2 max-h-80 overflow-y-auto"></div>`);
+}
+async function doSearch(q){
+if(!q.trim()){document.getElementById('search-results').innerHTML='';return}
+const[pr,ur]=await Promise.all([api('/posts/?q='+encodeURIComponent(q)),api('/users/search?q='+encodeURIComponent(q))]);
+const posts=pr?.posts||[];const users=ur||[];
+let html='';
+if(users.length)html+=users.map(u=>`<div class="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 cursor-pointer" onclick="closeModal();viewProfile(${u.id})"><div class="avatar avatar-sm">${u.username[0].toUpperCase()}</div><span class="text-sm">${u.username}</span></div>`).join('');
+if(posts.length)html+=posts.map(p=>`<div class="p-2 rounded-lg hover:bg-white/5 cursor-pointer" onclick="closeModal();toggleComments(${p.id})"><div class="text-xs text-gray-500">${p.author?.username} · ${timeAgo(p.created_at)}</div><div class="text-sm">${esc(p.content).substring(0,80)}...</div></div>`).join('');
+if(!html)html='<p class="text-gray-600 text-sm">无结果</p>';
+document.getElementById('search-results').innerHTML=html;
+}
+function searchByTag(tag){S.page='feed';renderNav();const app=document.getElementById('app');app.innerHTML='<p class="text-gray-500 text-center py-8">搜索中...</p>';api('/posts/?tag='+encodeURIComponent(tag)).then(r=>{const posts=r?.posts||[];app.innerHTML=`<div class="mb-3"><button onclick="nav('feed')" class="btn btn-ghost text-xs">← 返回首页</button> <span class="tag ml-2">${tag}</span></div>`+(posts.length?`<div class="space-y-3">${posts.map(postCard).join('')}</div>`:'<p class="text-gray-500 text-center py-8">无相关帖子</p>')})}
 
-    // ============ Navigation ============
-    function navigate(page) {
-        state.currentPage = page;
-        document.querySelectorAll('.nav-link').forEach(l => {
-            l.classList.toggle('text-white', l.dataset.page === page);
-            l.classList.toggle('text-dark-300', l.dataset.page !== page);
-        });
-        render();
-    }
+// ===== USER PROFILE =====
+function viewProfile(id){
+S._viewUserId=id;S.page='profile';renderNav();renderPage();
+}
+async function renderProfile(el){
+const uid=S._viewUserId;if(!uid)return;
+const r=await api('/users/profile/'+uid);if(!r){el.innerHTML='<p class="text-gray-500">用户不存在</p>';return}
+const isSelf=S.user&&S.user.id===uid;
+el.innerHTML=`<div class="fade-in">
+<div class="glass rounded-xl p-6 mb-4">
+<div class="flex items-center gap-4">
+<div class="avatar avatar-lg">${r.username[0].toUpperCase()}</div>
+<div class="flex-1"><div class="text-xl font-bold">${r.username}</div><div class="text-sm text-gray-400 mt-1">${esc(r.bio||'量化交易爱好者')}</div><div class="text-xs text-gray-600 mt-2">📅 ${timeAgo(r.created_at)}加入 · 👥 ${r.followers_count} 粉丝 · ✍️ ${r.posts_count} 帖子</div></div>
+${isSelf?'<button onclick="showProfileEdit()" class="btn btn-ghost text-sm">编辑资料</button>'
+:r.is_following?`<button onclick="doFollow(${uid})" class="btn btn-ghost text-sm">已关注</button>`:`<button onclick="doFollow(${uid})" class="btn btn-primary text-sm">关注</button>`}
+</div></div>
+<div class="space-y-3" id="profile-posts"><p class="text-gray-600 text-sm text-center py-4">加载中...</p></div>
+</div>`;
+const pr=await api('/posts/?user_id='+uid+'&limit=20');const posts=pr?.posts||[];
+document.getElementById('profile-posts').innerHTML=posts.length?posts.map(postCard).join(''):'<p class="text-gray-500 text-center py-8">暂无帖子</p>';
+}
+async function doFollow(uid){
+if(!S.user)return showAuth('login');const r=await api('/users/follow/'+uid,{method:'POST'});if(r){toast(r.message,'success');renderPage()}
+}
+function showProfileEdit(){
+if(!S.user)return;openModal(`<h3 class="font-semibold mb-4">编辑资料</h3>
+<form onsubmit="saveProfile(event)" class="space-y-3">
+<div><label class="text-xs text-gray-500 block mb-1">用户名</label><input class="input" value="${esc(S.user.username)}" disabled></div>
+<div><label class="text-xs text-gray-500 block mb-1">简介</label><textarea id="edit-bio" class="input" rows="2">${esc(S.user.bio||'')}</textarea></div>
+<div class="divider"></div><h4 class="text-sm font-medium">修改密码（可选）</h4>
+<div><label class="text-xs text-gray-500 block mb-1">原密码</label><input name="old_password" type="password" class="input"></div>
+<div><label class="text-xs text-gray-500 block mb-1">新密码</label><input name="new_password" type="password" class="input"></div>
+<button type="submit" class="btn btn-primary w-full">保存</button></form>`);
+}
+async function saveProfile(e){
+e.preventDefault();const fd=new FormData(e.target);const data={bio:document.getElementById('edit-bio').value};
+if(fd.get('old_password')){data.old_password=fd.get('old_password');data.new_password=fd.get('new_password')}
+const r=await api('/users/profile',{method:'PUT',body:JSON.stringify(data)});
+if(r?.message){const mr=await api('/auth/me');if(mr){S.user=mr;localStorage.setItem('qt_user',JSON.stringify(mr))}closeModal();toast('保存成功','success');renderAll()}else toast(r?.detail||'失败','error');
+}
 
-    async function render() {
-        const main = document.getElementById('main-content');
-        switch (state.currentPage) {
-            case 'feed': await renderFeed(main); break;
-            case 'market': await renderMarket(main); break;
-            case 'discover': await renderDiscover(main); break;
-            default: await renderFeed(main);
-        }
-    }
+// ===== DISCOVER =====
+async function renderDiscover(el){
+const tr=await api('/market/trending-tags');const tags=tr?.tags||[];
+el.innerHTML=`<div class="fade-in space-y-4">
+<div class="flex items-center justify-between"><h2 class="text-lg font-bold">🔍 发现</h2><button onclick="showSearch()" class="btn btn-ghost text-sm">🔍 搜索</button></div>
+<div class="glass rounded-xl p-5"><h3 class="font-semibold text-sm mb-3">热门话题</h3><div class="space-y-2.5">${tags.map((t,i)=>`<div class="flex items-center justify-between py-2 ${i<tags.length-1?'border-b border-gray-700/30':''}"><div class="flex items-center gap-3"><span class="text-xs font-bold ${i<3?'text-sky-400':'text-gray-600'} w-6">#${i+1}</span><span class="tag">${t.name}</span></div><span class="text-xs text-gray-600">${t.count} 讨论</span></div>`).join('')}</div></div>
+<div class="glass rounded-xl p-5"><h3 class="font-semibold text-sm mb-3">💡 功能亮点</h3>
+<div class="grid grid-cols-2 gap-3">
+<div class="glass2 rounded-lg p-4"><div class="text-xl mb-2">📊</div><div class="font-medium text-sm">策略分享</div><div class="text-xs text-gray-500 mt-1">分享量化交易策略</div></div>
+<div class="glass2 rounded-lg p-4"><div class="text-xl mb-2">💬</div><div class="font-medium text-sm">实时讨论</div><div class="text-xs text-gray-500 mt-1">WebSocket 实时通讯</div></div>
+<div class="glass2 rounded-lg p-4"><div class="text-xl mb-2">🌐</div><div class="font-medium text-sm">社区频道</div><div class="text-xs text-gray-500 mt-1">类 Discord 社区系统</div></div>
+<div class="glass2 rounded-lg p-4"><div class="text-xl mb-2">📈</div><div class="font-medium text-sm">行情追踪</div><div class="text-xs text-gray-500 mt-1">全球市场实时数据</div></div>
+</div></div></div>`;
+}
 
-    // ============ Feed ============
-    async function renderFeed(el) {
-        // Post form
-        let form = '';
-        if (state.user) {
-            form = `
-                <div class="glass rounded-xl p-4 mb-4 fade-in">
-                    <textarea id="post-content" class="w-full bg-dark-800 border border-dark-700 rounded-lg px-3 py-2 text-sm resize-none" rows="3" placeholder="分享你的交易策略、市场观点..."></textarea>
-                    <div class="flex items-center justify-between mt-3">
-                        <input id="post-tags" class="bg-dark-800 border border-dark-700 rounded-lg px-3 py-1.5 text-xs w-48" placeholder="标签，逗号分隔，如：量化策略,A股">
-                        <button onclick="submitPost()" class="btn-primary px-5 py-1.5 rounded-lg text-white text-sm font-medium">发布</button>
-                    </div>
-                </div>`;
-        }
+// ===== MARKET =====
+async function renderMarket(el){
+const[ir,sr]=await Promise.all([api('/market/indices'),api('/market/hot-stocks')]);
+const idx=ir?.indices||[];const stk=sr?.stocks||[];
+el.innerHTML=`<div class="fade-in space-y-4"><h2 class="text-lg font-bold">📈 市场行情</h2>
+<div class="grid grid-cols-2 md:grid-cols-3 gap-3">${idx.map(i=>`<div class="glass rounded-xl p-4"><div class="text-xs text-gray-500">${i.name}</div><div class="text-lg font-bold mt-1">${i.price.toLocaleString()}</div><div class="text-sm ${i.change>=0?'gain':'loss'}">${i.change>=0?'↑':'↓'} ${i.change>=0?'+':''}${i.change} (${i.change_pct>=0?'+':''}${i.change_pct.toFixed(2)}%)</div></div>`).join('')}</div>
+<h2 class="text-lg font-bold mt-6">🏷️ 热门股票</h2>
+<div class="glass rounded-xl overflow-hidden"><table class="w-full text-sm"><thead><tr class="text-gray-500 text-xs border-b border-gray-700/30"><th class="text-left p-3">名称</th><th class="text-left p-3">代码</th><th class="text-right p-3">价格</th><th class="text-right p-3">涨跌</th></tr></thead><tbody>${stk.map(s=>`<tr class="border-b border-gray-700/20 hover:bg-white/5"><td class="p-3 font-medium">${s.name}</td><td class="p-3 text-gray-500">${s.code}</td><td class="p-3 text-right">${s.price}</td><td class="p-3 text-right ${s.change_pct>=0?'gain':'loss'}">${s.change_pct>=0?'+':''}${s.change_pct.toFixed(2)}%</td></tr>`).join('')}</tbody></table></div></div>`;
+}
 
-        const res = await api('/posts/');
-        const posts = res?.posts || [];
-        const cards = posts.length ? posts.map(renderPostCard).join('') : '<p class="text-dark-500 text-center py-12">暂无动态，成为第一个发言的人吧 🚀</p>';
+// ===== COMMUNITIES =====
+async function renderCommunities(el){
+if(!S.user){el.innerHTML=`<div class="glass rounded-xl p-12 text-center"><div class="text-gray-500 mb-3">登录后查看社区</div><button onclick="showAuth('login')" class="btn btn-primary">登录</button></div>`;return}
+const[cr,mr]=await Promise.all([api('/communities/'),api('/communities/my')]);
+const comms=cr?.communities||[];const myComms=mr||[];
+el.innerHTML=`<div class="fade-in space-y-4">
+<div class="flex items-center justify-between"><h2 class="text-lg font-bold">🌐 社区</h2><button onclick="showCreateCommunity()" class="btn btn-primary text-sm">+ 创建社区</button></div>
+${myComms.length?`<div class="glass rounded-xl p-4"><h3 class="text-sm font-semibold text-gray-500 mb-3">我的社区</h3><div class="space-y-2">${myComms.map(c=>`<div class="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 cursor-pointer" onclick="openCommunity(${c.id})"><div class="avatar avatar-sm">${(c.display_name||c.name)[0].toUpperCase()}</div><div class="flex-1"><div class="text-sm font-medium">${c.display_name}</div><div class="text-xs text-gray-600">${c.members_count} 成员</div></div></div>`).join('')}</div></div>`:''}
+<div class="glass rounded-xl p-4"><h3 class="text-sm font-semibold text-gray-500 mb-3">发现社区</h3><div class="space-y-2">${comms.length?comms.map(c=>`<div class="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition glass2"><div class="avatar cursor-pointer" onclick="openCommunity(${c.id})">${(c.display_name||c.name)[0].toUpperCase()}</div><div class="flex-1 min-w-0 cursor-pointer" onclick="openCommunity(${c.id})"><div class="text-sm font-medium">${c.display_name}</div><div class="text-xs text-gray-500 truncate">${c.description||'暂无简介'}</div><div class="text-xs text-gray-600 mt-1">${c.members_count} 成员 · ${c.channels_count} 频道</div></div>${c.is_member?`<button onclick="joinCommunity(${c.id})" class="btn btn-ghost text-xs">已加入</button>`:`<button onclick="joinCommunity(${c.id})" class="btn btn-primary text-xs">加入</button>`}</div>`).join(''):'<p class="text-gray-600 text-sm">暂无公开社区</p>'}</div></div></div>`;
+}
 
-        el.innerHTML = form + `<div class="space-y-4">${cards}</div>`;
-    }
+function showCreateCommunity(){
+openModal(`<h3 class="font-semibold mb-4">创建社区</h3>
+<form onsubmit="createCommunity(event)" class="space-y-3">
+<div><label class="text-xs text-gray-500 block mb-1">社区ID（英文，唯一）</label><input name="name" required class="input" placeholder="如 quant-strategies"></div>
+<div><label class="text-xs text-gray-500 block mb-1">社区名称</label><input name="display_name" required class="input" placeholder="如 量化策略交流"></div>
+<div><label class="text-xs text-gray-500 block mb-1">简介</label><textarea name="description" class="input" rows="2" placeholder="社区描述..."></textarea></div>
+<button type="submit" class="btn btn-primary w-full">创建</button></form>`);
+}
+async function createCommunity(e){
+e.preventDefault();const fd=new FormData(e.target);
+const r=await api('/communities/',{method:'POST',body:JSON.stringify(Object.fromEntries(fd))});
+if(r?.id){closeModal();toast('社区创建成功','success');openCommunity(r.id)}else toast(r?.detail||'失败','error');
+}
+async function joinCommunity(id){const r=await api('/communities/'+id+'/join',{method:'POST'});if(r){toast(r.message,'success');renderPage()}}
+function openCommunity(id){S.communityId=id;S.page='community';renderNav();renderPage()}
 
-    function renderPostCard(post) {
-        const author = post.author || {};
-        const tags = post.tags ? post.tags.split(',').map(t => t.trim()).filter(Boolean).map(t => `<span class="tag text-xs px-2 py-0.5 rounded-full">${t}</span>`).join('') : '';
-        const time = new Date(post.created_at).toLocaleString('zh-CN', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
-        const likeIcon = post.is_liked ? '❤️' : '🤍';
-        const likeClass = post.is_liked ? 'text-red-400' : 'text-dark-400';
+// ===== COMMUNITY VIEW =====
+async function renderCommunityView(el){
+const cid=S.communityId;if(!cid){el.innerHTML='<p class="text-gray-500">未选择社区</p>';return}
+const r=await api('/communities/'+cid);if(!r){el.innerHTML='<p class="text-gray-500">社区不存在</p>';return}
+const channels=r.channels||[];
+const textCh=channels.filter(c=>c.channel_type==='text');
+const voiceCh=channels.filter(c=>c.channel_type==='voice');
+S._currentChannel=textCh[0]?.id||null;
 
-        return `
-        <article class="glass rounded-xl p-5 fade-in hover:border-accent-500/20 transition">
-            <div class="flex items-start gap-3">
-                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-accent-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-                    ${(author.username||'?')[0].toUpperCase()}
-                </div>
-                <div class="flex-1 min-w-0">
-                    <div class="flex items-center gap-2">
-                        <span class="font-semibold text-sm">${author.username||'匿名'}</span>
-                        <span class="text-xs text-dark-500">${time}</span>
-                    </div>
-                    ${post.title ? `<h3 class="font-semibold mt-1 text-white">${escHtml(post.title)}</h3>` : ''}
-                    <p class="mt-1.5 text-sm text-dark-200 leading-relaxed">${escHtml(post.content)}</p>
-                    ${tags ? `<div class="flex flex-wrap gap-1.5 mt-3">${tags}</div>` : ''}
-                    <div class="flex items-center gap-5 mt-3 text-sm">
-                        <button onclick="toggleLike(${post.id})" class="${likeClass} hover:text-red-400 transition flex items-center gap-1">
-                            ${likeIcon} ${post.likes_count||0}
-                        </button>
-                        <button onclick="showComments(${post.id})" class="text-dark-400 hover:text-accent-400 transition flex items-center gap-1">
-                            💬 ${post.comments_count||0}
-                        </button>
-                        <span class="text-dark-500 flex items-center gap-1">👁 ${post.views||0}</span>
-                    </div>
-                </div>
-            </div>
-            <div id="comments-${post.id}" class="hidden mt-4 pl-13 border-t border-dark-700/50 pt-3"></div>
-        </article>`;
-    }
+el.innerHTML=`<div class="fade-in flex gap-4">
+<!-- Channel list -->
+<div class="w-[200px] flex-shrink-0 hidden md:block">
+<div class="glass rounded-xl p-3 mb-4"><button onclick="nav('communities')" class="btn btn-ghost text-xs w-full">← 返回社区列表</button></div>
+<div class="glass rounded-xl p-3">
+<div class="text-xs font-semibold text-gray-500 mb-2 px-1">💬 文字频道</div>
+${textCh.map((c,i)=>`<div class="px-2 py-1.5 rounded-md text-sm cursor-pointer hover:bg-white/5 transition ${i===0?'bg-white/10 text-white font-medium':'text-gray-400'}" onclick="selectChannel(${c.id},this)" data-ch="${c.id}"># ${c.name}</div>`).join('')}
+${voiceCh.length?`<div class="text-xs font-semibold text-gray-500 mt-4 mb-2 px-1">🎤 语音频道</div>${voiceCh.map(c=>`<div class="px-2 py-1.5 rounded-md text-sm text-gray-500 cursor-pointer hover:text-gray-300">🔊 ${c.name}</div>`).join('')}`:''}
+${S.user&&r.owner_id===S.user.id?`<div class="divider"></div><button onclick="showCreateChannel(${cid})" class="btn btn-ghost text-xs w-full mt-1">+ 创建频道</button>`:''}
+</div></div>
+<!-- Chat area -->
+<div class="flex-1 min-w-0">
+<div class="glass rounded-xl flex flex-col" style="height:calc(100vh - 140px)">
+<div class="p-3 border-b border-gray-700/30 font-semibold text-sm" id="channel-header"># ${textCh[0]?.name||'选择频道'}</div>
+<div class="flex-1 overflow-y-auto p-4 space-y-3" id="chat-messages"><p class="text-gray-600 text-sm text-center">加载中...</p></div>
+${S.user?`<div class="p-3 border-t border-gray-700/30"><form onsubmit="sendChannelMsg(event)" class="flex gap-2"><input id="msg-input" class="input flex-1" placeholder="发送消息..." autocomplete="off"><button type="submit" class="btn btn-primary text-sm">发送</button></form></div>`:'<div class="p-3 border-t border-gray-700/30 text-center text-gray-600 text-sm">登录后可发送消息</div>'}
+</div></div></div>`;
+if(S._currentChannel)loadChannelMessages(S._currentChannel);connectWS();
+}
 
-    async function submitPost() {
-        const content = document.getElementById('post-content').value.trim();
-        const tags = document.getElementById('post-tags').value.trim();
-        if (!content) return toast('请输入内容', 'error');
-        const res = await api('/posts/', { method: 'POST', body: JSON.stringify({ content, tags }) });
-        if (res?.id) {
-            toast('发布成功！', 'success');
-            render();
-        } else {
-            toast(res?.detail || '发布失败', 'error');
-        }
-    }
+async function loadChannelMessages(chId){
+const r=await api(`/communities/${S.communityId}/channels/${chId}/messages`);
+const el=document.getElementById('chat-messages');
+if(!r||!r.length){el.innerHTML='<p class="text-gray-600 text-sm text-center">暂无消息，开始聊天吧！</p>';return}
+el.innerHTML=r.map(m=>{const t=new Date(m.created_at).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});return`<div class="flex gap-2.5"><div class="avatar avatar-sm">${(m.author?.username||'?')[0].toUpperCase()}</div><div><div class="flex items-center gap-2"><span class="font-medium text-xs">${m.author?.username||'匿名'}</span><span class="text-xs text-gray-600">${t}</span></div><p class="text-sm text-gray-300 mt-0.5">${esc(m.content)}</p></div></div>`}).join('');
+el.scrollTop=el.scrollHeight;
+}
+function selectChannel(chId,el){
+S._currentChannel=chId;document.querySelectorAll('[data-ch]').forEach(e=>{e.classList.remove('bg-white/10','text-white','font-medium');e.classList.add('text-gray-400')});
+el?.classList.add('bg-white/10','text-white','font-medium');el?.classList.remove('text-gray-400');
+const ch=document.querySelector(`[data-ch="${chId}"]`);document.getElementById('channel-header').textContent='# '+(ch?.textContent?.trim()||chId);
+loadChannelMessages(chId);connectWS();
+}
+function showCreateChannel(cid){
+openModal(`<h3 class="font-semibold mb-4">创建频道</h3>
+<form onsubmit="createChannel(event,${cid})" class="space-y-3">
+<div><label class="text-xs text-gray-500 block mb-1">频道名称</label><input name="name" required class="input" placeholder="如 市场分析"></div>
+<div><label class="text-xs text-gray-500 block mb-1">类型</label><select name="channel_type" class="input"><option value="text">文字频道</option><option value="voice">语音频道</option></select></div>
+<div><label class="text-xs text-gray-500 block mb-1">描述</label><input name="description" class="input" placeholder="频道描述"></div>
+<button type="submit" class="btn btn-primary w-full">创建</button></form>`);
+}
+async function createChannel(e,cid){
+e.preventDefault();const fd=new FormData(e.target);
+const r=await api(`/communities/${cid}/channels`,{method:'POST',body:JSON.stringify(Object.fromEntries(fd))});
+if(r?.id){closeModal();toast('频道创建成功','success');renderPage()}else toast(r?.detail||'失败','error');
+}
+async function sendChannelMsg(e){
+e.preventDefault();const inp=document.getElementById('msg-input');const content=inp.value.trim();if(!content||!S._currentChannel)return;
+if(S.ws?.readyState===1){S.ws.send(JSON.stringify({content}));inp.value=''}
+else{const r=await api(`/communities/${S.communityId}/channels/${S._currentChannel}/messages`,{method:'POST',body:JSON.stringify({content})});if(r)loadChannelMessages(S._currentChannel)}
+inp.focus();
+}
+function connectWS(){
+if(S.ws){S.ws.close();S.ws=null}
+if(!S.token||!S._currentChannel)return;
+const proto=location.protocol==='https:'?'wss:':'ws:';
+S.ws=new WebSocket(`${proto}//${location.host}/api/ws/channel/${S._currentChannel}?token=${S.token}`);
+S.ws.onmessage=(e)=>{
+const m=JSON.parse(e.data);if(m.type==='message'){
+const el=document.getElementById('chat-messages');
+if(el.querySelector('.text-gray-600.text-sm.text-center'))el.innerHTML='';
+const t=new Date(m.created_at).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
+el.innerHTML+=`<div class="flex gap-2.5 fade-in"><div class="avatar avatar-sm">${(m.author_username||'?')[0].toUpperCase()}</div><div><div class="flex items-center gap-2"><span class="font-medium text-xs">${m.author_username||'匿名'}</span><span class="text-xs text-gray-600">${t}</span></div><p class="text-sm text-gray-300 mt-0.5">${esc(m.content)}</p></div></div>`;
+el.scrollTop=el.scrollHeight;
+}};
+S.ws.onclose=()=>{setTimeout(()=>{if(S.page==='community'&&S._currentChannel)connectWS()},5000)};
+}
 
-    async function toggleLike(postId) {
-        const res = await api(`/posts/${postId}/like`, { method: 'POST' });
-        if (res) render();
-    }
-
-    async function showComments(postId) {
-        const el = document.getElementById(`comments-${postId}`);
-        if (!el.classList.contains('hidden')) { el.classList.add('hidden'); return; }
-        el.classList.remove('hidden');
-
-        let html = '<div class="space-y-3" id="comments-list-' + postId + '"><p class="text-dark-500 text-sm">加载中...</p></div>';
-        if (state.user) {
-            html += `<form onsubmit="submitComment(event, ${postId})" class="mt-3 flex gap-2">
-                <input name="content" required class="flex-1 bg-dark-800 border border-dark-700 rounded-lg px-3 py-1.5 text-sm" placeholder="写评论...">
-                <button type="submit" class="btn-primary px-3 py-1.5 rounded-lg text-white text-xs">发送</button>
-            </form>`;
-        }
-        el.innerHTML = html;
-
-        const res = await api(`/posts/${postId}/comments`);
-        const comments = res || [];
-        const listEl = document.getElementById(`comments-list-${postId}`);
-        listEl.innerHTML = comments.length ? comments.map(c => `
-            <div class="flex gap-2 text-sm">
-                <div class="w-6 h-6 rounded-full bg-dark-700 flex items-center justify-center text-xs font-bold flex-shrink-0">${(c.author?.username||'?')[0].toUpperCase()}</div>
-                <div>
-                    <span class="font-medium">${c.author?.username||'匿名'}</span>
-                    <span class="text-dark-500 text-xs ml-1">${new Date(c.created_at).toLocaleString('zh-CN',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}</span>
-                    <p class="text-dark-200 mt-0.5">${escHtml(c.content)}</p>
-                </div>
-            </div>
-        `).join('') : '<p class="text-dark-500 text-sm">暂无评论</p>';
-    }
-
-    async function submitComment(e, postId) {
-        e.preventDefault();
-        const fd = new FormData(e.target);
-        const res = await api(`/posts/${postId}/comments`, { method: 'POST', body: JSON.stringify({ content: fd.get('content') }) });
-        if (res?.id) {
-            toast('评论成功', 'success');
-            showComments(postId);
-        }
-    }
-
-    // ============ Market ============
-    async function renderMarket(el) {
-        const [indicesRes, stocksRes] = await Promise.all([api('/market/indices'), api('/market/hot-stocks')]);
-        const indices = indicesRes?.indices || [];
-        const stocks = stocksRes?.stocks || [];
-
-        el.innerHTML = `
-        <div class="fade-in space-y-4">
-            <h2 class="text-lg font-bold">📈 市场行情</h2>
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
-                ${indices.map(idx => `
-                    <div class="glass rounded-xl p-4">
-                        <div class="text-xs text-dark-400">${idx.name}</div>
-                        <div class="text-lg font-bold mt-1">${idx.price.toLocaleString()}</div>
-                        <div class="text-sm ${idx.change>=0?'gain-text':'loss-text'}">
-                            ${idx.change>=0?'↑':'↓'} ${idx.change>=0?'+':''}${idx.change} (${idx.change_pct>=0?'+':''}${idx.change_pct.toFixed(2)}%)
-                        </div>
-                    </div>
-                `).join('')}
-            </div>
-            <h2 class="text-lg font-bold mt-6">🏷️ 热门股票</h2>
-            <div class="glass rounded-xl overflow-hidden">
-                <table class="w-full text-sm">
-                    <thead><tr class="text-dark-400 text-xs border-b border-dark-700">
-                        <th class="text-left p-3">名称</th><th class="text-left p-3">代码</th>
-                        <th class="text-right p-3">价格</th><th class="text-right p-3">涨跌%</th>
-                    </tr></thead>
-                    <tbody>
-                        ${stocks.map(s => `
-                            <tr class="border-b border-dark-700/50 hover:bg-dark-800/50">
-                                <td class="p-3 font-medium">${s.name}</td>
-                                <td class="p-3 text-dark-400">${s.code}</td>
-                                <td class="p-3 text-right">${s.price}</td>
-                                <td class="p-3 text-right ${s.change_pct>=0?'gain-text':'loss-text'}">${s.change_pct>=0?'+':''}${s.change_pct.toFixed(2)}%</td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            </div>
-        </div>`;
-    }
-
-    // ============ Discover ============
-    async function renderDiscover(el) {
-        const tagsRes = await api('/market/trending-tags');
-        const tags = tagsRes?.tags || [];
-
-        el.innerHTML = `
-        <div class="fade-in space-y-4">
-            <h2 class="text-lg font-bold">🔍 发现</h2>
-            <div class="glass rounded-xl p-5">
-                <h3 class="font-semibold text-sm mb-3">热门话题</h3>
-                <div class="space-y-3">
-                    ${tags.map((t,i) => `
-                        <div class="flex items-center justify-between py-2 ${i<tags.length-1?'border-b border-dark-700/50':''}">
-                            <div class="flex items-center gap-3">
-                                <span class="text-xs font-bold ${i<3?'text-accent-400':'text-dark-500'} w-5">#${i+1}</span>
-                                <span class="tag text-sm px-3 py-1 rounded-full cursor-pointer">${t.name}</span>
-                            </div>
-                            <span class="text-xs text-dark-500">${t.count} 讨论</span>
-                        </div>
-                    `).join('')}
-                </div>
-            </div>
-            <div class="glass rounded-xl p-5">
-                <h3 class="font-semibold text-sm mb-3">💡 平台功能</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div class="bg-dark-800/50 rounded-lg p-4 border border-dark-700/50">
-                        <div class="text-lg mb-1">📊</div>
-                        <div class="font-medium text-sm">策略分享</div>
-                        <div class="text-xs text-dark-400 mt-1">分享你的量化交易策略，获取社区反馈</div>
-                    </div>
-                    <div class="bg-dark-800/50 rounded-lg p-4 border border-dark-700/50">
-                        <div class="text-lg mb-1">💬</div>
-                        <div class="font-medium text-sm">实时讨论</div>
-                        <div class="text-xs text-dark-400 mt-1">与全球量化交易者交流市场观点</div>
-                    </div>
-                    <div class="bg-dark-800/50 rounded-lg p-4 border border-dark-700/50">
-                        <div class="text-lg mb-1">📈</div>
-                        <div class="font-medium text-sm">行情追踪</div>
-                        <div class="text-xs text-dark-400 mt-1">实时掌握全球市场动态</div>
-                    </div>
-                    <div class="bg-dark-800/50 rounded-lg p-4 border border-dark-700/50">
-                        <div class="text-lg mb-1">🤝</div>
-                        <div class="font-medium text-sm">社区关注</div>
-                        <div class="text-xs text-dark-400 mt-1">关注优秀的交易者，学习交流</div>
-                    </div>
-                </div>
-            </div>
-        </div>`;
-    }
-
-    // ============ Sidebar Widgets ============
-    async function loadSidebarData() {
-        try {
-            const [indices, stocks, tags] = await Promise.all([
-                api('/market/indices'), api('/market/hot-stocks'), api('/market/trending-tags')
-            ]);
-
-            // Market mini
-            const indicesHtml = (indices?.indices || []).slice(0, 4).map(idx => `
-                <div class="flex justify-between items-center">
-                    <span class="text-dark-300">${idx.name}</span>
-                    <span class="${idx.change>=0?'gain-text':'loss-text'}">${idx.change_pct>=0?'+':''}${idx.change_pct.toFixed(2)}%</span>
-                </div>
-            `).join('');
-            if (indicesHtml) document.getElementById('market-mini').innerHTML = indicesHtml;
-
-            // Hot stocks mini
-            const stocksHtml = (stocks?.stocks || []).slice(0, 5).map(s => `
-                <div class="flex justify-between items-center">
-                    <span class="text-dark-300">${s.name}</span>
-                    <span class="${s.change_pct>=0?'gain-text':'loss-text'}">${s.change_pct>=0?'+':''}${s.change_pct.toFixed(2)}%</span>
-                </div>
-            `).join('');
-            if (stocksHtml) document.getElementById('hot-stocks-mini').innerHTML = stocksHtml;
-
-            // Tags
-            const tagsHtml = (tags?.tags || []).slice(0, 8).map(t =>
-                `<span class="tag text-xs px-2.5 py-1 rounded-full cursor-pointer">${t.name}</span>`
-            ).join('');
-            if (tagsHtml) document.getElementById('trending-tags').innerHTML = tagsHtml;
-        } catch(e) {}
-    }
-
-    // ============ Nav Render ============
-    function renderNav() {
-        const el = document.getElementById('nav-auth');
-        const userCard = document.getElementById('user-card');
-        if (state.user) {
-            el.innerHTML = `
-                <span class="text-sm text-dark-300 hidden md:inline">👋 ${state.user.username}</span>
-                <button onclick="logout()" class="text-xs text-dark-400 hover:text-white transition">退出</button>
-            `;
-            userCard.classList.remove('hidden');
-            userCard.innerHTML = `
-                <div class="glass rounded-xl p-4">
-                    <div class="flex items-center gap-3">
-                        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-accent-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg">${state.user.username[0].toUpperCase()}</div>
-                        <div>
-                            <div class="font-semibold">${state.user.username}</div>
-                            <div class="text-xs text-dark-400">${state.user.bio || '量化交易爱好者'}</div>
-                        </div>
-                    </div>
-                </div>`;
-        } else {
-            el.innerHTML = `
-                <button onclick="showAuthModal('login')" class="text-sm text-dark-300 hover:text-white transition">登录</button>
-                <button onclick="showAuthModal('register')" class="btn-primary px-4 py-1.5 rounded-lg text-white text-sm">注册</button>
-            `;
-            userCard.classList.add('hidden');
-        }
-    }
-
-    // ============ Utils ============
-    function escHtml(str) {
-        const d = document.createElement('div');
-        d.textContent = str;
-        return d.innerHTML;
-    }
-
-    // ============ Init ============
-    renderNav();
-    loadSidebarData();
-    render();
-    </script>
+// ===== INIT =====
+renderAll();
+// Check token on load
+if(S.token)api('/auth/me').catch(()=>doLogout());
+</script>
 </body>
 </html>
