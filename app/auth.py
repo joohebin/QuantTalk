@@ -11,6 +11,7 @@ from app.models import User
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 security = HTTPBearer()
+optional_security = HTTPBearer(auto_error=False)
 
 
 def hash_password(password: str) -> str:
@@ -44,9 +45,11 @@ def get_current_user(
 
 
 def get_optional_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    credentials: HTTPAuthorizationCredentials = Depends(optional_security),
     db: Session = Depends(get_db)
 ) -> User | None:
+    if not credentials:
+        return None
     try:
         return get_current_user(credentials, db)
     except HTTPException:
