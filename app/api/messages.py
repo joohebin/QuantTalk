@@ -4,7 +4,7 @@ from typing import List
 from pydantic import BaseModel
 from datetime import datetime
 from app.database import get_db
-from app.models import User, PrivateMessage
+from app.models import User, PrivateMessage, Notification
 from app.auth import get_current_user
 
 router = APIRouter(tags=["私信"])
@@ -51,6 +51,14 @@ async def send_message(message: MessageCreate, current_user: User = Depends(get_
         raise HTTPException(status_code=400, detail="不能给自己发私信")
     db_message = PrivateMessage(sender_id=current_user.id, receiver_id=message.receiver_id, content=message.content)
     db.add(db_message)
+    # 发送私信通知
+    notif = Notification(
+        user_id=message.receiver_id,
+        type="message",
+        content=f"{current_user.username} sent you a private message",
+        from_user_id=current_user.id
+    )
+    db.add(notif)
     db.commit()
     db.refresh(db_message)
     return MessageResponse(id=db_message.id, sender_id=db_message.sender_id, receiver_id=db_message.receiver_id, content=db_message.content, is_read=db_message.is_read, created_at=db_message.created_at, sender=user_to_dict(current_user), receiver=user_to_dict(receiver))
@@ -67,6 +75,15 @@ async def get_conversations(current_user: User = Depends(get_current_user), db: 
             unread_count = db.query(PrivateMessage).filter(PrivateMessage.sender_id == other_user_id, PrivateMessage.receiver_id == current_user.id, PrivateMessage.is_read == False).count()
             conversations[other_user_id] = {"user_id": other_user_id, "username": other_user.username, "avatar": other_user.avatar, "last_message": msg.content[:100], "last_time": str(msg.created_at), "unread_count": unread_count}
     return list(conversations.values())
+
+
+@router.get("/api/messages/unread/count")
+async def get_unread_count(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    count = db.query(PrivateMessage).filter(
+        PrivateMessage.receiver_id == current_user.id,
+        PrivateMessage.is_read == False
+    ).count()
+    return {"unread": count}
 
 
 @router.get("/api/messages/{user_id}")
