@@ -100,4 +100,9 @@ async def upload_avatar(
 @router.get("/uploads/{path:path}")
 async def serve_upload(path: str):
     """访问上传的文件"""
-    return path
+    from fastapi.responses import FileResponse
+    import os
+    filepath = f"uploads/{path}"
+    if os.path.exists(filepath):
+        return FileResponse(filepath)
+    raise HTTPException(status_code=404, detail="文件不存在")

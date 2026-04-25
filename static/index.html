@@ -655,15 +655,15 @@ ${['#e6edf3','#c9d1d9','#adbac7','#8b949e','#d2a8ff','#a5d6ff','#7ee787'].map(c=
 }
 
 async function updateChatSetting(key,value){
-const r=await api('/users/chat-settings',{method:'PUT',body:JSON.stringify({[key]:value})});
-if(r?.bubble_bg_self){
-S.chatSettings=r;
-applyChatSettings();
-toast('设置已保存','success');
-renderChatSettings();
-}else{
-toast('保存失败','error');
-}
+    const r=await api('/users/chat-settings',{method:'PUT',body:JSON.stringify({[key]:value})});
+    if(r && !r.detail){
+        S.chatSettings=r;
+        applyChatSettings();
+        toast('设置已保存','success');
+        renderChatSettings();
+    }else{
+        toast('保存失败','error');
+    }
 }
 
 function applyChatSettings(){
