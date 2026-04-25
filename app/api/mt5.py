@@ -2,12 +2,24 @@
 MetaApi MT5 真实账户客户端
 接入 QuantAI Main 账户 (ID: ff982e56-23b0-4e3d-b6f6-7f7b8c40679e)
 支持: 账户信息/实时行情/历史K线/持仓数据
+
+注意: MetaApi 服务器当前使用 Kubernetes 占位 SSL 证书 (Fake Certificate)，
+      需要临时禁用 SSL 验证。请联系 MetaApi 支持配置正式 SSL 证书。
 """
 
+import ssl
 import httpx
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Any, List
 from app.config import METAAPI_ACCOUNT_ID, METAAPI_API_KEY, METAAPI_BASE_URL, METAAPI_CACHE_TTL
+
+# ============================================
+# SSL 上下文（临时绕过假证书）
+# 生产环境请替换为 verify=True，并确保 MetaApi 已配置正式 SSL 证书
+# ============================================
+_ssl_context = ssl.create_default_context()
+_ssl_context.check_hostname = False
+_ssl_context.verify_mode = ssl.CERT_NONE
 
 # ============================================
 # 内部缓存
@@ -21,6 +33,9 @@ def _get_headers() -> dict:
         "Authorization": f"Bearer {METAAPI_API_KEY}",
         "Content-Type": "application/json",
     }
+
+
+
 
 
 def _get_cache(key: str, ttl: int) -> Optional[Any]:
@@ -52,7 +67,7 @@ async def get_account_info() -> Optional[Dict[str, Any]]:
 
     url = f"{METAAPI_BASE_URL}/users/current/accounts/{METAAPI_ACCOUNT_ID}/accountInformation"
     try:
-        async with httpx.AsyncClient(timeout=15.0) as client:
+        async with httpx.AsyncClient(verify=_ssl_context, timeout=15.0) as client:
             resp = await client.get(url, headers=_get_headers())
             if resp.status_code == 200:
                 data = resp.json()
@@ -78,7 +93,7 @@ async def get_positions() -> Optional[List[Dict[str, Any]]]:
 
     url = f"{METAAPI_BASE_URL}/users/current/accounts/{METAAPI_ACCOUNT_ID}/positions"
     try:
-        async with httpx.AsyncClient(timeout=15.0) as client:
+        async with httpx.AsyncClient(verify=_ssl_context, timeout=15.0) as client:
             resp = await client.get(url, headers=_get_headers())
             if resp.status_code == 200:
                 data = resp.json()
@@ -102,7 +117,7 @@ async def get_symbols() -> Optional[List[Dict[str, Any]]]:
 
     url = f"{METAAPI_BASE_URL}/users/current/accounts/{METAAPI_ACCOUNT_ID}/symbols"
     try:
-        async with httpx.AsyncClient(timeout=15.0) as client:
+        async with httpx.AsyncClient(verify=_ssl_context, timeout=15.0) as client:
             resp = await client.get(url, headers=_get_headers())
             if resp.status_code == 200:
                 data = resp.json()
@@ -129,7 +144,7 @@ async def get_symbol_price(symbol: str) -> Optional[Dict[str, Any]]:
 
     url = f"{METAAPI_BASE_URL}/users/current/accounts/{METAAPI_ACCOUNT_ID}/symbols/{symbol}/price"
     try:
-        async with httpx.AsyncClient(timeout=10.0) as client:
+        async with httpx.AsyncClient(verify=_ssl_context, timeout=10.0) as client:
             resp = await client.get(url, headers=_get_headers())
             if resp.status_code == 200:
                 data = resp.json()
@@ -202,7 +217,7 @@ async def get_historical_candles(
     }
 
     try:
-        async with httpx.AsyncClient(timeout=20.0) as client:
+        async with httpx.AsyncClient(verify=_ssl_context, timeout=20.0) as client:
             resp = await client.get(url, headers=_get_headers(), params=params)
             if resp.status_code == 200:
                 data = resp.json()
@@ -235,7 +250,7 @@ async def get_current_candle(symbol: str, timeframe: str = "1h") -> Optional[Dic
     params = {"timeframe": mt5_tf}
 
     try:
-        async with httpx.AsyncClient(timeout=10.0) as client:
+        async with httpx.AsyncClient(verify=_ssl_context, timeout=10.0) as client:
             resp = await client.get(url, headers=_get_headers(), params=params)
             if resp.status_code == 200:
                 data = resp.json()
