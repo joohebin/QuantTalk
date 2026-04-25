@@ -357,7 +357,7 @@ el.innerHTML=`<div class="fade-in space-y-4">
 <button onclick="nav('crypto')" class="text-sm font-medium pb-1 px-2 text-gray-500 hover:text-white">🪙 加密货币</button>
 <button onclick="nav('forex')" class="text-sm font-medium pb-1 px-2 text-sky-400 border-b-2 border-sky-400">💱 外汇贵金属</button>
 </div>
-<h2 class="text-lg font-bold">💱 外汇 · 贵金属 · 原油 · 指数</h2><p class="text-xs text-gray-500">数据来源：MT5 真实账户 (QuantAI Main)</p>
+<h2 class="text-lg font-bold">💱 外汇 · 贵金属 · 原油 · 指数</h2><p class="text-xs text-gray-500">数据来源：${r?.dataSource === 'api2trade' ? 'API2Trade MT4/MT5' : r?.dataSource === 'mt5' ? 'MT5 真实账户 (MetaApi)' : '模拟数据'}</p>
 <div class="glass rounded-xl overflow-hidden">
 <table class="w-full text-sm">
 <thead><tr class="text-gray-500 text-xs border-b border-gray-700/30">

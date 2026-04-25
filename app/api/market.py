@@ -4,7 +4,9 @@ import numpy as np
 from datetime import datetime, timedelta
 import random
 import asyncio
-from app.api import mt5  # MetaApi MT5 真实账户客户端
+from app.api import mt5  # MetaApi MT5 备用客户端
+from app.api import api2trade  # API2Trade MT4/MT5 主用客户端
+from app.config import API2TRADE_API_KEY  # API2Trade API Key
 
 router = APIRouter()
 
@@ -254,7 +256,7 @@ def generate_realistic_kline(base_price: float, count: int, interval_minutes: in
 
 
 async def get_realtime_quote(symbol: str, fallback_price: float):
-    """获取实时行情（优先 Binance/MT5 真实数据，备选模拟）"""
+    """获取实时行情（优先 Binance/API2Trade 真实数据，备选 MetaApi，再备选模拟）"""
     symbol_upper = symbol.upper()
 
     # 加密货币：从 Binance 获取
@@ -264,18 +266,45 @@ async def get_realtime_quote(symbol: str, fallback_price: float):
         if ticker:
             return ticker
 
-    # 外汇/贵金属/原油/指数：从 MetaApi MT5 真实账户获取
+    # 外汇/贵金属/原油/指数：优先 API2Trade，备选 MetaApi
     if symbol in FOREX_SYMBOLS:
+        mt_sym = api2trade.normalize_symbol(symbol)
+        base_price = KLINE_BASIS.get(symbol, fallback_price)
+
+        # 尝试 API2Trade（主用）
+        if API2TRADE_API_KEY:
+            a2t_price = await api2trade.get_symbol_price(mt_sym, API2TRADE_API_KEY)
+            if a2t_price:
+                bid = a2t_price.get("bid", 0) or a2t_price.get("Bid", 0)
+                ask = a2t_price.get("ask", 0) or a2t_price.get("Ask", 0)
+                last = a2t_price.get("last", 0) or a2t_price.get("Last", 0)
+                if bid and ask:
+                    current_price = (bid + ask) / 2
+                elif last:
+                    current_price = last
+                else:
+                    current_price = base_price
+                change = current_price - base_price
+                change_pct = (change / base_price * 100) if base_price else 0
+                return {
+                    "price": round(current_price, 5 if current_price < 0.01 else 4),
+                    "bid": round(bid, 5 if bid < 0.01 else 4),
+                    "ask": round(ask, 5 if ask < 0.01 else 4),
+                    "change": round(change, 5 if abs(change) < 0.01 else 4),
+                    "change_pct": round(change_pct, 2),
+                    "volume": a2t_price.get("volume", 0) or 0,
+                    "timestamp": int(datetime.now().timestamp() * 1000),
+                    "source": "api2trade",
+                }
+
+        # 备选 MetaApi
         mt5_sym = mt5.normalize_symbol(symbol)
         mt5_price = await mt5.get_symbol_price(mt5_sym)
         if mt5_price:
-            # MetaApi 返回格式: {bid, ask, brokerTime, ...}
-            # 需要计算 last price 和 change
             bid = mt5_price.get("bid", 0)
             ask = mt5_price.get("ask", 0)
             if bid and ask:
                 current_price = (bid + ask) / 2
-                base_price = KLINE_BASIS.get(symbol, fallback_price)
                 change = current_price - base_price
                 change_pct = (change / base_price * 100) if base_price else 0
                 return {
@@ -337,7 +366,7 @@ async def get_kline(
     """
     获取K线数据（支持股票/加密货币/外汇/贵金属/原油/指数）
     加密货币使用 Binance 真实数据
-    外汇/贵金属/原油/指数使用 MetaApi MT5 真实账户数据
+    外汇/贵金属/原油/指数优先 API2Trade，备选 MetaApi MT5
     """
     symbol = symbol.lower()
 
@@ -379,24 +408,47 @@ async def get_kline(
             }
         data = generate_realistic_kline(base_price, limit, interval_minutes)
 
-    # 外汇/贵金属/原油/指数：从 MetaApi MT5 获取真实 K线
+    # 外汇/贵金属/原油/指数：优先 API2Trade，备选 MetaApi
     elif symbol in FOREX_SYMBOLS:
-        mt5_sym = mt5.normalize_symbol(symbol)
-        real_data = await mt5.get_historical_candles(mt5_sym, interval_str, limit)
-        if real_data:
-            data = [
-                {
-                    "time": int(c.get("time", 0) / 1000),  # MetaApi 毫秒时间戳 -> 秒
-                    "open": float(c.get("open", 0)),
-                    "high": float(c.get("high", 0)),
-                    "low": float(c.get("low", 0)),
-                    "close": float(c.get("close", 0)),
-                    "volume": float(c.get("tickVolume", 0)),
-                }
-                for c in real_data
-            ]
-            source = "mt5"
-        else:
+        mt_sym = api2trade.normalize_symbol(symbol)
+        source = "simulation"
+
+        # 优先 API2Trade
+        if API2TRADE_API_KEY:
+            real_data = await api2trade.get_historical_candles(mt_sym, API2TRADE_API_KEY, interval_str, limit)
+            if real_data:
+                data = [
+                    {
+                        "time": c.get("time", 0) or c.get("t", 0),
+                        "open": float(c.get("open", 0) or c.get("o", 0)),
+                        "high": float(c.get("high", 0) or c.get("h", 0)),
+                        "low": float(c.get("low", 0) or c.get("l", 0)),
+                        "close": float(c.get("close", 0) or c.get("c", 0)),
+                        "volume": float(c.get("volume", 0) or c.get("v", 0)),
+                    }
+                    for c in real_data
+                ]
+                source = "api2trade"
+
+        # 备选 MetaApi
+        if source == "simulation" and API2TRADE_API_KEY:
+            mt5_sym = mt5.normalize_symbol(symbol)
+            real_data = await mt5.get_historical_candles(mt5_sym, interval_str, limit)
+            if real_data:
+                data = [
+                    {
+                        "time": int(c.get("time", 0) / 1000),
+                        "open": float(c.get("open", 0)),
+                        "high": float(c.get("high", 0)),
+                        "low": float(c.get("low", 0)),
+                        "close": float(c.get("close", 0)),
+                        "volume": float(c.get("tickVolume", 0)),
+                    }
+                    for c in real_data
+                ]
+                source = "mt5"
+
+        if source == "simulation":
             data = generate_realistic_kline(base_price, limit, interval_minutes)
     else:
         # 股票：使用模拟数据
@@ -513,11 +565,20 @@ async def get_forex_market():
         items.append({**f, **quote})
 
     # 判断数据源
+    has_api2trade = any(item.get("source") == "api2trade" for item in items)
     has_mt5 = any(item.get("source") == "mt5" for item in items)
+    if has_api2trade:
+        data_source = "api2trade"
+    elif has_mt5:
+        data_source = "mt5"
+    else:
+        data_source = "simulation"
+
+    account_label = "API2Trade MT4/MT5" if has_api2trade else ("QuantAI Main (MT5)" if has_mt5 else "Simulation")
     return {
         "forex": items,
-        "dataSource": "mt5" if has_mt5 else "simulation",
-        "account": "QuantAI Main (MT5 Real)",
+        "dataSource": data_source,
+        "account": account_label,
     }
 
 
@@ -547,20 +608,26 @@ async def get_trending_tags():
 
 
 # ============================================
-# MetaApi MT5 真实账户端点
+# API2Trade MT4/MT5 账户端点（主用）
 # ============================================
-@router.get("/mt5/account")
-async def get_mt5_account():
+@router.get("/api2trade/account")
+async def get_api2trade_account():
     """
-    获取 MT5 真实账户信息
-    账户: QuantAI Main (87954362)
+    获取 API2Trade MT4/MT5 账户信息
+    注意: 需要先在 config.py 中配置 API2TRADE_API_KEY
     """
-    info = await mt5.get_account_info()
+    if not API2TRADE_API_KEY:
+        return {
+            "success": False,
+            "message": "未配置 API2TRADE_API_KEY，请在 config.py 中添加",
+            "connected": False,
+        }
+    info = await api2trade.get_account_info(API2TRADE_API_KEY)
     if info:
         return {
             "success": True,
-            "account": "QuantAI Main",
-            "accountId": info.get("login") or info.get("accountId"),
+            "provider": "API2Trade",
+            "accountId": info.get("login") or "",
             "balance": info.get("balance"),
             "equity": info.get("equity"),
             "margin": info.get("margin"),
@@ -574,7 +641,90 @@ async def get_mt5_account():
         }
     return {
         "success": False,
-        "message": "无法连接 MT5 真实账户，请检查 MetaApi 配置",
+        "message": "无法连接 API2Trade，请检查 API Key 和账户 UUID",
+        "connected": False,
+    }
+
+
+@router.get("/api2trade/positions")
+async def get_api2trade_positions():
+    """获取 API2Trade MT4/MT5 当前持仓"""
+    if not API2TRADE_API_KEY:
+        return {"success": False, "positions": [], "message": "未配置 API2TRADE_API_KEY"}
+    positions = await api2trade.get_positions(API2TRADE_API_KEY)
+    if positions is not None:
+        return {
+            "success": True,
+            "positions": [
+                {
+                    "symbol": api2trade.mt_to_internal(p.get("symbol", "")),
+                    "mtSymbol": p.get("symbol"),
+                    "type": p.get("type"),
+                    "volume": p.get("volume"),
+                    "openPrice": p.get("openPrice"),
+                    "currentPrice": p.get("currentPrice"),
+                    "profit": p.get("profit"),
+                    "swap": p.get("swap"),
+                    "openTime": p.get("openTime"),
+                }
+                for p in positions
+            ]
+        }
+    return {"success": False, "positions": [], "message": "无法获取持仓数据"}
+
+
+@router.get("/api2trade/quote/{symbol}")
+async def get_api2trade_single_quote(symbol: str):
+    """获取单个 API2Trade 品种的实时报价"""
+    if not API2TRADE_API_KEY:
+        return {"success": False, "symbol": symbol, "message": "未配置 API2TRADE_API_KEY"}
+    mt_sym = api2trade.normalize_symbol(symbol)
+    price = await api2trade.get_symbol_price(mt_sym, API2TRADE_API_KEY)
+    if price:
+        return {
+            "success": True,
+            "symbol": symbol,
+            "mtSymbol": mt_sym,
+            "bid": price.get("bid") or price.get("Bid"),
+            "ask": price.get("ask") or price.get("Ask"),
+            "last": price.get("last") or price.get("Last"),
+            "time": price.get("time") or price.get("Time"),
+        }
+    return {"success": False, "symbol": symbol, "message": "无法获取报价"}
+
+
+# ============================================
+# MetaApi MT5 真实账户端点（备用）
+# 注意: MetaApi 当前服务器 SSL 证书问题，作为备用保留
+# ============================================
+@router.get("/mt5/account")
+async def get_mt5_account():
+    """
+    获取 MT5 真实账户信息（备用）
+    账户: QuantAI Main (87954362)
+    """
+    info = await mt5.get_account_info()
+    if info:
+        return {
+            "success": True,
+            "provider": "MetaApi (Backup)",
+            "account": "QuantAI Main",
+            "accountId": info.get("login") or info.get("accountId"),
+            "balance": info.get("balance"),
+            "equity": info.get("equity"),
+            "margin": info.get("margin"),
+            "freeMargin": info.get("marginFree"),
+            "profit": info.get("profit"),
+            "marginLevel": info.get("marginLevel"),
+            "leverage": info.get("leverage"),
+            "currency": info.get("currency"),
+            "server": info.get("server"),
+            "connected": True,
+            "note": "MetaApi 作为备用方案，当前主要使用 API2Trade"
+        }
+    return {
+        "success": False,
+        "message": "无法连接 MT5 真实账户（MetaApi 备用），请检查 API2Trade 配置",
         "connected": False,
     }
 

@@ -1,0 +1,10 @@
+{
+  "commands": [
+    "ls /home/ubuntu/ 2>/dev/null && echo HOME_OK",
+    "ls /root/ 2>/dev/null && echo ROOT_OK",
+    "ls /srv/ 2>/dev/null && echo SRV_OK",
+    "ls /var/www/ 2>/dev/null && echo WWW_OK",
+    "find / -name 'main.py' -type f 2>/dev/null | head -5",
+    "which python3 && python3 --version"
+  ]
+}
