@@ -221,3 +221,30 @@ async def get_symbol_price(symbol: str, account_uuid: str) -> Optional[Dict[str,
     if quote:
         return quote
     return None
+
+
+# ============================================
+# 历史K线（API2Trade REST API 暂不支持，返回 None）
+# 注意: API2Trade 只提供实时报价 WebSocket，历史K线需要自行构建或使用其他数据源
+# ============================================
+async def get_historical_candles(
+    symbol: str,
+    account_uuid: str,
+    timeframe: str = "1h",
+    limit: int = 200
+) -> Optional[List[Dict[str, Any]]]:
+    """
+    获取历史K线数据
+    
+    注意: API2Trade REST API 暂不支持历史K线接口。
+    如需K线数据，可考虑:
+    1. 使用 Binance API（加密货币已有完整K线支持）
+    2. 使用 MetaApi MT5（备用方案）
+    3. 通过 WebSocket 实时报价自行构建K线
+    
+    此函数返回 None，让调用方使用备选方案。
+    """
+    # API2Trade REST API 不提供历史K线端点
+    # 文档: https://www.api2trade.com
+    # 主要接口: AccountSummary, GetQuote, GetPositions
+    return None
