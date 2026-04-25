@@ -319,13 +319,6 @@ else{renderProfilePosts(uid);}
 }else{
 renderProfilePosts(uid);
 }
-}
-if(isSelf&&S._profileTab==='exchanges'){
-renderExchangeConfigs();
-}else{
-renderProfilePosts(uid);
-}
-}
 function switchProfileTab(tab){
 S._profileTab=tab;
 const content=document.getElementById('profile-content');
