@@ -142,6 +142,37 @@ def send_friend_request(req: FriendRequestCreate, current_user: User = Depends(g
     return {"message": "friend request sent", "request_id": friend_req.id}
 
 
+@router.get("/friend-status/{user_id}")
+def get_friend_status(user_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    if user_id == current_user.id:
+        return {"is_friend": False, "has_pending_request_from_me": False, "has_pending_request_to_me": False}
+    # 检查是否已是好友
+    is_friend = db.query(friendships).filter(
+        or_(
+            and_(friendships.c.user_id == current_user.id, friendships.c.friend_id == user_id),
+            and_(friendships.c.user_id == user_id, friendships.c.friend_id == current_user.id)
+        )
+    ).first()
+    # 检查我发出的待处理申请
+    my_request = db.query(FriendRequest).filter(
+        FriendRequest.from_user_id == current_user.id,
+        FriendRequest.to_user_id == user_id,
+        FriendRequest.status == "PENDING"
+    ).first()
+    # 检查收到的待处理申请
+    their_request = db.query(FriendRequest).filter(
+        FriendRequest.from_user_id == user_id,
+        FriendRequest.to_user_id == current_user.id,
+        FriendRequest.status == "PENDING"
+    ).first()
+    return {
+        "is_friend": is_friend is not None,
+        "has_pending_request_from_me": my_request is not None,
+        "has_pending_request_to_me": their_request is not None,
+        "request_id": their_request.id if their_request else (my_request.id if my_request else None)
+    }
+
+
 @router.get("/friend-requests")
 def get_friend_requests(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     # 获取收到的好友申请
@@ -246,37 +277,6 @@ def get_friends(current_user: User = Depends(get_current_user), db: Session = De
         }
         for f in friends
     ]
-
-
-@router.get("/friend-status/{user_id}")
-def get_friend_status(user_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    if user_id == current_user.id:
-        return {"is_friend": False, "has_pending_request_from_me": False, "has_pending_request_to_me": False}
-    # 检查是否已是好友
-    is_friend = db.query(friendships).filter(
-        or_(
-            and_(friendships.c.user_id == current_user.id, friendships.c.friend_id == user_id),
-            and_(friendships.c.user_id == user_id, friendships.c.friend_id == current_user.id)
-        )
-    ).first()
-    # 检查我发出的待处理申请
-    my_request = db.query(FriendRequest).filter(
-        FriendRequest.from_user_id == current_user.id,
-        FriendRequest.to_user_id == user_id,
-        FriendRequest.status == "PENDING"
-    ).first()
-    # 检查收到的待处理申请
-    their_request = db.query(FriendRequest).filter(
-        FriendRequest.from_user_id == user_id,
-        FriendRequest.to_user_id == current_user.id,
-        FriendRequest.status == "PENDING"
-    ).first()
-    return {
-        "is_friend": is_friend is not None,
-        "has_pending_request_from_me": my_request is not None,
-        "has_pending_request_to_me": their_request is not None,
-        "request_id": their_request.id if their_request else (my_request.id if my_request else None)
-    }
 
 
 @router.delete("/friend/{user_id}")
