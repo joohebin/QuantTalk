@@ -1,5 +1,6 @@
 from typing import Any, Optional, List
 from fastapi import APIRouter, Depends, HTTPException, Form, UploadFile, File
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, and_
 from app.database import get_db
@@ -67,6 +68,49 @@ async def update_profile(
         current_user.hashed_password = hash_password(new_password)
     db.commit()
     return {"message": "ok", "avatar": current_user.avatar}
+
+
+# === Chat Settings ===
+class ChatSettingsUpdate(BaseModel):
+    bubble_bg_self: Optional[str] = None
+    bubble_bg_other: Optional[str] = None
+    bubble_text_color: Optional[str] = None
+    font_size: Optional[str] = None
+
+
+@router.put("/chat-settings")
+def update_chat_settings(
+    settings: ChatSettingsUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if settings.bubble_bg_self is not None:
+        current_user.bubble_bg_self = settings.bubble_bg_self
+    if settings.bubble_bg_other is not None:
+        current_user.bubble_bg_other = settings.bubble_bg_other
+    if settings.bubble_text_color is not None:
+        current_user.bubble_text_color = settings.bubble_text_color
+    if settings.font_size is not None:
+        if settings.font_size not in ["small", "medium", "large"]:
+            raise HTTPException(400, "invalid font size")
+        current_user.font_size = settings.font_size
+    db.commit()
+    return {
+        "bubble_bg_self": current_user.bubble_bg_self,
+        "bubble_bg_other": current_user.bubble_bg_other,
+        "bubble_text_color": current_user.bubble_text_color,
+        "font_size": current_user.font_size,
+    }
+
+
+@router.get("/chat-settings")
+def get_chat_settings(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    return {
+        "bubble_bg_self": current_user.bubble_bg_self,
+        "bubble_bg_other": current_user.bubble_bg_other,
+        "bubble_text_color": current_user.bubble_text_color,
+        "font_size": current_user.font_size,
+    }
 
 
 @router.post("/follow/{user_id}")

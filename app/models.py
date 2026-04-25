@@ -49,6 +49,12 @@ class User(Base):
     is_verified = Column(Boolean, default=False)
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+    
+    # 聊天样式设置
+    bubble_bg_self = Column(String(20), default="#3b82f6")      # 自己的气泡背景
+    bubble_bg_other = Column(String(20), default="#374151")      # 对方气泡背景
+    bubble_text_color = Column(String(20), default="#ffffff")    # 气泡字体颜色
+    font_size = Column(String(10), default="medium")            # 字体大小: small/medium/large
 
     posts = relationship("Post", back_populates="author", cascade="all, delete-orphan")
     comments = relationship("Comment", back_populates="author", cascade="all, delete-orphan")

@@ -309,6 +309,7 @@ ${isSelf?`<div class="flex gap-2 mb-4 flex-wrap">
 <button onclick="switchProfileTab('friend-requests')" class="btn btn-sm ${S._profileTab==='friend-requests'?'btn-primary':'btn-ghost'}">📥 好友申请</button>
 <button onclick="showAddFriendModal()" class="btn btn-sm btn-primary">➕ 添加好友</button>
 <button onclick="switchProfileTab('exchanges')" class="btn btn-sm ${S._profileTab==='exchanges'?'btn-primary':'btn-ghost'}">🔗 交易所配置</button>
+<button onclick="switchProfileTab('chat-settings')" class="btn btn-sm ${S._profileTab==='chat-settings'?'btn-primary':'btn-ghost'}">💬 聊天设置</button>
 </div>`:''}
 <div id="profile-content"><p class="text-gray-600 text-sm text-center py-4">加载中...</p></div>
 </div>`;
@@ -316,6 +317,7 @@ if(isSelf){
 if(S._profileTab==='friends'){renderMyFriends();}
 else if(S._profileTab==='friend-requests'){renderFriendRequests();}
 else if(S._profileTab==='exchanges'){renderExchangeConfigs();}
+else if(S._profileTab==='chat-settings'){renderChatSettings();}
 else{renderProfilePosts(uid);}
 }else{
 renderProfilePosts(uid);
@@ -330,6 +332,8 @@ renderMyFriends();
 renderFriendRequests();
 }else if(tab==='exchanges'){
 renderExchangeConfigs();
+}else if(tab==='chat-settings'){
+renderChatSettings();
 }else{
 renderProfilePosts(S._viewUserId);
 }
@@ -484,6 +488,94 @@ ${configs.length?configs.map(c=>`<div class="flex items-center justify-between p
 <div class="mt-4 p-3 bg-yellow-500/10 rounded-lg"><p class="text-xs text-yellow-400">⚠️ API Key 仅用于获取行情和执行交易，不会泄露给第三方。 请确保只在可信的交易所创建只读或交易权限的 API Key。</p></div>
 </div>`;
 }
+// 聊天样式设置
+async function renderChatSettings(){
+const content=document.getElementById('profile-content');
+const r=await api('/users/chat-settings');
+const settings=r||{};
+content.innerHTML=`<div class="glass rounded-xl p-4">
+<h3 class="font-semibold mb-4">💬 聊天样式设置</h3>
+
+<div class="space-y-4">
+<!-- 字体大小 -->
+<div>
+<label class="text-sm text-gray-400 block mb-2">字体大小</label>
+<div class="flex gap-2">
+<button onclick="updateChatSetting('font_size','small')" class="btn btn-sm ${settings.font_size==='small'?'btn-primary':'btn-ghost'}">小</button>
+<button onclick="updateChatSetting('font_size','medium')" class="btn btn-sm ${settings.font_size==='medium'||!settings.font_size?'btn-primary':'btn-ghost'}">中</button>
+<button onclick="updateChatSetting('font_size','large')" class="btn btn-sm ${settings.font_size==='large'?'btn-primary':'btn-ghost'}">大</button>
+</div>
+</div>
+
+<!-- 自己的气泡背景 -->
+<div>
+<label class="text-sm text-gray-400 block mb-2">自己的气泡颜色</label>
+<div class="flex gap-2 flex-wrap">
+${['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899','#06b6d4','#84cc16'].map(c=>`<button onclick="updateChatSetting('bubble_bg_self','${c}')" class="w-8 h-8 rounded-full border-2 ${settings.bubble_bg_self===c||(!settings.bubble_bg_self&&c==='#3b82f6')?'border-white':'border-transparent'}" style="background:${c}"></button>`).join('')}
+</div>
+</div>
+
+<!-- 对方的气泡背景 -->
+<div>
+<label class="text-sm text-gray-400 block mb-2">对方的气泡颜色</label>
+<div class="flex gap-2 flex-wrap">
+${['#374151','#1f2937','#4b5563','#6b7280','#78716c','#57534e','#44403c','#292524'].map(c=>`<button onclick="updateChatSetting('bubble_bg_other','${c}')" class="w-8 h-8 rounded-full border-2 ${settings.bubble_bg_other===c||(!settings.bubble_bg_other&&c==='#374151')?'border-white':'border-transparent'}" style="background:${c}"></button>`).join('')}
+</div>
+</div>
+
+<!-- 字体颜色 -->
+<div>
+<label class="text-sm text-gray-400 block mb-2">气泡字体颜色</label>
+<div class="flex gap-2 flex-wrap">
+${['#ffffff','#000000','#fef3c7','#dbeafe','#dcfce7','#fce7f3','#f3e8ff'].map(c=>`<button onclick="updateChatSetting('bubble_text_color','${c}')" class="w-8 h-8 rounded-full border-2 ${settings.bubble_text_color===c||(!settings.bubble_text_color&&c==='#ffffff')?'border-white':'border-gray-600'}" style="background:${c}"></button>`).join('')}
+</div>
+</div>
+
+<!-- 预览 -->
+<div class="mt-6 pt-4 border-t border-gray-700/30">
+<label class="text-sm text-gray-400 block mb-2">预览效果</label>
+<div class="bg-gray-900/50 rounded-lg p-4 space-y-2">
+<div class="flex justify-start"><div class="max-w-[70%] rounded-lg px-3 py-2 text-sm" style="background:${settings.bubble_bg_other||'#374151'};color:${settings.bubble_text_color||'#ffffff'};font-size:${settings.font_size==='small'?'12px':settings.font_size==='large'?'18px':'14px'}">你好啊</div></div>
+<div class="flex justify-end"><div class="max-w-[70%] rounded-lg px-3 py-2 text-sm" style="background:${settings.bubble_bg_self||'#3b82f6'};color:${settings.bubble_text_color||'#ffffff'};font-size:${settings.font_size==='small'?'12px':settings.font_size==='large'?'18px':'14px'}">我在大连，你呢？</div></div>
+</div>
+</div>
+</div>
+</div>`;
+}
+
+async function updateChatSetting(key,value){
+const r=await api('/users/chat-settings',{method:'PUT',body:JSON.stringify({[key]:value})});
+if(r?.bubble_bg_self){
+S.chatSettings=r;
+applyChatSettings();
+toast('设置已保存','success');
+renderChatSettings();
+}else{
+toast('保存失败','error');
+}
+}
+
+function applyChatSettings(){
+const settings=S.chatSettings||{};
+const fontSize=settings.font_size==='small'?'12px':settings.font_size==='large'?'18px':'14px';
+document.querySelectorAll('.chat-bubble-self').forEach(el=>{
+el.style.background=settings.bubble_bg_self||'#3b82f6';
+el.style.color=settings.bubble_text_color||'#ffffff';
+el.style.fontSize=fontSize;
+});
+document.querySelectorAll('.chat-bubble-other').forEach(el=>{
+el.style.background=settings.bubble_bg_other||'#374151';
+el.style.color=settings.bubble_text_color||'#ffffff';
+el.style.fontSize=fontSize;
+});
+}
+
+async function initChatSettings(){
+const r=await api('/users/chat-settings');
+S.chatSettings=r||{};
+applyChatSettings();
+}
+
 async function renderProfilePosts(uid){
 const content=document.getElementById('profile-content');
 const pr=await api('/posts/?user_id='+uid+'&limit=20');const posts=pr?.posts||[];
@@ -981,12 +1073,16 @@ async function loadChatMessages(userId){
     if(!el) return;
     const r = await api(`/messages/${userId}?limit=50`);
     const msgs = r || [];
+    const settings = S.chatSettings||{};
+    const fontSize = settings.font_size==='small'?'12px':settings.font_size==='large'?'18px':'14px';
     el.innerHTML = msgs.map(m => {
         const isMe = m.sender_id === S.user.id;
+        const bgColor = isMe?(settings.bubble_bg_self||'#3b82f6'):(settings.bubble_bg_other||'#374151');
+        const textColor = settings.bubble_text_color||'#ffffff';
         return `<div class="flex ${isMe?'justify-end':'justify-start'}">
-            <div class="max-w-[70%] ${isMe?'bg-sky-500/20':'glass'} rounded-xl px-3 py-2">
+            <div class="max-w-[70%] ${isMe?'chat-bubble-self':'chat-bubble-other'} rounded-xl px-3 py-2" style="background:${bgColor};color:${textColor};font-size:${fontSize}">
                 <div class="text-sm">${esc(m.content)}</div>
-                <div class="text-xs text-gray-500 text-right mt-1">${timeAgo(m.created_at)}</div>
+                <div class="text-xs text-gray-400 text-right mt-1">${timeAgo(m.created_at)}</div>
             </div>
         </div>`;
     }).join('');
@@ -1613,7 +1709,11 @@ function startKlineUpdate(){
 // ===== INIT =====
 renderAll();
 // Check token on load
-if(S.token)api('/auth/me').catch(()=>doLogout());
+if(S.token){
+    api('/auth/me').catch(()=>doLogout());
+    // 加载聊天设置
+    initChatSettings().catch(()=>{});
+}
 </script>
 </body>
 </html>
