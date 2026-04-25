@@ -9,6 +9,14 @@ from app.schemas import UserUpdate
 router = APIRouter()
 
 
+@router.get("/search")
+def search_users(q: str = "", limit: int = 20, db: Session = Depends(get_db)):
+    if not q:
+        return []
+    users = db.query(User).filter(User.username.contains(q)).limit(limit).all()
+    return [{"id": u.id, "username": u.username, "avatar": u.avatar, "bio": u.bio} for u in users]
+
+
 @router.get("/{user_id}")
 def get_user_by_id(user_id: int, current_user: Any = None, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.id == user_id).first()
@@ -76,11 +84,3 @@ def toggle_follow(user_id: int, current_user: User = Depends(get_current_user), 
         db.add(notif)
         db.commit()
         return {"following": True, "message": "followed"}
-
-
-@router.get("/search")
-def search_users(q: str = "", limit: int = 20, db: Session = Depends(get_db)):
-    if not q:
-        return []
-    users = db.query(User).filter(User.username.contains(q)).limit(limit).all()
-    return [{"id": u.id, "username": u.username, "avatar": u.avatar, "bio": u.bio} for u in users]
