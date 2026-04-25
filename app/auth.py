@@ -18,7 +18,7 @@ def hash_password(password: str) -> str:
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return check_password_hash(plain_password, hashed_password)
+    return check_password_hash(hashed_password, plain_password)
 
 
 def create_access_token(user_id: int, username: str) -> str:
