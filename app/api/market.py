@@ -4,6 +4,7 @@ import numpy as np
 from datetime import datetime, timedelta
 import random
 import asyncio
+from app.api import mt5  # MetaApi MT5 真实账户客户端
 
 router = APIRouter()
 
@@ -253,7 +254,7 @@ def generate_realistic_kline(base_price: float, count: int, interval_minutes: in
 
 
 async def get_realtime_quote(symbol: str, fallback_price: float):
-    """获取实时行情（优先 Binance，备选模拟）"""
+    """获取实时行情（优先 Binance/MT5 真实数据，备选模拟）"""
     symbol_upper = symbol.upper()
 
     # 加密货币：从 Binance 获取
@@ -263,7 +264,32 @@ async def get_realtime_quote(symbol: str, fallback_price: float):
         if ticker:
             return ticker
 
-    # 外汇/贵金属/指数：模拟实时波动
+    # 外汇/贵金属/原油/指数：从 MetaApi MT5 真实账户获取
+    if symbol in FOREX_SYMBOLS:
+        mt5_sym = mt5.normalize_symbol(symbol)
+        mt5_price = await mt5.get_symbol_price(mt5_sym)
+        if mt5_price:
+            # MetaApi 返回格式: {bid, ask, brokerTime, ...}
+            # 需要计算 last price 和 change
+            bid = mt5_price.get("bid", 0)
+            ask = mt5_price.get("ask", 0)
+            if bid and ask:
+                current_price = (bid + ask) / 2
+                base_price = KLINE_BASIS.get(symbol, fallback_price)
+                change = current_price - base_price
+                change_pct = (change / base_price * 100) if base_price else 0
+                return {
+                    "price": round(current_price, 5 if current_price < 0.01 else 4),
+                    "bid": round(bid, 5 if bid < 0.01 else 4),
+                    "ask": round(ask, 5 if ask < 0.01 else 4),
+                    "change": round(change, 5 if abs(change) < 0.01 else 4),
+                    "change_pct": round(change_pct, 2),
+                    "volume": mt5_price.get("volume", 0) or 0,
+                    "timestamp": mt5_price.get("time", int(datetime.now().timestamp() * 1000)),
+                    "source": "mt5",
+                }
+
+    # 模拟实时波动（回退方案）
     base_price = KLINE_BASIS.get(symbol, fallback_price)
     change_pct = (random.random() - 0.5) * 0.005  # 外汇波动更小
     current_price = base_price * (1 + change_pct)
@@ -274,7 +300,8 @@ async def get_realtime_quote(symbol: str, fallback_price: float):
         "change": round(change, 4 if base_price < 10 else 2),
         "change_pct": round(change_pct * 100, 2),
         "volume": int(50000000 + random.random() * 200000000),
-        "timestamp": int(datetime.now().timestamp() * 1000)
+        "timestamp": int(datetime.now().timestamp() * 1000),
+        "source": "simulation",
     }
 
 
@@ -308,8 +335,9 @@ async def get_kline(
     limit: int = Query(100, ge=10, le=500)
 ):
     """
-    获取K线数据（支持股票/加密货币/外汇/贵金属）
-    加密货币使用 Binance 真实数据，其他使用模拟数据
+    获取K线数据（支持股票/加密货币/外汇/贵金属/原油/指数）
+    加密货币使用 Binance 真实数据
+    外汇/贵金属/原油/指数使用 MetaApi MT5 真实账户数据
     """
     symbol = symbol.lower()
 
@@ -330,13 +358,13 @@ async def get_kline(
     })
 
     base_price = KLINE_BASIS.get(symbol, 100)
+    source = "simulation"
 
     # 加密货币：从 Binance 获取真实 K线
     if symbol in CRYPTO_SYMBOLS:
         binance_sym = CRYPTO_SYMBOLS[symbol]["binance"]
         real_data = await fetch_binance_kline(binance_sym, interval_str, limit)
         if real_data:
-            # 获取实时 ticker
             ticker = await fetch_binance_ticker(binance_sym)
             return {
                 "symbol": symbol,
@@ -349,10 +377,29 @@ async def get_kline(
                 "latest": ticker or {},
                 "data": real_data
             }
-        # Binance 失败则降级到模拟
         data = generate_realistic_kline(base_price, limit, interval_minutes)
+
+    # 外汇/贵金属/原油/指数：从 MetaApi MT5 获取真实 K线
+    elif symbol in FOREX_SYMBOLS:
+        mt5_sym = mt5.normalize_symbol(symbol)
+        real_data = await mt5.get_historical_candles(mt5_sym, interval_str, limit)
+        if real_data:
+            data = [
+                {
+                    "time": int(c.get("time", 0) / 1000),  # MetaApi 毫秒时间戳 -> 秒
+                    "open": float(c.get("open", 0)),
+                    "high": float(c.get("high", 0)),
+                    "low": float(c.get("low", 0)),
+                    "close": float(c.get("close", 0)),
+                    "volume": float(c.get("tickVolume", 0)),
+                }
+                for c in real_data
+            ]
+            source = "mt5"
+        else:
+            data = generate_realistic_kline(base_price, limit, interval_minutes)
     else:
-        # 股票/外汇/贵金属：使用模拟数据
+        # 股票：使用模拟数据
         data = generate_realistic_kline(base_price, limit, interval_minutes)
 
     latest = await get_realtime_quote(symbol, base_price)
@@ -364,7 +411,7 @@ async def get_kline(
         "type": stock_info["type"],
         "period": period,
         "base_price": base_price,
-        "source": "simulation",
+        "source": source,
         "latest": latest,
         "data": data
     }
@@ -444,7 +491,7 @@ async def get_crypto_market():
 
 @router.get("/forex")
 async def get_forex_market():
-    """获取外汇/贵金属/原油/指数市场概览"""
+    """获取外汇/贵金属/原油/指数市场概览（MetaApi MT5 真实数据）"""
     forex_list = [
         # 外汇
         {"symbol": "eurusd", "name": "EUR/USD"},
@@ -465,7 +512,13 @@ async def get_forex_market():
         quote = await get_realtime_quote(f["symbol"], KLINE_BASIS.get(f["symbol"], 100))
         items.append({**f, **quote})
 
-    return {"forex": items}
+    # 判断数据源
+    has_mt5 = any(item.get("source") == "mt5" for item in items)
+    return {
+        "forex": items,
+        "dataSource": "mt5" if has_mt5 else "simulation",
+        "account": "QuantAI Main (MT5 Real)",
+    }
 
 
 @router.get("/trending-tags")
@@ -491,3 +544,89 @@ async def get_trending_tags():
             {"name": " Solana", "count": 220},
         ]
     }
+
+
+# ============================================
+# MetaApi MT5 真实账户端点
+# ============================================
+@router.get("/mt5/account")
+async def get_mt5_account():
+    """
+    获取 MT5 真实账户信息
+    账户: QuantAI Main (87954362)
+    """
+    info = await mt5.get_account_info()
+    if info:
+        return {
+            "success": True,
+            "account": "QuantAI Main",
+            "accountId": info.get("login") or info.get("accountId"),
+            "balance": info.get("balance"),
+            "equity": info.get("equity"),
+            "margin": info.get("margin"),
+            "freeMargin": info.get("marginFree"),
+            "profit": info.get("profit"),
+            "marginLevel": info.get("marginLevel"),
+            "leverage": info.get("leverage"),
+            "currency": info.get("currency"),
+            "server": info.get("server"),
+            "connected": True,
+        }
+    return {
+        "success": False,
+        "message": "无法连接 MT5 真实账户，请检查 MetaApi 配置",
+        "connected": False,
+    }
+
+
+@router.get("/mt5/positions")
+async def get_mt5_positions():
+    """获取 MT5 真实账户当前持仓"""
+    positions = await mt5.get_positions()
+    if positions is not None:
+        return {
+            "success": True,
+            "positions": [
+                {
+                    "symbol": mt5.mt5_to_internal(p.get("symbol", "")),
+                    "mt5Symbol": p.get("symbol"),
+                    "type": p.get("type"),
+                    "volume": p.get("volume"),
+                    "openPrice": p.get("openPrice"),
+                    "currentPrice": p.get("currentPrice"),
+                    "profit": p.get("profit"),
+                    "swap": p.get("swap"),
+                    "openTime": p.get("openTime"),
+                }
+                for p in positions
+            ]
+        }
+    return {"success": False, "positions": [], "message": "无法获取持仓数据"}
+
+
+@router.get("/mt5/symbols")
+async def get_mt5_symbols():
+    """获取 MT5 账户支持的交易品种列表"""
+    symbols = await mt5.get_symbols()
+    if symbols:
+        return {"success": True, "count": len(symbols), "symbols": symbols}
+    return {"success": False, "symbols": [], "message": "无法获取品种列表"}
+
+
+@router.get("/mt5/quote/{symbol}")
+async def get_mt5_single_quote(symbol: str):
+    """获取单个 MT5 品种的实时报价"""
+    mt5_sym = mt5.normalize_symbol(symbol)
+    price = await mt5.get_symbol_price(mt5_sym)
+    if price:
+        return {
+            "success": True,
+            "symbol": symbol,
+            "mt5Symbol": mt5_sym,
+            "bid": price.get("bid"),
+            "ask": price.get("ask"),
+            "last": price.get("last"),
+            "time": price.get("time"),
+            "brokerTime": price.get("brokerTime"),
+        }
+    return {"success": False, "symbol": symbol, "message": "无法获取报价"}
