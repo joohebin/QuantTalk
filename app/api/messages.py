@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 from pydantic import BaseModel
-from datetime import datetime
+from datetime import datetime, timezone
 from app.database import get_db
 from app.models import User, PrivateMessage, Notification
 from app.auth import get_current_user
@@ -61,7 +61,7 @@ async def send_message(message: MessageCreate, current_user: User = Depends(get_
     db.add(notif)
     db.commit()
     db.refresh(db_message)
-    return MessageResponse(id=db_message.id, sender_id=db_message.sender_id, receiver_id=db_message.receiver_id, content=db_message.content, is_read=db_message.is_read, created_at=db_message.created_at, sender=user_to_dict(current_user), receiver=user_to_dict(receiver))
+    return MessageResponse(id=db_message.id, sender_id=db_message.sender_id, receiver_id=db_message.receiver_id, content=db_message.content, is_read=db_message.is_read, created_at=db_message.created_at.replace(tzinfo=timezone.utc) if db_message.created_at else datetime.now(timezone.utc), sender=user_to_dict(current_user), receiver=user_to_dict(receiver))
 
 
 @router.get("/conversations")
@@ -73,7 +73,7 @@ async def get_conversations(current_user: User = Depends(get_current_user), db: 
         other_user = msg.receiver if msg.sender_id == current_user.id else msg.sender
         if other_user_id not in conversations:
             unread_count = db.query(PrivateMessage).filter(PrivateMessage.sender_id == other_user_id, PrivateMessage.receiver_id == current_user.id, PrivateMessage.is_read == False).count()
-            conversations[other_user_id] = {"user_id": other_user_id, "username": other_user.username, "avatar": other_user.avatar, "last_message": msg.content[:100], "last_time": str(msg.created_at), "unread_count": unread_count}
+            conversations[other_user_id] = {"user_id": other_user_id, "username": other_user.username, "avatar": other_user.avatar, "last_message": msg.content[:100], "last_time": msg.created_at.replace(tzinfo=timezone.utc).isoformat() if msg.created_at else datetime.now(timezone.utc).isoformat(), "unread_count": unread_count}
     return list(conversations.values())
 
 
@@ -94,7 +94,7 @@ async def get_messages_with_user(user_id: int, limit: int = 50, offset: int = 0,
     messages = db.query(PrivateMessage).filter(((PrivateMessage.sender_id == current_user.id) & (PrivateMessage.receiver_id == user_id)) | ((PrivateMessage.sender_id == user_id) & (PrivateMessage.receiver_id == current_user.id))).order_by(PrivateMessage.created_at.desc()).limit(limit).offset(offset).all()
     db.query(PrivateMessage).filter(PrivateMessage.sender_id == user_id, PrivateMessage.receiver_id == current_user.id, PrivateMessage.is_read == False).update({"is_read": True})
     db.commit()
-    return [{"id": msg.id, "sender_id": msg.sender_id, "receiver_id": msg.receiver_id, "content": msg.content, "is_read": msg.is_read, "created_at": str(msg.created_at), "sender": user_to_dict(msg.sender), "receiver": user_to_dict(msg.receiver)} for msg in reversed(messages)]
+    return [{"id": msg.id, "sender_id": msg.sender_id, "receiver_id": msg.receiver_id, "content": msg.content, "is_read": msg.is_read, "created_at": msg.created_at.replace(tzinfo=timezone.utc).isoformat() if msg.created_at else datetime.now(timezone.utc).isoformat(), "sender": user_to_dict(msg.sender), "receiver": user_to_dict(msg.receiver)} for msg in reversed(messages)]
 
 
 @router.post("/{message_id}/read")
