@@ -9,6 +9,23 @@ from app.schemas import UserUpdate
 router = APIRouter()
 
 
+@router.get("/{user_id}")
+def get_user_by_id(user_id: int, current_user: Any = None, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(404, "user not found")
+    is_following = False
+    if current_user and current_user.id != user.id:
+        is_following = user in current_user.following
+    return {
+        "id": user.id, "username": user.username, "avatar": user.avatar,
+        "bio": user.bio, "is_online": user.is_online,
+        "followers_count": len(user.followers), "following_count": len(user.following),
+        "posts_count": len(user.posts), "is_following": is_following,
+        "created_at": user.created_at.isoformat(),
+    }
+
+
 @router.get("/profile/{username}")
 def get_user_profile(username: str, current_user: Any = None, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.username == username).first()
