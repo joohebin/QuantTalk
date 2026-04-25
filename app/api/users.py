@@ -18,22 +18,8 @@ def search_users(q: str = "", limit: int = 20, db: Session = Depends(get_db)):
     return [{"id": u.id, "username": u.username, "avatar": u.avatar, "bio": u.bio} for u in users]
 
 
-@router.get("/{user_id}")
-def get_user_by_id(user_id: int, current_user: Any = None, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.id == user_id).first()
-    if not user:
-        raise HTTPException(404, "user not found")
-    is_following = False
-    if current_user and current_user.id != user.id:
-        is_following = user in current_user.following
-    return {
-        "id": user.id, "username": user.username, "avatar": user.avatar,
-        "bio": user.bio, "is_online": user.is_online,
-        "followers_count": len(user.followers), "following_count": len(user.following),
-        "posts_count": len(user.posts), "is_following": is_following,
-        "created_at": user.created_at.isoformat(),
-    }
-
+# NOTE: /{user_id} 路由移到最后，确保具体路由优先匹配
+# @router.get("/{user_id}") - see at end of file
 
 @router.get("/profile/{username}")
 def get_user_profile(username: str, current_user: Any = None, db: Session = Depends(get_db)):
@@ -290,3 +276,22 @@ def remove_friend(user_id: int, current_user: User = Depends(get_current_user), 
     ).delete(synchronize_session=False)
     db.commit()
     return {"message": "friend removed"}
+
+
+# /{user_id} 路由必须放在最后，确保 /friend-requests 等具体路由优先匹配
+@router.get("/{user_id}")
+def get_user_by_id(user_id: int, current_user: Any = None, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(404, "user not found")
+    is_following = False
+    if current_user and current_user.id != user.id:
+        is_following = user in current_user.following
+    return {
+        "id": user.id, "username": user.username, "avatar": user.avatar,
+        "bio": user.bio, "is_online": user.is_online,
+        "followers_count": len(user.followers), "following_count": len(user.following),
+        "posts_count": len(user.posts), "is_following": is_following,
+        "created_at": user.created_at.isoformat(),
+    }
+
