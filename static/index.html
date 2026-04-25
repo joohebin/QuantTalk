@@ -76,6 +76,41 @@ return r.json();
 }
 function toast(msg,type='info'){const c={info:'#0ea5e9',success:'#22c55e',error:'#ef4444'};const d=document.createElement('div');d.className='toast';d.style.background=c[type]||c.info;d.textContent=msg;document.getElementById('toasts').appendChild(d);setTimeout(()=>d.remove(),3000)}
 function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML}
+
+// ===== EMOJI PICKER =====
+function toggleEmojiPicker(textareaId, pickerId){
+    // 关闭其他已打开的 picker
+    document.querySelectorAll('.emoji-picker-popup').forEach(p=>{if(p.id!==pickerId)p.classList.add('hidden')});
+    const picker=document.getElementById(pickerId);
+    if(picker){
+        picker.classList.toggle('hidden');
+        picker.classList.toggle('emoji-picker-popup');
+    }
+    // 点击其他地方关闭
+    setTimeout(()=>{
+        document.addEventListener('click', function closePicker(e){
+            if(!e.target.closest('.emoji-btn') && !e.target.closest(`#${pickerId}`) && !e.target.closest('.emoji-toggle-btn')){
+                const p=document.getElementById(pickerId);
+                if(p)p.classList.add('hidden');
+                document.removeEventListener('click', closePicker);
+            }
+        });
+    },100);
+}
+
+function insertEmoji(textareaId, emoji){
+    const ta=document.getElementById(textareaId);
+    if(ta){
+        const start=ta.selectionStart;
+        const end=ta.selectionEnd;
+        const text=ta.value;
+        ta.value=text.substring(0,start)+emoji+text.substring(end);
+        ta.selectionStart=ta.selectionEnd=start+emoji.length;
+        ta.focus();
+    }
+    // 关闭 picker
+    document.querySelectorAll('.emoji-picker-popup, [id*="emoji-picker"]').forEach(p=>p.classList.add('hidden'));
+}
 function timeAgo(t){const d=Date.now()-new Date(t).getTime();const m=Math.floor(d/60000);if(m<1)return'刚刚';if(m<60)return m+'分钟前';const h=Math.floor(m/60);if(h<24)return h+'小时前';return Math.floor(h/24)+'天前'}
 function openModal(html){document.getElementById('modal-body').innerHTML=html;document.getElementById('modal').style.display='flex'}
 function closeModal(){document.getElementById('modal').style.display='none'}
@@ -218,7 +253,58 @@ ${tags?`<div class="flex flex-wrap gap-1.5 mt-2.5">${tags}</div>`:''}
 // ===== FEED =====
 async function renderFeed(el){
 let form='';
-if(S.user)form=`<div class="glass rounded-xl p-4 mb-4 fade-in"><textarea id="post-box" class="input" rows="3" placeholder="分享你的交易策略、市场观点..."></textarea><div class="flex items-center justify-between mt-2"><input id="post-tags" class="input" style="width:200px" placeholder="标签，逗号分隔"><button onclick="submitPost()" class="btn btn-primary">发布</button></div></div>`;
+if(S.user)form=`<div class="glass rounded-xl p-4 mb-4 fade-in">
+<textarea id="post-box" class="input" rows="3" placeholder="分享你的交易策略、市场观点..."></textarea>
+<div class="flex items-center justify-between mt-2">
+<div class="flex items-center gap-2">
+<button type="button" onclick="toggleEmojiPicker('post-box','emoji-picker-post')" class="btn btn-ghost text-lg px-2">😎</button>
+<div id="emoji-picker-post" class="hidden fixed bg-gray-800 border border-gray-700 rounded-lg p-3 shadow-xl z-50" style="max-width:320px">
+<div class="text-xs text-gray-500 mb-2">量化 & 加密货币表情</div>
+<div class="grid grid-cols-8 gap-1">
+<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','📈')">📈</span>
+<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','📉')">📉</span>
+<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','💹')">💹</span>
+<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','💰')">💰</span>
+<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','🪙')">🪙</span>
+<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','₿')">₿</span>
+<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','🟢')">🟢</span>
+<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','🔴')">🔴</span>
+<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','📊')">📊</span>
+<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','💎')">💎</span>
+<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','🚀')">🚀</span>
+<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','🔥')">🔥</span>
+<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','⚡')">⚡</span>
+<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','🎯')">🎯</span>
+<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','✅')">✅</span>
+<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','❌')">❌</span>
+<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','🔔')">🔔</span>
+<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','📋')">📋</span>
+<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','📌')">📌</span>
+<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','🏆')">🏆</span>
+<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','💵')">💵</span>
+<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','📐')">📐</span>
+<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','🤖')">🤖</span>
+<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','🧠')">🧠</span>
+<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','💡')">💡</span>
+<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','🌙')">🌙</span>
+<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','☀️')">☀️</span>
+<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','🌊')">🌊</span>
+<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','⛓️')">⛓️</span>
+<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','🔐')">🔐</span>
+<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','📈')">📈</span>
+<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','📉')">📉</span>
+<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','🛡️')">🛡️</span>
+<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','💸')">💸</span>
+<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','🎲')">🎲</span>
+<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','📱')">📱</span>
+<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','💻')">💻</span>
+</div>
+</div>
+</div>
+<input id="post-tags" class="input" style="width:200px" placeholder="标签，逗号分隔">
+<button onclick="submitPost()" class="btn btn-primary">发布</button>
+</div>
+</div>`;
 const r=await api(S.user?'/posts/feed':'/posts/');const posts=r?.posts||[];
 el.innerHTML=form+(posts.length?`<div class="space-y-3">${posts.map(postCard).join('')}</div>`:'<div class="glass rounded-xl p-12 text-center text-gray-500">暂无动态</div>');
 }
@@ -234,7 +320,8 @@ async function toggleComments(id){
 const el=document.getElementById('comments-'+id);if(el.classList.contains('hidden')){el.classList.remove('hidden');
 el.innerHTML='<p class="text-gray-600 text-sm">加载中...</p>';
 const r=await api('/posts/'+id+'/comments');const comments=r||[];
-el.innerHTML=(comments.length?comments.map(c=>`<div class="flex gap-2 mb-2 text-sm"><div class="avatar avatar-sm">${(c.author?.username||'?')[0].toUpperCase()}</div><div><span class="font-medium text-xs">${c.author?.username||'匿名'}</span> <span class="text-gray-600 text-xs">${timeAgo(c.created_at)}</span><p class="text-gray-300 mt-0.5">${esc(c.content)}</p></div></div>`).join(''):'<p class="text-gray-600 text-sm">暂无评论</p>')+(S.user?`<form onsubmit="submitComment(event,${id})" class="flex gap-2 mt-2"><input name="content" required class="input flex-1" placeholder="写评论..."><button type="submit" class="btn btn-primary text-xs">发送</button></form>`:'<p class="text-gray-600 text-xs mt-2">登录后可评论</p>');
+el.innerHTML=(comments.length?comments.map(c=>`<div class="flex gap-2 mb-2 text-sm"><div class="avatar avatar-sm">${(c.author?.username||'?')[0].toUpperCase()}</div><div><span class="font-medium text-xs">${c.author?.username||'匿名'}</span> <span class="text-gray-600 text-xs">${timeAgo(c.created_at)}</span><p class="text-gray-300 mt-0.5">${esc(c.content)}</p></div></div>`).join(''):'<p class="text-gray-600 text-sm">暂无评论</p>')+(S.user?`<div class="relative"><form onsubmit="submitComment(event,${id})" class="flex gap-2 mt-2"><input id="comment-input-${id}" name="content" required class="input flex-1" placeholder="写评论..."><button type="button" class="btn btn-ghost text-lg px-2" onclick="toggleEmojiPicker('comment-input-${id}','emoji-picker-comment-${id}')">😎</button><button type="submit" class="btn btn-primary text-xs">发送</button></form><div id="emoji-picker-comment-${id}" class="hidden absolute bottom-12 left-0 bg-gray-800 border border-gray-700 rounded-lg p-2 shadow-xl z-50" style="max-width:280px"><div class="text-xs text-gray-500 mb-1">量化表情</div><div class="grid grid-cols-8 gap-1">${['📈','📉','💹','💰','🪙','₿','🟢','🔴','📊','💎','🚀','🔥','⚡','🎯','✅','❌','🔔','📋','🏆','💵','🤖','🧠','💡','🌙'].map(e=>`<span class="cursor-pointer p-1 hover:bg-gray-700 rounded text-sm" onclick="insertEmoji('comment-input-${id}','${e}')">${e}</span>`).join('')}</div></div></div>`:'<p class="text-gray-600 text-xs mt-2">登录后可评论</p>');
+
 }else{el.classList.add('hidden')}
 }
 async function submitComment(e,id){
@@ -1059,10 +1146,17 @@ async function openChat(userId, username){
         </div>
         <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-3"></div>
         <div class="p-4 border-t border-gray-700/20">
+            <div class="relative">
             <form onsubmit="sendChatMsg(event)" class="flex gap-2">
                 <input id="chat-input" class="input flex-1" placeholder="发送消息..." autocomplete="off">
+                <button type="button" onclick="toggleEmojiPicker('chat-input','emoji-picker-chat')" class="btn btn-ghost text-lg px-2">😎</button>
                 <button type="submit" class="btn btn-primary">发送</button>
             </form>
+            <div id="emoji-picker-chat" class="hidden absolute bottom-12 right-0 bg-gray-800 border border-gray-700 rounded-lg p-2 shadow-xl z-50" style="max-width:280px">
+<div class="text-xs text-gray-500 mb-1">量化表情</div>
+<div class="grid grid-cols-8 gap-1">${['📈','📉','💹','💰','🪙','₿','🟢','🔴','📊','💎','🚀','🔥','⚡','🎯','✅','❌','🔔','📋','🏆','💵','🤖','🧠','💡','🌙'].map(e=>`<span class="cursor-pointer p-1 hover:bg-gray-700 rounded text-sm" onclick="insertEmoji('chat-input','${e}')">${e}</span>`).join('')}</div>
+</div>
+            </div>
         </div>
     </div>`;
     await loadChatMessages(userId);
