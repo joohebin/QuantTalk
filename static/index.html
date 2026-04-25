@@ -68,7 +68,16 @@ const A='/api';
 
 // ===== UTILS =====
 async function api(p,o={}){
-const h={'Content-Type':'application/json',...(o.headers||{})};
+const h={...(o.headers||{})};
+// 如果没有指定 Content-Type，默认用 JSON
+if(!h['Content-Type'] && !(o.body instanceof FormData)){
+h['Content-Type']='application/json';
+}
+// 处理 FormData，自动设置 boundary
+if(o.body instanceof FormData && !h['Content-Type']){
+// 不设置 Content-Type，让浏览器自动处理
+delete h['Content-Type'];
+}
 if(S.token)h.Authorization='Bearer '+S.token;
 const r=await fetch(A+p,{...o,headers:h});
 if(r.status===401&&!p.includes('/auth/')){doLogout();return null}
@@ -772,7 +781,7 @@ if(pw){
 fd.append('old_password',pw);
 fd.append('new_password',document.querySelector('[name="new_password"]').value);
 }
-const r=await api('/users/profile',{method:'PUT',body:fd,headers:{'Content-Type':undefined}});
+const r=await api('/users/profile',{method:'PUT',body:fd});
 if(r?.message||r?.id){
 const mr=await api('/auth/me');
 if(mr){S.user=mr;localStorage.setItem('qt_user',JSON.stringify(mr));renderAll();renderNav();}
