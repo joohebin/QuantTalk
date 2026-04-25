@@ -876,6 +876,7 @@ function showMySignals(){
 
 // ===== MESSAGES / PRIVATE CHAT =====
 let _activeChatUser = null;
+let _pendingChat = null; // 待跳转后打开的聊天
 let _msgPolling = null;
 
 async function renderMessages(el){
@@ -903,6 +904,13 @@ async function renderMessages(el){
 
     await loadConversations();
     startMsgPolling();
+    
+    // 如果有待打开的聊天会话，打开它
+    if(_pendingChat){
+        const pending = _pendingChat;
+        _pendingChat = null;
+        await openChat(pending.id, pending.username);
+    }
 }
 
 async function loadConversations(){
@@ -942,6 +950,12 @@ async function searchUserForChat(q){
 }
 
 async function openChat(userId, username){
+    // 如果不在私信页面，先跳转
+    if(S.page !== 'messages'){
+        _pendingChat = {id: userId, username};
+        nav('messages');
+        return;
+    }
     _activeChatUser = {id: userId, username};
     await loadConversations();
     const chatEl = document.getElementById('chat-area');
