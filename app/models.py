@@ -90,6 +90,15 @@ class User(Base):
     sent_friend_requests = relationship("FriendRequest", foreign_keys="FriendRequest.from_user_id", cascade="all, delete-orphan")
     received_friend_requests = relationship("FriendRequest", foreign_keys="FriendRequest.to_user_id", cascade="all, delete-orphan")
     guilds = relationship("Guild", secondary=guild_members, back_populates="members")
+    
+    # 第四阶段：钱包和转账
+    wallets = relationship("UserWallet", back_populates="user", cascade="all, delete-orphan")
+    wallet_balances = relationship("WalletBalance", back_populates="user", cascade="all, delete-orphan")
+    sent_transfers = relationship("TransferRecord", foreign_keys="TransferRecord.sender_id", back_populates="sender")
+    received_transfers = relationship("TransferRecord", foreign_keys="TransferRecord.receiver_id", back_populates="receiver")
+    wallet_notifications = relationship("WalletNotification", back_populates="user", cascade="all, delete-orphan")
+    withdrawal_requests = relationship("WithdrawalRequest", back_populates="user")
+    deposit_addresses = relationship("DepositAddress", back_populates="user", cascade="all, delete-orphan")
 
 
 class Post(Base):

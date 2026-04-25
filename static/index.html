@@ -234,6 +234,7 @@ case 'messages':title.textContent='💬 私信';renderMessages();break;
 case 'groups':title.textContent='👥 群聊';renderGroups();break;
 case 'portfolio':title.textContent='📜 成绩单';renderPortfolio();break;
 case 'profile':title.textContent='👤 个人主页';renderProfile();break;
+case 'wallet':title.textContent='💰 我的钱包';renderWallet();break;
 default:title.textContent='🏠 首页';renderHome();
 }
 }
@@ -782,6 +783,11 @@ document.getElementById('channels-list').innerHTML=`
 <div class="channel-group">
 <div class="channel-group-header">📜 成绩单</div>
 <div class="channel-item" onclick="nav('portfolio')"><span class="ch-icon">📊</span>我的成绩单</div>
+</div>
+<div class="channel-group">
+<div class="channel-group-header">💰 加密钱包</div>
+<div class="channel-item" onclick="nav('wallet')"><span class="ch-icon">💰</span>我的钱包</div>
+<div class="channel-item" onclick="QuickTransfer.show()"><span class="ch-icon">↔️</span>快捷转账</div>
 </div>`;
 renderPage();
 }
@@ -1471,6 +1477,13 @@ content.innerHTML=`
 </div>`;
 }
 
+// ===== 钱包页面 =====
+function renderWallet(){
+const content=document.getElementById('main-content');
+content.innerHTML=renderWalletPage();
+WalletModule.init();
+}
+
 // ===== INIT =====
 function renderAll(){
 renderUserPanel();
@@ -1500,5 +1513,6 @@ api('/auth/me').then(r=>{if(!r||!r.id)doLogout();else{S.user=r;localStorage.setI
 
 <!-- 第三阶段：交易社区功能 -->
 <script src="/trading_community.js"></script>
+<script src="/wallet.js"></script>
 </body>
 </html>
