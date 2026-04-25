@@ -303,10 +303,11 @@ el.innerHTML=`<div class="fade-in">
 <div class="flex-1"><div class="text-xl font-bold">${r.username}${isFriend?' <span class="text-xs bg-sky-500/20 text-sky-400 px-2 py-0.5 rounded">好友</span>':''}</div><div class="text-sm text-gray-400 mt-1">${esc(r.bio||'量化交易爱好者')}</div><div class="text-xs text-gray-600 mt-2">📅 ${timeAgo(r.created_at)}加入 · 👥 ${r.followers_count} 粉丝 · ✍️ ${r.posts_count} 帖子</div></div>
 ${actionButtons}
 </div></div>
-${isSelf?`<div class="flex gap-2 mb-4">
+${isSelf?`<div class="flex gap-2 mb-4 flex-wrap">
 <button onclick="switchProfileTab('posts')" class="btn btn-sm ${S._profileTab==='posts'?'btn-primary':'btn-ghost'}">📝 帖子</button>
 <button onclick="switchProfileTab('friends')" class="btn btn-sm ${S._profileTab==='friends'?'btn-primary':'btn-ghost'}">👥 好友</button>
 <button onclick="switchProfileTab('friend-requests')" class="btn btn-sm ${S._profileTab==='friend-requests'?'btn-primary':'btn-ghost'}">📥 好友申请</button>
+<button onclick="showAddFriendModal()" class="btn btn-sm btn-primary">➕ 添加好友</button>
 <button onclick="switchProfileTab('exchanges')" class="btn btn-sm ${S._profileTab==='exchanges'?'btn-primary':'btn-ghost'}">🔗 交易所配置</button>
 </div>`:''}
 <div id="profile-content"><p class="text-gray-600 text-sm text-center py-4">加载中...</p></div>
@@ -360,6 +361,50 @@ if(!confirm('确定要删除该好友吗？'))return;
 const r=await api('/users/friend/'+userId,{method:'DELETE'});
 if(r?.message==='friend removed'){toast('已删除好友','success');renderProfile(document.getElementById('app'));}
 else{toast(r?.detail||'删除失败','error')}
+}
+// 添加好友弹窗 - 搜索用户并发送申请
+function showAddFriendModal(){
+openModal(`<h3 class="font-semibold mb-4">添加好友</h3>
+<div class="space-y-3">
+<input id="add-friend-search" class="input" placeholder="搜索用户名..." oninput="searchAddFriend(this.value)">
+<div id="add-friend-results" class="max-h-60 overflow-y-auto space-y-2"></div>
+</div>`);
+}
+async function searchAddFriend(q){
+const resultsEl=document.getElementById('add-friend-results');
+if(!q.trim()){resultsEl.innerHTML='';return;}
+const users=await api('/users/search?q='+encodeURIComponent(q));
+if(!users?.length){resultsEl.innerHTML='<p class="text-gray-500 text-sm">未找到用户</p>';return;}
+let html='';
+for(const u of users){
+const status=await api('/users/friend-status/'+u.id)||{};
+let btn='';
+if(status.is_friend){
+btn='<span class="text-xs text-green-400">已是好友</span>';
+}else if(status.has_pending_request_from_me){
+btn='<span class="text-xs text-yellow-400">已发送申请</span>';
+}else if(status.has_pending_request_to_me){
+btn='<button onclick="acceptFriendById('+u.id+')" class="btn btn-primary btn-xs">接受申请</button>';
+}else{
+btn='<button onclick="quickSendFriendReq('+u.id+')" class="btn btn-primary btn-xs">添加</button>';
+}
+html+=`<div class="flex items-center justify-between p-2 rounded hover:bg-white/5">
+<div class="flex items-center gap-2"><div class="avatar avatar-sm">${u.username[0].toUpperCase()}</div><span class="text-sm">${u.username}</span></div>
+${btn}
+</div>`;
+}
+resultsEl.innerHTML=html;
+}
+async function quickSendFriendReq(userId){
+const msg=prompt('添加附言（可选，直接确定跳过）：')||'';
+const r=await api('/users/friend-request',{method:'POST',body:JSON.stringify({to_user_id:userId,message:msg})});
+if(r?.message==='friend request sent'){toast('申请已发送！','success');searchAddFriend(document.getElementById('add-friend-search').value);}
+else{toast(r?.detail||'发送失败','error')}
+}
+async function acceptFriendById(userId){
+const reqs=await api('/users/friend-requests')||[];
+const req=reqs.find(x=>x.from_user_id===userId&&x.status==='PENDING');
+if(req){await api('/users/friend-request/'+req.id+'/accept',{method:'POST'});toast('已成为好友！','success');searchAddFriend(document.getElementById('add-friend-search').value);}
 }
 // 我的好友列表
 async function renderMyFriends(){
