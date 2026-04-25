@@ -924,16 +924,6 @@ const KLINE_PERIODS = [
     {value: '1w', label: '周K'},
 ];
 
-const KLINE_MARKET_GROUPS = [
-    {label: '📊 A股/港股/美股', items: KLINE_SYMBOLS.filter(s=>['A','HK','US'].includes(s.market))},
-    {label: '🪙 加密货币', items: KLINE_SYMBOLS.filter(s=>s.market==='CRYPTO')},
-    {label: '💱 外汇', items: KLINE_SYMBOLS.filter(s=>['FX','METAL','ENERGY','INDEX'].includes(s.market))},
-];
-
-function getKlineSymbolOptions(){
-    return KLINE_MARKET_GROUPS.map(g=>`<optgroup label="${g.label}">${g.items.map(s=>`<option value="${s.symbol}" ${s.symbol===klineSymbol?'selected':''}>${s.name}</option>`).join('')}</optgroup>`).join('');
-}
-
 const KLINE_SYMBOLS = [
     // A股
     {symbol: 'sh000001', name: '上证指数', market: 'A'},
@@ -991,7 +981,17 @@ const KLINE_SYMBOLS = [
     {symbol: 'us100', name: '纳斯达克100', market: 'INDEX'},
     {symbol: 'de40', name: '德国DAX40', market: 'INDEX'},
     {symbol: 'jp225', name: '日经225', market: 'INDEX'},
-];
+]
+
+function getKlineSymbolOptions(){
+    return KLINE_MARKET_GROUPS.map(g=>`<optgroup label="${g.label}">${g.items.map(s=>`<option value="${s.symbol}" ${s.symbol===klineSymbol?'selected':''}>${s.name}</option>`).join('')}</optgroup>`).join('');
+}
+
+const KLINE_MARKET_GROUPS = [
+    {label: '📊 A股/港股/美股', items: KLINE_SYMBOLS.filter(s=>['A','HK','US'].includes(s.market))},
+    {label: '🪙 加密货币', items: KLINE_SYMBOLS.filter(s=>s.market==='CRYPTO')},
+    {label: '💱 外汇', items: KLINE_SYMBOLS.filter(s=>['FX','METAL','ENERGY','INDEX'].includes(s.market))},
+];;
 
 async function renderKline(el){
     el.innerHTML = `<div class="fade-in">
