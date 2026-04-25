@@ -1,5 +1,5 @@
-from typing import Any, Optional, UploadFile, File
-from fastapi import APIRouter, Depends, HTTPException, Form, UploadFile as FastAPIUploadFile
+from typing import Any, Optional
+from fastapi import APIRouter, Depends, HTTPException, Form, UploadFile
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import User, Notification
@@ -54,7 +54,7 @@ def get_user_profile(username: str, current_user: Any = None, db: Session = Depe
 @router.put("/profile")
 async def update_profile(
     bio: Optional[str] = Form(None),
-    avatar: Optional[FastAPIUploadFile] = File(None),
+    avatar: Optional[UploadFile] = File(None),
     old_password: Optional[str] = Form(None),
     new_password: Optional[str] = Form(None),
     current_user: User = Depends(get_current_user),
