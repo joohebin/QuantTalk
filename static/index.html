@@ -255,6 +255,7 @@ async function renderProfile(el){
 const uid=S._viewUserId;if(!uid)return;
 const r=await api('/users/profile/'+uid);if(!r){el.innerHTML='<p class="text-gray-500">用户不存在</p>';return}
 const isSelf=S.user&&S.user.id===uid;
+S._profileTab=isSelf?'posts':'posts'; // 默认显示帖子
 el.innerHTML=`<div class="fade-in">
 <div class="glass rounded-xl p-6 mb-4">
 <div class="flex items-center gap-4">
@@ -264,10 +265,109 @@ ${isSelf?'<button onclick="showProfileEdit()" class="btn btn-ghost text-sm">编�
 :`<button onclick="openChat(${uid},'${esc(r.username)}')" class="btn btn-ghost text-sm">💬 发私信</button>
 ${r.is_following?`<button onclick="doFollow(${uid})" class="btn btn-ghost text-sm">已关注</button>`:`<button onclick="doFollow(${uid})" class="btn btn-primary text-sm">关注</button>`}`}
 </div></div>
-<div class="space-y-3" id="profile-posts"><p class="text-gray-600 text-sm text-center py-4">加载中...</p></div>
+${isSelf?`<div class="flex gap-2 mb-4">
+<button onclick="switchProfileTab('posts')" class="btn btn-sm ${S._profileTab==='posts'?'btn-primary':'btn-ghost'}">📝 帖子</button>
+<button onclick="switchProfileTab('exchanges')" class="btn btn-sm ${S._profileTab==='exchanges'?'btn-primary':'btn-ghost'}">🔗 交易所配置</button>
+</div>`:''}
+<div id="profile-content"><p class="text-gray-600 text-sm text-center py-4">加载中...</p></div>
 </div>`;
+if(isSelf&&S._profileTab==='exchanges'){
+renderExchangeConfigs();
+}else{
+renderProfilePosts(uid);
+}
+}
+function switchProfileTab(tab){
+S._profileTab=tab;
+const content=document.getElementById('profile-content');
+if(tab==='exchanges'){
+renderExchangeConfigs();
+}else{
+renderProfilePosts(S._viewUserId);
+}
+}
+// 交易所配置
+async function renderExchangeConfigs(){
+const content=document.getElementById('profile-content');
+const r=await api('/exchanges/');
+const configs=r||[];
+content.innerHTML=`<div class="glass rounded-xl p-4">
+<div class="flex items-center justify-between mb-4"><h3 class="font-semibold">🔗 交易所配置</h3><button onclick="showAddExchange()" class="btn btn-primary btn-sm">+ 添加交易所</button></div>
+${configs.length?configs.map(c=>`<div class="flex items-center justify-between py-3 border-b border-gray-700/30 last:border-0">
+<div class="flex items-center gap-3"><span class="text-lg">${getExchangeIcon(c.exchange)}</span><div><div class="font-medium text-sm">${getExchangeName(c.exchange)}</div><div class="text-xs text-gray-500">${c.label||'API Key: '+c.api_key_masked}</div></div></div>
+<div class="flex items-center gap-2">
+<span class="text-xs px-2 py-1 rounded ${c.is_verified?'bg-green-500/20 text-green-400':'bg-yellow-500/20 text-yellow-400'}">${c.is_verified?'已验证':'未验证'}</span>
+<span class="text-xs px-2 py-1 rounded ${c.is_enabled?'bg-blue-500/20 text-blue-400':'bg-gray-500/20 text-gray-400'}">${c.is_enabled?'启用':'禁用'}</span>
+<button onclick="showEditExchange(${c.id})" class="btn btn-ghost btn-xs">编辑</button>
+<button onclick="deleteExchange(${c.id})" class="btn btn-ghost btn-xs text-red-400">删除</button>
+</div>
+</div>`).join(''):'<p class="text-gray-500 text-center py-6">暂无交易所配置，点击上方按钮添加</p>'}
+<div class="mt-4 p-3 bg-yellow-500/10 rounded-lg"><p class="text-xs text-yellow-400">⚠️ API Key 仅用于获取行情和执行交易，不会泄露给第三方。 请确保只在可信的交易所创建只读或交易权限的 API Key。</p></div>
+</div>`;
+}
+async function renderProfilePosts(uid){
+const content=document.getElementById('profile-content');
 const pr=await api('/posts/?user_id='+uid+'&limit=20');const posts=pr?.posts||[];
-document.getElementById('profile-posts').innerHTML=posts.length?posts.map(postCard).join(''):'<p class="text-gray-500 text-center py-8">暂无帖子</p>';
+content.innerHTML=posts.length?`<div class="space-y-3">${posts.map(postCard).join('')}</div>`:'<p class="text-gray-500 text-center py-8">暂无帖子</p>';
+}
+function getExchangeIcon(ex){
+const icons={binance:'₿',okx:'○',bybit:'◉',huobi:'◆',gateio:'▣',kucoin:'◇',bitget:'◎',mexc:'◈'};
+return icons[ex]||'●';
+}
+function getExchangeName(ex){
+const names={binance:'Binance',okx:'OKX',bybit:'Bybit',huobi:'Huobi',gateio:'Gate.io',kucoin:'KuCoin',bitget:'Bitget',mexc:'MEXC'};
+return names[ex]||ex;
+}
+async function showAddExchange(){
+const supported=await api('/exchanges/supported');
+const options=supported.map(e=>`<option value="${e.id}">${e.icon} ${e.name}${e.need_passphrase?' (需要Passphrase)':''}</option>`).join('');
+openModal(`<h3 class="font-semibold mb-4">添加交易所</h3>
+<form onsubmit="addExchange(event)" class="space-y-3">
+<div><label class="text-xs text-gray-500 block mb-1">交易所</label><select id="ex-exchange" class="input" required>${options}</select></div>
+<div><label class="text-xs text-gray-500 block mb-1">API Key</label><input id="ex-apikey" class="input" placeholder="请输入 API Key" required></div>
+<div><label class="text-xs text-gray-500 block mb-1">API Secret</label><input id="ex-secret" type="password" class="input" placeholder="请输入 API Secret" required></div>
+<div id="ex-passphrase-wrap" style="display:none"><label class="text-xs text-gray-500 block mb-1">Passphrase</label><input id="ex-passphrase" class="input" placeholder="请输入 Passphrase"></div>
+<div><label class="text-xs text-gray-500 block mb-1">标签（可选）</label><input id="ex-label" class="input" placeholder="如：我的现货账户"></div>
+<div class="p-3 bg-blue-500/10 rounded-lg"><p class="text-xs text-blue-400">建议创建只读权限的 API Key，仅勾选"读取"权限即可。</p></div>
+<button type="submit" class="btn btn-primary w-full">添加并验证</button></form>`);
+document.getElementById('ex-exchange').addEventListener('change',function(){
+const sel=supported.find(s=>s.id===this.value);
+document.getElementById('ex-passphrase-wrap').style.display=sel?.need_passphrase?'block':'none';
+});
+}
+async function addExchange(e){
+e.preventDefault();
+const data={exchange:document.getElementById('ex-exchange').value,api_key:document.getElementById('ex-apikey').value,api_secret:document.getElementById('ex-secret').value,passphrase:document.getElementById('ex-passphrase').value||null,label:document.getElementById('ex-label').value||''};
+const r=await api('/exchanges/',{method:'POST',body:JSON.stringify(data)});
+if(r?.id){closeModal();toast('添加成功，正在验证连接...','success');renderExchangeConfigs();}else toast(r?.detail||'添加失败','error');
+}
+async function showEditExchange(id){
+const r=await api('/exchanges/'+id);if(!r)return;
+openModal(`<h3 class="font-semibold mb-4">编辑 ${getExchangeName(r.exchange)}</h3>
+<form onsubmit="editExchange(event,${id})" class="space-y-3">
+<div><label class="text-xs text-gray-500 block mb-1">API Key</label><input id="ed-apikey" class="input" value="${esc(r.api_key_masked.replace('...','xxxxxxxxxxxx'))}" placeholder="留空则不修改"></div>
+<div><label class="text-xs text-gray-500 block mb-1">API Secret</label><input id="ed-secret" type="password" class="input" placeholder="留空则不修改"></div>
+<div><label class="text-xs text-gray-500 block mb-1">Passphrase</label><input id="ed-passphrase" type="password" class="input" placeholder="留空则不修改"></div>
+<div><label class="text-xs text-gray-500 block mb-1">标签</label><input id="ed-label" class="input" value="${esc(r.label||'')}"></div>
+<div class="flex items-center gap-2"><input type="checkbox" id="ed-enabled" ${r.is_enabled?'checked':''}><label for="ed-enabled" class="text-sm">启用此交易所</label></div>
+<button type="submit" class="btn btn-primary w-full">保存</button></form>`);
+}
+async function editExchange(e,id){
+e.preventDefault();
+const apikey=document.getElementById('ed-apikey').value;
+const data={};
+if(apikey&&!apikey.includes('xxxx'))data.api_key=apikey;
+const secret=document.getElementById('ed-secret').value;if(secret)data.api_secret=secret;
+const passphrase=document.getElementById('ed-passphrase').value;if(passphrase)data.passphrase=passphrase;
+data.label=document.getElementById('ed-label').value;
+data.is_enabled=document.getElementById('ed-enabled').checked;
+const r=await api('/exchanges/'+id,{method:'PUT',body:JSON.stringify(data)});
+if(r?.id){closeModal();toast('保存成功','success');renderExchangeConfigs();}else toast(r?.detail||'保存失败','error');
+}
+async function deleteExchange(id){
+if(!confirm('确定要删除此交易所配置吗？'))return;
+const r=await api('/exchanges/'+id,{method:'DELETE'});
+if(r?.message){toast('删除成功','success');renderExchangeConfigs();}else toast(r?.detail||'删除失败','error');
 }
 async function doFollow(uid){
 if(!S.user)return showAuth('login');const r=await api('/users/follow/'+uid,{method:'POST'});if(r){toast(r.message,'success');renderPage()}

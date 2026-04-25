@@ -33,3 +33,14 @@ METAAPI_ACCOUNT_ID = "ff982e56-23b0-4e3d-b6f6-7f7b8c40679e"
 METAAPI_API_KEY = "a915ec00-8a72-4df2-9fc1-1caf13d6b6e2"
 METAAPI_BASE_URL = "https://api.metaapi.cloud"
 METAAPI_CACHE_TTL = 5  # 实时行情缓存秒数
+
+# ============================================
+# TradeMux MT5 配置（第三方）
+# 文档: https://docs.trademux.io/
+# Base URL: https://mux.skybluefin.tech
+# API Key 类型: MT5 (需要 MT EA 连接才能获取账户/持仓数据)
+# 注意: TradeMux 需要在 MT4/MT5 终端安装 EA 并连接到同一 API Key
+# ============================================
+TRADEMUX_BASE_URL = "https://mux.skybluefin.tech"
+TRADEMUX_API_KEY = "starter_tmux_yoX0qbnh5pZT9HFOVcOvrUSc"
+TRADEMUX_CACHE_TTL = 5  # 实时数据缓存秒数

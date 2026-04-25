@@ -213,3 +213,75 @@ class PortfolioPosition(Base):
     created_at = Column(DateTime, server_default=func.now())
 
     user = relationship("User", back_populates="portfolio_positions")
+
+
+class ExchangeConfig(Base):
+    """用户交易所 API 配置"""
+    __tablename__ = "exchange_configs"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    exchange = Column(String(30), nullable=False)  # binance, okx, bybit, huobi, etc.
+    api_key = Column(String(200), nullable=False)
+    api_secret = Column(String(200), nullable=False)
+    passphrase = Column(String(100), nullable=True)  # OKX/某些交易所需要
+    label = Column(String(50), default="")  # 用户自定义标签
+    is_enabled = Column(Boolean, default=True)
+    is_verified = Column(Boolean, default=False)  # 验证连接是否正常
+    last_sync = Column(DateTime, nullable=True)  # 最后同步时间
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+    user = relationship("User")
+
+
+# 支持的交易所列表（静态配置）
+SUPPORTED_EXCHANGES = {
+    "binance": {
+        "name": "Binance",
+        "icon": "₿",
+        "need_passphrase": False,
+        "docs_url": "https://www.binance.com/zh-CN/support/faq/how-to-create-api-keys-on-binance-360002502072"
+    },
+    "okx": {
+        "name": "OKX",
+        "icon": "○",
+        "need_passphrase": True,
+        "docs_url": "https://www.okx.com/zh-hans/account/my-api"
+    },
+    "bybit": {
+        "name": "Bybit",
+        "icon": "◉",
+        "need_passphrase": False,
+        "docs_url": "https://www.bybit.com/zh-TW/help-center/bybit-default/my-assets/how-to-create-an-api-key"
+    },
+    "huobi": {
+        "name": "Huobi",
+        "icon": "◆",
+        "need_passphrase": False,
+        "docs_url": "https://www.huobi.com/zh-cn/apikey/"
+    },
+    "gateio": {
+        "name": "Gate.io",
+        "icon": "▣",
+        "need_passphrase": True,
+        "docs_url": "https://www.gate.io/zh-tw/myapikey"
+    },
+    "kucoin": {
+        "name": "KuCoin",
+        "icon": "◇",
+        "need_passphrase": True,
+        "docs_url": "https://www.kucoin.com/zh-CN/account/api"
+    },
+    "bitget": {
+        "name": "Bitget",
+        "icon": "◎",
+        "need_passphrase": True,
+        "docs_url": "https://www.bitget.com/zh-TW/account/demo/api"
+    },
+    "mexc": {
+        "name": "MEXC",
+        "icon": "◈",
+        "need_passphrase": False,
+        "docs_url": "https://www.mexc.com/zh-TW/apikey/"
+    }
+}
