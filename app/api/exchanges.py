@@ -54,9 +54,17 @@ class ExchangeConfigResponse(BaseModel):
 class ExchangeInfo(BaseModel):
     id: str
     name: str
+    region: str
+    region_name: str
     icon: str
     need_passphrase: bool
     docs_url: str
+
+
+class RegionGroup(BaseModel):
+    region: str
+    region_name: str
+    exchanges: List[ExchangeInfo]
 
 
 # ============ 交易所验证函数 ============
@@ -192,10 +200,42 @@ def mask_api_key(api_key: str) -> str:
 
 @router.get("/supported", response_model=List[ExchangeInfo])
 async def get_supported_exchanges():
-    """获取支持的交易所列表"""
+    """获取支持的交易所列表（按地区分组）"""
     return [
         ExchangeInfo(id=k, **v) for k, v in SUPPORTED_EXCHANGES.items()
     ]
+
+
+@router.get("/regions", response_model=List[RegionGroup])
+async def get_exchanges_by_region():
+    """获取按地区分组的交易所列表"""
+    # 按地区分组
+    regions = {}
+    for exchange_id, info in SUPPORTED_EXCHANGES.items():
+        region = info.get("region", "other")
+        if region not in regions:
+            regions[region] = {
+                "region": region,
+                "region_name": info.get("region_name", "其他"),
+                "exchanges": []
+            }
+        regions[region]["exchanges"].append(ExchangeInfo(id=exchange_id, **info))
+    
+    # 按地区排序
+    region_order = ["japan", "korea", "hongkong", "singapore", "taiwan", "seasia", 
+                   "middleeast", "africa", "euroamerica", "oceania"]
+    
+    result = []
+    for region_key in region_order:
+        if region_key in regions:
+            result.append(RegionGroup(**regions[region_key]))
+    
+    # 添加其他未分类的交易所
+    for region_key, data in regions.items():
+        if region_key not in region_order:
+            result.append(RegionGroup(**data))
+    
+    return result
 
 
 @router.get("/", response_model=List[ExchangeConfigResponse])

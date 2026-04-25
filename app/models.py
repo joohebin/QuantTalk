@@ -234,54 +234,324 @@ class ExchangeConfig(Base):
     user = relationship("User")
 
 
-# 支持的交易所列表（静态配置）
+# 支持的交易所列表（按地区分类）
+# 地区: japan=日本, korea=韩国, hongkong=香港, singapore=新加坡, taiwan=台湾, 
+#       seasia=东南亚, middleeast=中东, africa=非洲, euroamerica=欧美, oceania=大洋洲
+
 SUPPORTED_EXCHANGES = {
+    # ============ 欧美 (Europe & America) ============
+    "coinbase": {
+        "name": "Coinbase",
+        "region": "euroamerica",
+        "region_name": "欧美",
+        "icon": "💰",
+        "need_passphrase": False,
+        "docs_url": "https://help.coinbase.com/en/exchange/managing-account/crypto-exchange-user-settings/api"
+    },
+    "kraken": {
+        "name": "Kraken",
+        "region": "euroamerica",
+        "region_name": "欧美",
+        "icon": "🦑",
+        "need_passphrase": False,
+        "docs_url": "https://www.kraken.com/features/api"
+    },
+    "gemini": {
+        "name": "Gemini",
+        "region": "euroamerica",
+        "region_name": "欧美",
+        "icon": "👯",
+        "need_passphrase": False,
+        "docs_url": "https://support.gemini.com/hc/en-us/articles/360031020532-API-Keys"
+    },
+    "etoro": {
+        "name": "eToro",
+        "region": "euroamerica",
+        "region_name": "欧美",
+        "icon": "📊",
+        "need_passphrase": False,
+        "docs_url": "https://www.etoro.com/customer-service/creator-terms/"
+    },
+    "bitstamp": {
+        "name": "Bitstamp",
+        "region": "euroamerica",
+        "region_name": "欧美",
+        "icon": "🏦",
+        "need_passphrase": False,
+        "docs_url": "https://www.bitstamp.net/api/"
+    },
+    "kucoin": {
+        "name": "KuCoin",
+        "region": "seasia",
+        "region_name": "东南亚",
+        "icon": "◇",
+        "need_passphrase": True,
+        "docs_url": "https://www.kucoin.com/zh-CN/account/api"
+    },
+    
+    # ============ 亚洲 (Asia Pacific) ============
     "binance": {
         "name": "Binance",
+        "region": "singapore",
+        "region_name": "新加坡",
         "icon": "₿",
         "need_passphrase": False,
         "docs_url": "https://www.binance.com/zh-CN/support/faq/how-to-create-api-keys-on-binance-360002502072"
     },
     "okx": {
         "name": "OKX",
+        "region": "singapore",
+        "region_name": "新加坡",
         "icon": "○",
         "need_passphrase": True,
         "docs_url": "https://www.okx.com/zh-hans/account/my-api"
     },
     "bybit": {
         "name": "Bybit",
+        "region": "singapore",
+        "region_name": "新加坡",
         "icon": "◉",
         "need_passphrase": False,
         "docs_url": "https://www.bybit.com/zh-TW/help-center/bybit-default/my-assets/how-to-create-an-api-key"
     },
-    "huobi": {
-        "name": "Huobi",
-        "icon": "◆",
-        "need_passphrase": False,
-        "docs_url": "https://www.huobi.com/zh-cn/apikey/"
-    },
-    "gateio": {
-        "name": "Gate.io",
-        "icon": "▣",
-        "need_passphrase": True,
-        "docs_url": "https://www.gate.io/zh-tw/myapikey"
-    },
-    "kucoin": {
-        "name": "KuCoin",
-        "icon": "◇",
-        "need_passphrase": True,
-        "docs_url": "https://www.kucoin.com/zh-CN/account/api"
-    },
     "bitget": {
         "name": "Bitget",
+        "region": "singapore",
+        "region_name": "新加坡",
         "icon": "◎",
         "need_passphrase": True,
         "docs_url": "https://www.bitget.com/zh-TW/account/demo/api"
     },
+    "gateio": {
+        "name": "Gate.io",
+        "region": "hongkong",
+        "region_name": "香港",
+        "icon": "▣",
+        "need_passphrase": True,
+        "docs_url": "https://www.gate.io/zh-tw/myapikey"
+    },
+    "htx": {
+        "name": "HTX (火币)",
+        "region": "hongkong",
+        "region_name": "香港",
+        "icon": "🔥",
+        "need_passphrase": False,
+        "docs_url": "https://www.htx.com/en-us/topApikey/"
+    },
+    "bitfinex": {
+        "name": "Bitfinex",
+        "region": "hongkong",
+        "region_name": "香港",
+        "icon": "⚡",
+        "need_passphrase": False,
+        "docs_url": "https://www.bitfinex.com/api"
+    },
+    
+    # ============ 日本 (Japan) ============
+    "bitflyer": {
+        "name": "bitFlyer",
+        "region": "japan",
+        "region_name": "日本",
+        "icon": "🦊",
+        "need_passphrase": False,
+        "docs_url": "https://bitflyer.com/en/apikey"
+    },
+    "coincheck": {
+        "name": "Coincheck",
+        "region": "japan",
+        "region_name": "日本",
+        "icon": "💴",
+        "need_passphrase": False,
+        "docs_url": "https://coincheck.com/zh_CN/api"
+    },
+    "liquid": {
+        "name": "Liquid",
+        "region": "japan",
+        "region_name": "日本",
+        "icon": "💧",
+        "need_passphrase": False,
+        "docs_url": "https://docs.liquid.com/"
+    },
+    "gmo": {
+        "name": "GMO Coin",
+        "region": "japan",
+        "region_name": "日本",
+        "icon": "🌐",
+        "need_passphrase": False,
+        "docs_url": "https://coin.z.com/jp/corporate/api/"
+    },
+    
+    # ============ 韩国 (Korea) ============
+    "upbit": {
+        "name": "Upbit",
+        "region": "korea",
+        "region_name": "韩国",
+        "icon": "🔺",
+        "need_passphrase": False,
+        "docs_url": "https://www.upbit.com/service-center/api_guide"
+    },
+    "bithumb": {
+        "name": "Bithumb",
+        "region": "korea",
+        "region_name": "韩国",
+        "icon": "💎",
+        "need_passphrase": False,
+        "docs_url": "https://www.bithumb.com/publicinfo/open-api/guide"
+    },
+    "korbit": {
+        "name": "Korbit",
+        "region": "korea",
+        "region_name": "韩国",
+        "icon": "🐻",
+        "need_passphrase": False,
+        "docs_url": "https://apidocs.korbit.co.kr/"
+    },
+    "coinone": {
+        "name": "Coinone",
+        "region": "korea",
+        "region_name": "韩国",
+        "icon": "🪙",
+        "need_passphrase": False,
+        "docs_url": "https://coinone.co.kr/open-api/"
+    },
+    
+    # ============ 台湾 (Taiwan) ============
+    "maicoin": {
+        "name": "MaiCoin",
+        "region": "taiwan",
+        "region_name": "台湾",
+        "icon": "🏮",
+        "need_passphrase": False,
+        "docs_url": "https://www.maicoin.com/zh-TW/api-docs"
+    },
+    "bitoex": {
+        "name": "BitoEX 币托",
+        "region": "taiwan",
+        "region_name": "台湾",
+        "icon": "🐷",
+        "need_passphrase": False,
+        "docs_url": "https://www.bitoex.com/cpage/api"
+    },
+    "ace": {
+        "name": "ACE",
+        "region": "taiwan",
+        "region_name": "台湾",
+        "icon": "⭐",
+        "need_passphrase": False,
+        "docs_url": "https://www.ace.io/"
+    },
+    
+    # ============ 东南亚 (Southeast Asia) ============
     "mexc": {
         "name": "MEXC",
+        "region": "seasia",
+        "region_name": "东南亚",
         "icon": "◈",
         "need_passphrase": False,
         "docs_url": "https://www.mexc.com/zh-TW/apikey/"
-    }
+    },
+    "zipmex": {
+        "name": "Zipmex",
+        "region": "seasia",
+        "region_name": "东南亚",
+        "icon": "⚡",
+        "need_passphrase": False,
+        "docs_url": "https://api.zipmex.com/"
+    },
+    "tokocrypto": {
+        "name": "Tokocrypto",
+        "region": "seasia",
+        "region_name": "东南亚",
+        "icon": "🔮",
+        "need_passphrase": False,
+        "docs_url": "https://www.tokocrypto.com/en/support/sections/200550268-API"
+    },
+    
+    # ============ 香港持牌 (Hong Kong Licensed) ============
+    "hashkey": {
+        "name": "HashKey",
+        "region": "hongkong",
+        "region_name": "香港",
+        "icon": "🔑",
+        "need_passphrase": False,
+        "docs_url": "https://www.hashkey.com/api"
+    },
+    "osl": {
+        "name": "OSL",
+        "region": "hongkong",
+        "region_name": "香港",
+        "icon": "🏛️",
+        "need_passphrase": False,
+        "docs_url": "https://www.osl.com/api"
+    },
+    
+    # ============ 中东 (Middle East) ============
+    "rainoasis": {
+        "name": "Rain",
+        "region": "middleeast",
+        "region_name": "中东",
+        "icon": "🌧️",
+        "need_passphrase": False,
+        "docs_url": "https://raininfoapi.docs.apiary.io/"
+    },
+    "bitoasis": {
+        "name": "BitOasis",
+        "region": "middleeast",
+        "region_name": "中东",
+        "icon": "🌴",
+        "need_passphrase": False,
+        "docs_url": "https://docs.bitoasis.com/"
+    },
+    
+    # ============ 非洲 (Africa) ============
+    "luno": {
+        "name": "Luno",
+        "region": "africa",
+        "region_name": "非洲",
+        "icon": "🌙",
+        "need_passphrase": False,
+        "docs_url": "https://www.luno.com/en/api"
+    },
+    "yellowcard": {
+        "name": "Yellow Card",
+        "region": "africa",
+        "region_name": "非洲",
+        "icon": "🟡",
+        "need_passphrase": False,
+        "docs_url": "https://yellowcard.io/api"
+    },
+    
+    # ============ 大洋洲 (Oceania) ============
+    "cryptocom": {
+        "name": "Crypto.com",
+        "region": "oceania",
+        "region_name": "大洋洲",
+        "icon": "💳",
+        "need_passphrase": False,
+        "docs_url": "https://crypto.com/exchange/node_api"
+    },
+    "coinspot": {
+        "name": "CoinSpot",
+        "region": "oceania",
+        "region_name": "大洋洲",
+        "icon": "🥇",
+        "need_passphrase": False,
+        "docs_url": "https://www.coinspot.com.au/v2/api"
+    },
+    "easycrypto": {
+        "name": "Easy Crypto",
+        "region": "oceania",
+        "region_name": "大洋洲",
+        "icon": "🔄",
+        "need_passphrase": False,
+        "docs_url": "https://www.easycrypto.ai/api"
+    },
+    "btcmarkets": {
+        "name": "BTC Markets",
+        "region": "oceania",
+        "region_name": "大洋洲",
+        "icon": "🎯",
+        "need_passphrase": False,
+        "docs_url": "https://docs.btcmarkets.net/"
+    },
 }
