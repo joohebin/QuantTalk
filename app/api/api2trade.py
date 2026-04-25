@@ -21,7 +21,7 @@ from typing import Optional, Dict, Any, List
 # ============================================
 # 配置
 # ============================================
-from app.config import API2TRADE_BASE_URL, API2TRADE_API_KEY, API2TRADE_CACHE_TTL
+from app.config import API2TRADE_BASE_URL, API2TRADE_API_KEY, API2TRADE_ACCOUNT_UUID, API2TRADE_CACHE_TTL
 
 _cache: Dict[str, tuple] = {}  # key: cache_key, value: (timestamp, data)
 

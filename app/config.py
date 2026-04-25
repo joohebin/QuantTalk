@@ -17,7 +17,8 @@ APP_VERSION = "2.0.0"
 # 认证: x-api-key header
 # ============================================
 API2TRADE_BASE_URL = "https://api.metatraderapi.dev"
-API2TRADE_API_KEY = ""  # TODO: 填入 API2Trade API Key
+API2TRADE_API_KEY = "a915ec00-8a72-4df2-9fc1-1caf13d6b6e2"  # API2Trade API Key
+API2TRADE_ACCOUNT_UUID = "ff982e56-23b0-4e3d-b6f6-7f7b8c40679e"  # MT4/MT5 账户 UUID
 API2TRADE_WS_URL = "wss://api.metatraderapi.dev/stream"
 API2TRADE_CACHE_TTL = 5  # 实时行情缓存秒数
 

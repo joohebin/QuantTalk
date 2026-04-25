@@ -6,7 +6,7 @@ import random
 import asyncio
 from app.api import mt5  # MetaApi MT5 备用客户端
 from app.api import api2trade  # API2Trade MT4/MT5 主用客户端
-from app.config import API2TRADE_API_KEY  # API2Trade API Key
+from app.config import API2TRADE_API_KEY, API2TRADE_ACCOUNT_UUID  # API2Trade API Key + UUID
 
 router = APIRouter()
 
@@ -272,8 +272,8 @@ async def get_realtime_quote(symbol: str, fallback_price: float):
         base_price = KLINE_BASIS.get(symbol, fallback_price)
 
         # 尝试 API2Trade（主用）
-        if API2TRADE_API_KEY:
-            a2t_price = await api2trade.get_symbol_price(mt_sym, API2TRADE_API_KEY)
+        if API2TRADE_API_KEY and API2TRADE_ACCOUNT_UUID:
+            a2t_price = await api2trade.get_symbol_price(mt_sym, API2TRADE_ACCOUNT_UUID)
             if a2t_price:
                 bid = a2t_price.get("bid", 0) or a2t_price.get("Bid", 0)
                 ask = a2t_price.get("ask", 0) or a2t_price.get("Ask", 0)
@@ -414,8 +414,8 @@ async def get_kline(
         source = "simulation"
 
         # 优先 API2Trade
-        if API2TRADE_API_KEY:
-            real_data = await api2trade.get_historical_candles(mt_sym, API2TRADE_API_KEY, interval_str, limit)
+        if API2TRADE_API_KEY and API2TRADE_ACCOUNT_UUID:
+            real_data = await api2trade.get_historical_candles(mt_sym, API2TRADE_ACCOUNT_UUID, interval_str, limit)
             if real_data:
                 data = [
                     {
@@ -430,8 +430,8 @@ async def get_kline(
                 ]
                 source = "api2trade"
 
-        # 备选 MetaApi
-        if source == "simulation" and API2TRADE_API_KEY:
+        # 备选 MetaApi（独立检查，不依赖 API2Trade 配置）
+        if source == "simulation":
             mt5_sym = mt5.normalize_symbol(symbol)
             real_data = await mt5.get_historical_candles(mt5_sym, interval_str, limit)
             if real_data:
@@ -616,13 +616,13 @@ async def get_api2trade_account():
     获取 API2Trade MT4/MT5 账户信息
     注意: 需要先在 config.py 中配置 API2TRADE_API_KEY
     """
-    if not API2TRADE_API_KEY:
+    if not API2TRADE_API_KEY or not API2TRADE_ACCOUNT_UUID:
         return {
             "success": False,
-            "message": "未配置 API2TRADE_API_KEY，请在 config.py 中添加",
+            "message": "未配置 API2TRADE_API_KEY 或 API2TRADE_ACCOUNT_UUID，请在 config.py 中添加",
             "connected": False,
         }
-    info = await api2trade.get_account_info(API2TRADE_API_KEY)
+    info = await api2trade.get_account_info(API2TRADE_ACCOUNT_UUID)
     if info:
         return {
             "success": True,
@@ -649,9 +649,9 @@ async def get_api2trade_account():
 @router.get("/api2trade/positions")
 async def get_api2trade_positions():
     """获取 API2Trade MT4/MT5 当前持仓"""
-    if not API2TRADE_API_KEY:
-        return {"success": False, "positions": [], "message": "未配置 API2TRADE_API_KEY"}
-    positions = await api2trade.get_positions(API2TRADE_API_KEY)
+    if not API2TRADE_ACCOUNT_UUID:
+        return {"success": False, "positions": [], "message": "未配置 API2TRADE_ACCOUNT_UUID"}
+    positions = await api2trade.get_positions(API2TRADE_ACCOUNT_UUID)
     if positions is not None:
         return {
             "success": True,
@@ -676,10 +676,10 @@ async def get_api2trade_positions():
 @router.get("/api2trade/quote/{symbol}")
 async def get_api2trade_single_quote(symbol: str):
     """获取单个 API2Trade 品种的实时报价"""
-    if not API2TRADE_API_KEY:
-        return {"success": False, "symbol": symbol, "message": "未配置 API2TRADE_API_KEY"}
+    if not API2TRADE_ACCOUNT_UUID:
+        return {"success": False, "symbol": symbol, "message": "未配置 API2TRADE_ACCOUNT_UUID"}
     mt_sym = api2trade.normalize_symbol(symbol)
-    price = await api2trade.get_symbol_price(mt_sym, API2TRADE_API_KEY)
+    price = await api2trade.get_symbol_price(mt_sym, API2TRADE_ACCOUNT_UUID)
     if price:
         return {
             "success": True,
