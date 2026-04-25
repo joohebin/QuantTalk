@@ -783,11 +783,6 @@ document.getElementById('channels-list').innerHTML=`
 <div class="channel-group">
 <div class="channel-group-header">📜 成绩单</div>
 <div class="channel-item" onclick="nav('portfolio')"><span class="ch-icon">📊</span>我的成绩单</div>
-</div>
-<div class="channel-group">
-<div class="channel-group-header">💰 加密钱包</div>
-<div class="channel-item" onclick="nav('wallet')"><span class="ch-icon">💰</span>我的钱包</div>
-<div class="channel-item" onclick="QuickTransfer.show()"><span class="ch-icon">↔️</span>快捷转账</div>
 </div>`;
 renderPage();
 }
@@ -1460,7 +1455,7 @@ content.innerHTML=`
 </div>
 <button onclick="nav('portfolio')" class="btn btn-primary" style="margin-left:auto">查看成绩单</button>
 </div>
-<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px">
 <button class="quote-card" onclick="nav('friends')" style="cursor:pointer;text-align:center">
 <div style="font-size:24px;margin-bottom:8px">👥</div>
 <div style="font-weight:600;color:#fff">好友</div>
@@ -1472,6 +1467,10 @@ content.innerHTML=`
 <button class="quote-card" onclick="nav('groups')" style="cursor:pointer;text-align:center">
 <div style="font-size:24px;margin-bottom:8px">👥</div>
 <div style="font-weight:600;color:#fff">群聊</div>
+</button>
+<button class="quote-card" onclick="nav('wallet')" style="cursor:pointer;text-align:center">
+<div style="font-size:24px;margin-bottom:8px">💰</div>
+<div style="font-weight:600;color:#fff">钱包</div>
 </button>
 </div>
 </div>`;
