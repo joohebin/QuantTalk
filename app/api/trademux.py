@@ -6,7 +6,6 @@ API Key 类型: MT5 (不是 OANDA)
 """
 
 import httpx
-import requests
 from typing import Optional, Dict, List, Any
 from datetime import datetime
 from fastapi import APIRouter, HTTPException
@@ -194,13 +193,13 @@ class TradeMuxSyncClient:
     
     def _request(self, method: str, endpoint: str, data: Optional[Dict] = None) -> Dict:
         """发送 HTTP 请求"""
-        import requests
+        import httpx
         url = f"{self.BASE_URL}{endpoint}"
         
         if method == "GET":
-            response = requests.get(url, headers=self.headers, timeout=30)
+            response = httpx.get(url, headers=self.headers, timeout=30)
         elif method == "POST":
-            response = requests.post(url, headers=self.headers, json=data, timeout=30)
+            response = httpx.post(url, headers=self.headers, json=data, timeout=30)
         else:
             raise ValueError(f"Unsupported method: {method}")
         
