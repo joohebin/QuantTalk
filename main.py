@@ -5,7 +5,7 @@ FastAPI Application Entry Point
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
-from app.api import auth, posts, users, market, notifications, communities, ws, messages, quantai, trademux, exchanges, upload, room_signaling
+from app.api import auth, posts, users, market, notifications, communities, ws, messages, quantai, trademux, exchanges, upload, room_signaling, guilds, groups, portfolio, trading_community
 from app.database import engine, Base
 import uvicorn
 
@@ -22,6 +22,8 @@ app.add_middleware(
 )
 
 app.include_router(auth.router, prefix="/api/auth", tags=["认证"])
+app.include_router(groups.router, tags=["Group Chat"])
+app.include_router(portfolio.router, tags=["Portfolio"])
 app.include_router(posts.router, prefix="/api/posts", tags=["动态"])
 app.include_router(users.router, prefix="/api/users", tags=["用户"])
 app.include_router(notifications.router, prefix="/api/notifications", tags=["通知"])
@@ -34,6 +36,8 @@ app.include_router(exchanges.router, tags=["交易所配置"])
 app.include_router(ws.router, tags=["WebSocket"])
 app.include_router(upload.router, tags=["上传"])
 app.include_router(room_signaling.router, tags=["视频通话"])
+app.include_router(guilds.router, tags=["Discord服务器"])
+app.include_router(trading_community.router, tags=["第三阶段：交易社区"])
 
 # 上传文件目录 - 必须在 static 之前挂载
 import os

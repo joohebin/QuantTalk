@@ -35,6 +35,24 @@ friendships = Table(
     Column("created_at", DateTime, server_default=func.now()),
 )
 
+# Discord风格服务器成员关系表
+guild_members = Table(
+    "guild_members", Base.metadata,
+    Column("user_id", Integer, ForeignKey("users.id"), primary_key=True),
+    Column("guild_id", Integer, ForeignKey("guilds.id"), primary_key=True),
+    Column("nickname", String(50), default=""),
+    Column("role", String(20), default="member"),  # owner/admin/moderator/member
+    Column("joined_at", DateTime, server_default=func.now()),
+)
+
+# 语音频道在线成员
+voice_members = Table(
+    "voice_members", Base.metadata,
+    Column("user_id", Integer, ForeignKey("users.id"), primary_key=True),
+    Column("voice_channel_id", Integer, ForeignKey("voice_channels.id"), primary_key=True),
+    Column("joined_at", DateTime, server_default=func.now()),
+)
+
 
 class User(Base):
     __tablename__ = "users"
@@ -71,6 +89,7 @@ class User(Base):
                           secondaryjoin=id == friendships.c.friend_id, backref="friends_of")
     sent_friend_requests = relationship("FriendRequest", foreign_keys="FriendRequest.from_user_id", cascade="all, delete-orphan")
     received_friend_requests = relationship("FriendRequest", foreign_keys="FriendRequest.to_user_id", cascade="all, delete-orphan")
+    guilds = relationship("Guild", secondary=guild_members, back_populates="members")
 
 
 class Post(Base):
@@ -601,3 +620,173 @@ class VideoRoom(Base):
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, server_default=func.now())
     ended_at = Column(DateTime, nullable=True)
+
+
+class Guild(Base):
+    """Discord风格的服务器"""
+    __tablename__ = "guilds"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(100), nullable=False)
+    icon = Column(String(500), default="")
+    description = Column(String(500), default="")
+    owner_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    invite_code = Column(String(20), unique=True, nullable=True)
+    is_public = Column(Boolean, default=True)
+    created_at = Column(DateTime, server_default=func.now())
+
+    owner = relationship("User", foreign_keys=[owner_id])
+    members = relationship("User", secondary=guild_members, back_populates="guilds")
+    text_channels = relationship("TextChannel", back_populates="guild", cascade="all, delete-orphan")
+    voice_channels = relationship("VoiceChannel", back_populates="guild", cascade="all, delete-orphan")
+
+
+class TextChannel(Base):
+    """文字频道"""
+    __tablename__ = "text_channels"
+    id = Column(Integer, primary_key=True, index=True)
+    guild_id = Column(Integer, ForeignKey("guilds.id"), nullable=False)
+    name = Column(String(100), nullable=False)
+    topic = Column(String(300), default="")
+    position = Column(Integer, default=0)
+    created_at = Column(DateTime, server_default=func.now())
+
+    guild = relationship("Guild", back_populates="text_channels")
+    messages = relationship("GuildMessage", back_populates="channel", cascade="all, delete-orphan")
+
+
+class GuildMessage(Base):
+    """服务器消息"""
+    __tablename__ = "guild_messages"
+    id = Column(Integer, primary_key=True, index=True)
+    channel_id = Column(Integer, ForeignKey("text_channels.id"), nullable=False)
+    author_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    content = Column(Text, nullable=False)
+    created_at = Column(DateTime, server_default=func.now())
+
+    channel = relationship("TextChannel", back_populates="messages")
+    author = relationship("User")
+
+
+class VoiceChannel(Base):
+    """语音/视频频道"""
+    __tablename__ = "voice_channels"
+    id = Column(Integer, primary_key=True, index=True)
+    guild_id = Column(Integer, ForeignKey("guilds.id"), nullable=False)
+    name = Column(String(100), nullable=False)
+    channel_type = Column(String(20), default="voice")  # voice / video / stage
+    bitrate = Column(Integer, default=64000)
+    user_limit = Column(Integer, default=0)  # 0表示无限制
+    position = Column(Integer, default=0)
+    created_at = Column(DateTime, server_default=func.now())
+
+    guild = relationship("Guild", back_populates="voice_channels")
+    online_members = relationship("User", secondary=voice_members)
+
+
+# ========== 群聊系统 ==========
+
+class Group(Base):
+    """群组"""
+    __tablename__ = "groups"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(100), nullable=False)
+    description = Column(Text, default="")
+    avatar = Column(String(500), nullable=True)
+    owner_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    invite_code = Column(String(20), nullable=False, unique=True)
+    is_private = Column(Boolean, default=False)
+    created_at = Column(DateTime, server_default=func.now())
+
+    owner = relationship("User")
+    members = relationship("GroupMember", back_populates="group", cascade="all, delete-orphan")
+    messages = relationship("GroupMessage", back_populates="group", cascade="all, delete-orphan")
+
+
+class GroupMember(Base):
+    """群组成员"""
+    __tablename__ = "group_members"
+    id = Column(Integer, primary_key=True, index=True)
+    group_id = Column(Integer, ForeignKey("groups.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    is_owner = Column(Boolean, default=False)
+    is_admin = Column(Boolean, default=False)
+    joined_at = Column(DateTime, server_default=func.now())
+
+    group = relationship("Group", back_populates="members")
+    user = relationship("User")
+
+
+class GroupMessage(Base):
+    """群消息"""
+    __tablename__ = "group_messages"
+    id = Column(Integer, primary_key=True, index=True)
+    group_id = Column(Integer, ForeignKey("groups.id"), nullable=False)
+    author_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    content = Column(Text, nullable=False)
+    reply_to = Column(Integer, ForeignKey("group_messages.id"), nullable=True)
+    created_at = Column(DateTime, server_default=func.now())
+
+    group = relationship("Group", back_populates="messages")
+    author = relationship("User")
+
+
+# ========== 成绩单系统 ==========
+
+class TradeRecord(Base):
+    """交易记录"""
+    __tablename__ = "trade_records"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    symbol = Column(String(20), nullable=False, index=True)
+    direction = Column(String(10), nullable=False)  # long / short
+    entry_price = Column(Float, nullable=False)
+    exit_price = Column(Float, nullable=True)
+    entry_time = Column(DateTime, nullable=False)
+    exit_time = Column(DateTime, nullable=True)
+    quantity = Column(Float, nullable=False)
+    pnl = Column(Float, nullable=True)  # 盈亏金额
+    pnl_pct = Column(Float, nullable=True)  # 盈亏百分比
+    strategy_name = Column(String(100), default="")
+    notes = Column(Text, default="")
+    created_at = Column(DateTime, server_default=func.now())
+
+    user = relationship("User")
+
+
+class BacktestReport(Base):
+    """回测报告"""
+    __tablename__ = "backtest_reports"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    name = Column(String(200), nullable=False)
+    strategy_name = Column(String(100), nullable=False)
+    symbol = Column(String(20), nullable=False)
+    period = Column(String(10), nullable=False)  # 1m, 5m, 15m, 1h, 4h, 1d
+    start_date = Column(String(20), nullable=False)
+    end_date = Column(String(20), nullable=False)
+    total_trades = Column(Integer, default=0)
+    win_rate = Column(Float, default=0)  # 胜率 %
+    profit_factor = Column(Float, default=0)  # 盈亏比
+    max_drawdown = Column(Float, default=0)  # 最大回撤 %
+    sharpe_ratio = Column(Float, nullable=True)
+    total_return = Column(Float, default=0)  # 总收益率 %
+    annualized_return = Column(Float, nullable=True)
+    equity_curve = Column(Text, nullable=True)  # JSON
+    trades_summary = Column(Text, nullable=True)  # JSON
+    chart_data = Column(Text, nullable=True)  # JSON
+    notes = Column(Text, nullable=True)
+    is_public = Column(Boolean, default=True)
+    likes_count = Column(Integer, default=0)
+    views_count = Column(Integer, default=0)
+    created_at = Column(DateTime, server_default=func.now())
+
+    user = relationship("User")
+    likes = relationship("User", secondary="backtest_likes")
+
+
+class BacktestLike(Base):
+    """回测报告点赞"""
+    __tablename__ = "backtest_likes"
+    user_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
+    report_id = Column(Integer, ForeignKey("backtest_reports.id"), primary_key=True)
+    created_at = Column(DateTime, server_default=func.now())

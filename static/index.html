@@ -8,51 +8,177 @@
 <script src="https://unpkg.com/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.production.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-*{scrollbar-width:thin;scrollbar-color:#334155 transparent}
-::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:#334155;border-radius:3px}
-body{background:#0f1419;color:#c9d1d9;font-family:'Inter',sans-serif;margin:0}
+*{scrollbar-width:thin;scrollbar-color:#2d2d2d transparent}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#2d2d2d;border-radius:4px}
+body{background:#1a1a1a;color:#dcddde;font-family:'Inter',sans-serif;margin:0;height:100vh;overflow:hidden}
 .glass{background:rgba(15,20,25,.9);backdrop-filter:blur(12px);border:1px solid rgba(100,116,139,.1)}
 .glass2{background:rgba(25,30,38,.7);border:1px solid rgba(100,116,139,.08)}
 .tag{background:rgba(14,165,233,.12);color:#38bdf8;border:1px solid rgba(14,165,233,.2);border-radius:9999px;padding:2px 10px;font-size:12px;cursor:pointer;white-space:nowrap}
 .btn{padding:6px 16px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;border:none;color:#fff}
 .btn-primary{background:linear-gradient(135deg,#0ea5e9,#0284c7)}.btn-primary:hover{box-shadow:0 4px 14px rgba(14,165,233,.4);transform:translateY(-1px)}
-.btn-ghost{background:transparent;color:#94a3b8;border:1px solid #334155}.btn-ghost:hover{color:#fff;border-color:#475569}
+.btn-ghost{background:transparent;color:#b9bbbe;border:1px solid #72767d}.btn-ghost:hover{color:#fff;border-color:#b9bbbe;background:rgba(79,84,92,.4)}
 .btn-danger{background:rgba(239,68,68,.15);color:#f87171;border:1px solid rgba(239,68,68,.2)}.btn-danger:hover{background:rgba(239,68,68,.25)}
-.gain{color:#22c55e}.loss{color:#ef4444}
+.gain{color:#23a559}.loss{color:#ed4245}
 .avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:#fff;flex-shrink:0;background:linear-gradient(135deg,#0ea5e9,#8b5cf6)}
-.avatar-sm{width:28px;height:28px;font-size:11px}
+.avatar-sm{width:24px;height:24px;font-size:10px}
 .avatar-lg{width:56px;height:56px;font-size:22px}
-.input{width:100%;background:#0f172a;border:1px solid #1e293b;border-radius:8px;padding:8px 12px;color:#e2e8f0;font-size:13px;outline:none;transition:border .2s}
-.input:focus{border-color:#0ea5e9;box-shadow:0 0 0 2px rgba(14,165,233,.15)}
+.input{width:100%;background:#383842;border:1px solid #202225;border-radius:4px;padding:8px 12px;color:#dcddde;font-size:13px;outline:none;transition:border .2s}
+.input:focus{border-color:#7289da;background:#404045}
 .fade-in{animation:fadeIn .25s ease}@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(4px);z-index:100;display:flex;align-items:center;justify-content:center;padding:16px}
-.modal{background:#141c2e;border:1px solid rgba(100,116,139,.2);border-radius:16px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;padding:24px}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.85);backdrop-filter:blur(4px);z-index:100;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal{background:#36393f;border:1px solid rgba(0,0,0,.2);border-radius:8px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;padding:24px;color:#dcddde}
 .toast-wrap{position:fixed;top:70px;right:16px;z-index:200}
-.toast{padding:10px 18px;border-radius:10px;color:#fff;font-size:13px;margin-bottom:8px;animation:fadeIn .2s}
-.badge{position:absolute;top:-4px;right:-4px;background:#ef4444;color:#fff;font-size:10px;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700}
-.divider{height:1px;background:rgba(100,116,139,.12);margin:12px 0}
+.toast{padding:10px 18px;border-radius:8px;color:#fff;font-size:13px;margin-bottom:8px;animation:fadeIn .2s}
+.badge{position:absolute;top:-4px;right:-4px;background:#ed4245;color:#fff;font-size:10px;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700}
+.divider{height:1px;background:rgba(79,84,92,.4);margin:8px 0}
+
+/* ===== DISCORD LAYOUT ===== */
+.discord-container{display:flex;height:100vh;overflow:hidden}
+
+/* 服务器列表栏 (最左侧) */
+.guilds-bar{width:72px;background:#1e1f22;display:flex;flex-direction:column;align-items:center;padding:12px 0;gap:8px;overflow-y:auto}
+.guild-icon{width:48px;height:48px;border-radius:24px;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;transition:all .2s;background:#36393f;color:#fff;font-weight:600}
+.guild-icon:hover{border-radius:16px}
+.guild-icon.active{background:#5865f2;border-radius:16px}
+.guild-icon.home{background:#5865f2}
+.guild-divider{width:32px;height:2px;background:#202225;border-radius:1px}
+.add-guild-btn{width:48px;height:48px;border-radius:24px;display:flex;align-items:center;justify-content:center;font-size:24px;cursor:pointer;background:#23a559;color:#fff;transition:all .2s}
+.add-guild-btn:hover{border-radius:16px;background:#2d8a4e}
+
+/* 频道栏 */
+.channels-bar{width:240px;background:#2b2d31;display:flex;flex-direction:column;overflow:hidden}
+.channels-header{height:48px;padding:0 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #202225;font-weight:600;font-size:15px;background:#2b2d31;box-shadow:0 1px 0 rgba(0,0,0,.2)}
+.channels-list{flex:1;overflow-y:auto;padding:8px 8px}
+.channel-group{margin-bottom:16px}
+.channel-group-header{display:flex;align-items:center;padding:4px 8px;font-size:11px;font-weight:700;text-transform:uppercase;color:#939ba2;cursor:pointer;user-select:none}
+.channel-group-header:hover{color:#dcddde}
+.channel-item{display:flex;align-items:center;padding:6px 8px;border-radius:4px;cursor:pointer;color:#b9bbbe;font-size:14px;transition:all .1s}
+.channel-item:hover{background:rgba(79,84,92,.4);color:#dcddde}
+.channel-item.active{background:rgba(79,84,92,.6);color:#fff}
+.channel-item .ch-icon{margin-right:8px;font-size:16px}
+
+/* 用户区域 */
+.user-panel{height:52px;background:#232428;display:flex;align-items:center;padding:0 8px;gap:8px}
+.user-panel .avatar{width:32px;height:32px;font-size:12px}
+.user-info{flex:1;min-width:0}
+.user-name{font-size:13px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-status{font-size:11px;color:#b9bbbe}
+
+/* 主内容区 */
+.main-area{flex:1;display:flex;flex-direction:column;background:#313338;min-width:0}
+.chat-header{height:48px;padding:0 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #3f4147;font-weight:600}
+.chat-header .ch-hash{color:#6d6f78;font-size:24px}
+.chat-messages{flex:1;overflow-y:auto;padding:16px}
+.message{_display:flex;gap:16px;padding:4px 16px;border-radius:4px}
+.message:hover{background:rgba(0,0,0,.1)}
+.message .msg-avatar{width:40px;height:40px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:16px;color:#fff}
+.message-header{display:flex;align-items:baseline;gap:8px;margin-bottom:2px}
+.msg-author{font-weight:600;color:#fff;font-size:14px}
+.msg-time{font-size:10px;color:#72767d}
+.msg-content{font-size:14px;color:#dbdee1;line-height:1.4}
+
+/* 聊天输入区 */
+.chat-input-area{padding:0 16px 24px;display:flex;gap:8px}
+.chat-input{flex:1;background:#404045;border:1px solid #202225;border-radius:8px;padding:10px 14px;color:#dcddde;font-size:14px;resize:none;min-height:44px;max-height:200px}
+.chat-input:focus{outline:none;border-color:#5865f2}
+.chat-input::placeholder{color:#72767d}
+
+/* 右侧面板 (成员列表) */
+.right-panel{width:260px;background:#2b2d31;border-left:1px solid #202225;display:flex;flex-direction:column;overflow:hidden}
+.right-panel-header{height:36px;padding:0 16px;display:flex;align-items:center;font-size:12px;font-weight:700;text-transform:uppercase;color:#939ba2}
+.members-list{flex:1;overflow-y:auto;padding:8px}
+.member-item{display:flex;align-items:center;padding:6px 8px;border-radius:4px;cursor:pointer;color:#b9bbbe;font-size:13px;gap:8px}
+.member-item:hover{background:rgba(79,84,92,.4);color:#dcddde}
+.member-item .avatar{width:24px;height:24px;font-size:10px}
+.member-name{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.member-badge{padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600}
+.badge-owner{background:#f04747;color:#fff}
+.badge-admin{background:#f04747;color:#fff}
+.badge-mod{background:#43b581;color:#fff}
+
+/* 交易大厅 */
+.trading-selector{display:flex;align-items:center;gap:12px;padding:8px 16px;background:#2b2d31;border-bottom:1px solid #202225}
+.exchange-select{background:#383842;border:1px solid #202225;border-radius:4px;padding:6px 12px;color:#dcddde;font-size:13px;cursor:pointer;min-width:140px}
+.exchange-select:focus{outline:none;border-color:#5865f2}
+.symbol-input{background:#383842;border:1px solid #202225;border-radius:4px;padding:6px 12px;color:#dcddde;font-size:13px;width:100px}
+.symbol-input:focus{outline:none;border-color:#5865f2}
+
+/* K线图表容器 */
+.kline-container{flex:1;padding:16px;min-height:400px}
+.kline-controls{display:flex;gap:8px;margin-bottom:12px}
+.kline-btn{padding:4px 12px;border-radius:4px;font-size:12px;font-weight:500;cursor:pointer;background:#383842;color:#b9bbbe;border:1px solid #202225;transition:all .15s}
+.kline-btn:hover{background:#404045;color:#fff}
+.kline-btn.active{background:#5865f2;color:#fff;border-color:#5865f2}
+.kline-chart{height:350px;border-radius:8px;overflow:hidden}
+
+/* 行情面板 */
+.quote-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;padding:16px}
+.quote-card{background:#36393f;border-radius:8px;padding:16px;transition:all .2s}
+.quote-card:hover{background:#404045;transform:translateY(-2px)}
+.quote-symbol{font-weight:600;font-size:16px;color:#fff}
+.quote-price{font-size:24px;font-weight:700;margin:4px 0}
+.quote-change{font-size:13px;font-weight:500}
+
+/* 模态框样式覆盖 */
+.modal h3{color:#fff;font-size:18px;font-weight:600}
+.modal input,.modal select,.modal textarea{background:#404045;border-color:#202225;color:#dcddde}
+.modal input:focus,.modal textarea:focus{border-color:#5865f2}
 </style>
 </head>
 <body>
-<!-- NAV -->
-<nav class="glass sticky top-0 z-50" style="border-bottom:1px solid rgba(100,116,139,.1)">
-<div class="max-w-[1200px] mx-auto px-4 h-14 flex items-center justify-between">
-<div class="flex items-center gap-6">
-<a href="#" onclick="nav('feed')" class="flex items-center gap-2 text-lg font-bold text-white no-underline"><span style="color:#38bdf8">⚡</span>QuantTalk</a>
-<div class="hidden md:flex items-center gap-1" id="nav-links"></div>
-</div>
-<div class="flex items-center gap-3" id="nav-right"></div>
-</div>
-</nav>
 
-<!-- MAIN -->
-<div class="max-w-[1200px] mx-auto px-4 py-5 flex gap-5">
-<!-- LEFT SIDEBAR -->
-<aside class="hidden lg:block w-[240px] flex-shrink-0 space-y-4" id="sidebar-l"></aside>
-<!-- CENTER -->
-<div class="flex-1 min-w-0" id="app"></div>
-<!-- RIGHT SIDEBAR -->
-<aside class="hidden xl:block w-[260px] flex-shrink-0 space-y-4" id="sidebar-r"></aside>
+<!-- 整体容器 (Discord风格) -->
+<div id="app-container" class="discord-container">
+    <!-- 左侧：服务器列表 -->
+    <div class="guilds-bar" id="guilds-bar">
+        <div class="guild-icon home active" onclick="showHome()" title="首页">
+            ⚡
+        </div>
+        <div class="guild-divider"></div>
+        <!-- 动态加载服务器 -->
+        <div id="guilds-list"></div>
+        <div class="add-guild-btn" onclick="showCreateGuild()" title="创建服务器">+</div>
+    </div>
+
+    <!-- 中间：频道栏 + 主内容 -->
+    <div id="main-column" style="display:flex;flex:1;min-width:0">
+        <!-- 频道栏 -->
+        <div class="channels-bar" id="channels-bar">
+            <div class="channels-header">
+                <span id="current-server-name">QuantTalk</span>
+            </div>
+            <div class="channels-list" id="channels-list">
+                <!-- 动态加载频道 -->
+            </div>
+            <!-- 用户面板 -->
+            <div class="user-panel">
+                <div class="avatar" id="user-avatar" style="width:32px;height:32px;font-size:12px">?</div>
+                <div class="user-info">
+                    <div class="user-name" id="user-name">未登录</div>
+                    <div class="user-status">#在线</div>
+                </div>
+                <button onclick="toggleUserMenu()" style="background:none;border:none;color:#b9bbbe;cursor:pointer;font-size:18px;padding:4px">⚙️</button>
+            </div>
+        </div>
+
+        <!-- 主内容区 -->
+        <div class="main-area" id="main-area">
+            <!-- 顶部导航 -->
+            <div class="channels-header" style="padding:0 16px">
+                <span id="main-header-title">🏠 首页</span>
+            </div>
+            <!-- 内容区域 -->
+            <div id="main-content" style="flex:1;overflow-y:auto">
+                <!-- 动态加载内容 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 右侧：成员列表 -->
+    <div class="right-panel" id="right-panel" style="display:none">
+        <div class="right-panel-header">👥 在线 — <span id="online-count">0</span></div>
+        <div class="members-list" id="members-list"></div>
+    </div>
 </div>
 
 <!-- MODAL -->
@@ -63,19 +189,16 @@ body{background:#0f1419;color:#c9d1d9;font-family:'Inter',sans-serif;margin:0}
 <div class="toast-wrap" id="toasts"></div>
 
 <script>
-const S={token:localStorage.getItem('qt_token')||'',user:JSON.parse(localStorage.getItem('qt_user')||'null'),page:'feed',ws:null,channelId:null,communityId:null};
+const S={token:localStorage.getItem('qt_token')||'',user:JSON.parse(localStorage.getItem('qt_user')||'null'),page:'home',ws:null,channelId:null,guildId:null};
 const A='/api';
 
 // ===== UTILS =====
 async function api(p,o={}){
 const h={...(o.headers||{})};
-// 如果没有指定 Content-Type，默认用 JSON
 if(!h['Content-Type'] && !(o.body instanceof FormData)){
 h['Content-Type']='application/json';
 }
-// 处理 FormData，自动设置 boundary
 if(o.body instanceof FormData && !h['Content-Type']){
-// 不设置 Content-Type，让浏览器自动处理
 delete h['Content-Type'];
 }
 if(S.token)h.Authorization='Bearer '+S.token;
@@ -83,55 +206,469 @@ const r=await fetch(A+p,{...o,headers:h});
 if(r.status===401&&!p.includes('/auth/')){doLogout();return null}
 return r.json();
 }
-function toast(msg,type='info'){const c={info:'#0ea5e9',success:'#22c55e',error:'#ef4444'};const d=document.createElement('div');d.className='toast';d.style.background=c[type]||c.info;d.textContent=msg;document.getElementById('toasts').appendChild(d);setTimeout(()=>d.remove(),3000)}
+function toast(msg,type='info'){const c={info:'#5865f2',success:'#23a559',error:'#ed4245'};const d=document.createElement('div');d.className='toast';d.style.background=c[type]||c.info;d.textContent=msg;document.getElementById('toasts').appendChild(d);setTimeout(()=>d.remove(),3000)}
 function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML}
 
-// ===== EMOJI PICKER =====
-function toggleEmojiPicker(textareaId, pickerId){
-    // 关闭其他已打开的 picker
-    document.querySelectorAll('.emoji-picker-popup').forEach(p=>{if(p.id!==pickerId)p.classList.add('hidden')});
-    const picker=document.getElementById(pickerId);
-    if(picker){
-        picker.classList.toggle('hidden');
-        picker.classList.toggle('emoji-picker-popup');
-    }
-    // 点击其他地方关闭
-    setTimeout(()=>{
-        document.addEventListener('click', function closePicker(e){
-            if(!e.target.closest('.emoji-btn') && !e.target.closest(`#${pickerId}`) && !e.target.closest('.emoji-toggle-btn')){
-                const p=document.getElementById(pickerId);
-                if(p)p.classList.add('hidden');
-                document.removeEventListener('click', closePicker);
-            }
-        });
-    },100);
+// ===== NAV =====
+function nav(id){
+S.page=id;
+renderPage();
 }
 
-function insertEmoji(textareaId, emoji){
-    const ta=document.getElementById(textareaId);
-    if(ta){
-        const start=ta.selectionStart;
-        const end=ta.selectionEnd;
-        const text=ta.value;
-        ta.value=text.substring(0,start)+emoji+text.substring(end);
-        ta.selectionStart=ta.selectionEnd=start+emoji.length;
-        ta.focus();
-    }
-    // 关闭 picker
-    document.querySelectorAll('.emoji-picker-popup, [id*="emoji-picker"]').forEach(p=>p.classList.add('hidden'));
+// ===== PAGE ROUTER =====
+function renderPage(){
+const content=document.getElementById('main-content');
+const title=document.getElementById('main-header-title');
+document.getElementById('right-panel').style.display='none';
+
+switch(S.page){
+case 'home':title.textContent='🏠 首页';renderHome();break;
+case 'trading':title.textContent='📊 交易大厅';renderTradingFloor();break;
+case 'market':title.textContent='📈 行情';renderMarket();break;
+case 'crypto':title.textContent='🪙 加密货币';renderCrypto();break;
+case 'forex':title.textContent='💱 外汇贵金属';renderForex();break;
+case 'kline':title.textContent='📊 K线分析';renderKline();break;
+case 'chat':title.textContent='💬 聊天室';renderChat();break;
+case 'friends':title.textContent='👥 好友';renderFriends();break;
+case 'messages':title.textContent='💬 私信';renderMessages();break;
+case 'groups':title.textContent='👥 群聊';renderGroups();break;
+case 'portfolio':title.textContent='📜 成绩单';renderPortfolio();break;
+case 'profile':title.textContent='👤 个人主页';renderProfile();break;
+default:title.textContent='🏠 首页';renderHome();
 }
-function timeAgo(t){const d=Date.now()-new Date(t).getTime();const m=Math.floor(d/60000);if(m<1)return'刚刚';if(m<60)return m+'分钟前';const h=Math.floor(m/60);if(h<24)return h+'小时前';return Math.floor(h/24)+'天前'}
-function openModal(html){document.getElementById('modal-body').innerHTML=html;document.getElementById('modal').style.display='flex'}
-function closeModal(){document.getElementById('modal').style.display='none'}
+}
+
+// ===== HOME PAGE =====
+function renderHome(){
+const content=document.getElementById('main-content');
+if(!S.user){
+content.innerHTML=`
+<div style="display:flex;align-items:center;justify-content:center;height:100%;flex-direction:column;color:#b9bbbe">
+<div style="font-size:72px;margin-bottom:24px">⚡</div>
+<h1 style="font-size:32px;font-weight:700;color:#fff;margin-bottom:8px">QuantTalk</h1>
+<p style="font-size:16px;margin-bottom:32px">量化交易社交平台 — 连接全球交易者</p>
+<div style="display:flex;gap:12px">
+<button onclick="showAuth('login')" class="btn btn-primary">登录</button>
+<button onclick="showAuth('register')" class="btn btn-ghost">注册</button>
+</div>
+</div>`;
+return;
+}
+
+// 快速导航卡片
+content.innerHTML=`
+<div style="padding:24px">
+<h2 style="font-size:20px;font-weight:600;color:#fff;margin-bottom:20px">⚡ 欢迎回来，${S.user.username}</h2>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:32px">
+<div class="quote-card" onclick="nav('trading')" style="cursor:pointer">
+<div style="font-size:24px;margin-bottom:12px">📊</div>
+<div style="font-weight:600;color:#fff;font-size:16px">交易大厅</div>
+<div style="color:#b9bbbe;font-size:13px;margin-top:4px">MT4/MT5/交易所实时行情</div>
+</div>
+<div class="quote-card" onclick="nav('market')" style="cursor:pointer">
+<div style="font-size:24px;margin-bottom:12px">📈</div>
+<div style="font-weight:600;color:#fff;font-size:16px">行情分析</div>
+<div style="color:#b9bbbe;font-size:13px;margin-top:4px">股票、指数、期货</div>
+</div>
+<div class="quote-card" onclick="nav('crypto')" style="cursor:pointer">
+<div style="font-size:24px;margin-bottom:12px">🪙</div>
+<div style="font-weight:600;color:#fff;font-size:16px">加密货币</div>
+<div style="color:#b9bbbe;font-size:13px;margin-top:4px">BTC、ETH等主流币种</div>
+</div>
+<div class="quote-card" onclick="nav('kline')" style="cursor:pointer">
+<div style="font-size:24px;margin-bottom:12px">📊</div>
+<div style="font-weight:600;color:#fff;font-size:16px">K线分析</div>
+<div style="color:#b9bbbe;font-size:13px;margin-top:4px">自定义K线图表</div>
+</div>
+<div class="quote-card" onclick="nav('forex')" style="cursor:pointer">
+<div style="font-size:24px;margin-bottom:12px">💱</div>
+<div style="font-weight:600;color:#fff;font-size:16px">外汇贵金属</div>
+<div style="color:#b9bbbe;font-size:13px;margin-top:4px">EUR/USD、黄金、白银</div>
+</div>
+<div class="quote-card" onclick="nav('chat')" style="cursor:pointer">
+<div style="font-size:24px;margin-bottom:12px">💬</div>
+<div style="font-weight:600;color:#fff;font-size:16px">聊天室</div>
+<div style="color:#b9bbbe;font-size:13px;margin-top:4px">与其他交易者交流</div>
+</div>
+</div>
+
+<h3 style="font-size:16px;font-weight:600;color:#fff;margin-bottom:12px">📰 最新动态</h3>
+<div id="home-feed" style="color:#b9bbbe">加载中...</div>
+</div>`;
+loadHomeFeed();
+}
+
+async function loadHomeFeed(){
+try{
+const posts=await api('/posts?limit=5');
+const el=document.getElementById('home-feed');
+if(posts&&posts.length){
+el.innerHTML=posts.map(p=>`
+<div style="padding:12px;background:#36393f;border-radius:8px;margin-bottom:8px">
+<div style="font-weight:600;color:#fff">${esc(p.author?.username||'匿名')}</div>
+<div style="margin-top:4px">${esc(p.content||'').substring(0,100)}...</div>
+<div style="font-size:11px;color:#72767d;margin-top:8px">${timeAgo(p.created_at)}</div>
+</div>`).join('');
+}else{
+el.innerHTML='<p>暂无动态，快来发布第一条吧！</p>';
+}
+}catch(e){
+document.getElementById('home-feed').innerHTML='<p>加载失败</p>';
+}
+}
+
+// ===== TRADING FLOOR =====
+function renderTradingFloor(){
+const content=document.getElementById('main-content');
+content.innerHTML=`
+<div class="trading-selector">
+<select class="exchange-select" id="exchange-select" onchange="onExchangeChange()">
+<option value="mt4">MT4</option>
+<option value="mt5">MT5</option>
+<option value="binance">Binance</option>
+<option value="okx">OKX</option>
+<option value="bybit">Bybit</option>
+</select>
+<select class="exchange-select" id="symbol-select">
+<option value="EURUSD">EUR/USD</option>
+<option value="GBPUSD">GBP/USD</option>
+<option value="USDJPY">USD/JPY</option>
+<option value="XAUUSD">XAU/USD (黄金)</option>
+<option value="BTCUSD">BTC/USD</option>
+</select>
+<button onclick="loadTradingChart()" class="btn btn-primary" style="padding:6px 16px">刷新</button>
+</div>
+
+<div style="display:flex;flex:1;gap:16px;padding:16px;overflow:hidden">
+<div style="flex:1;min-width:0">
+<div id="kline-chart" style="height:400px;background:#36393f;border-radius:8px;padding:16px">
+<div style="height:100%;display:flex;align-items:center;justify-content:center;color:#72767d">点击刷新加载K线图</div>
+</div>
+<div class="kline-controls" style="margin-top:12px">
+<button class="kline-btn active" onclick="setKlinePeriod('1m',this)">1分钟</button>
+<button class="kline-btn" onclick="setKlinePeriod('5m',this)">5分钟</button>
+<button class="kline-btn" onclick="setKlinePeriod('15m',this)">15分钟</button>
+<button class="kline-btn" onclick="setKlinePeriod('1h',this)">1小时</button>
+<button class="kline-btn" onclick="setKlinePeriod('4h',this)">4小时</button>
+<button class="kline-btn" onclick="setKlinePeriod('1d',this)">日线</button>
+</div>
+</div>
+<div style="width:300px;display:flex;flex-direction:column;gap:12px">
+<div class="quote-card" style="padding:12px">
+<div style="font-size:12px;color:#939ba2;margin-bottom:4px">当前价格</div>
+<div id="current-price" style="font-size:28px;font-weight:700;color:#fff">--</div>
+<div id="price-change" style="font-size:14px;margin-top:4px">--</div>
+</div>
+<div class="quote-card" style="flex:1;overflow-y:auto">
+<div style="font-size:12px;color:#939ba2;margin-bottom:8px;font-weight:600">实时行情</div>
+<div id="quotes-list"></div>
+</div>
+</div>
+</div>`;
+
+// 显示右侧面板
+document.getElementById('right-panel').style.display='flex';
+document.getElementById('right-panel-header').innerHTML='📊 交易对行情';
+renderTradingQuotes();
+}
+
+function onExchangeChange(){
+const exchange=document.getElementById('exchange-select').value;
+const symbolSelect=document.getElementById('symbol-select');
+const symbols={
+mt4:['EURUSD','GBPUSD','USDJPY','XAUUSD','GBPJPY','AUDUSD'],
+mt5:['EURUSD','GBPUSD','USDJPY','XAUUSD','GBPJPY','AUDUSD','USDCAD','NZDUSD'],
+binance:['BTCUSDT','ETHUSDT','BNBUSDT','SOLUSDT','XRPUSDT'],
+okx:['BTCUSDT','ETHUSDT','OKBUSDT','SOLUSDT'],
+bybit:['BTCUSDT','ETHUSDT','SOLUSDT','XRPUSDT']
+};
+const list=symbols[exchange]||symbols.mt4;
+symbolSelect.innerHTML=list.map(s=>`<option value="${s}">${s}</option>`).join('');
+}
+
+function setKlinePeriod(period,btn){
+document.querySelectorAll('.kline-btn').forEach(b=>b.classList.remove('active'));
+btn.classList.add('active');
+S.klinePeriod=period;
+if(S.klineChart)loadTradingChart();
+}
+
+let S_klineChart=null;
+async function loadTradingChart(){
+const exchange=document.getElementById('exchange-select').value;
+const symbol=document.getElementById('symbol-select').value;
+const period=S.klinePeriod||'1h';
+
+const chartEl=document.getElementById('kline-chart');
+if(!chartEl)return;
+
+if(S_klineChart){S_klineChart.remove();S_klineChart=null;}
+try{
+const chart=LightweightCharts.createChart(chartEl,{layout:{background:{type:'solid',color:'#36393f'},textColor:'#b9bbbe'},grid:{vertLines:{color:'#404045'},horzLines:{color:'#404045'}},width:chartEl.clientWidth,height:380});
+S_klineChart=chart;
+
+const candleSeries=chart.addCandlestickSeries({upColor:'#23a559',downColor:'#ed4245',borderVisible:false});
+const res=await api(`/market/kline/${symbol}?period=${period}&limit=200`);
+if(res&&res.length){
+candleSeries.setData(res.map(d=>({time:d.time,open:d.open,high:d.high,low:d.low,close:d.close})));
+chart.timeScale().fitContent();
+}else{
+const now=Math.floor(Date.now()/1000);
+const data=generateMockKline(symbol,now,200);
+candleSeries.setData(data);
+chart.timeScale().fitContent();
+}
+
+// 更新价格
+const last=res?.[res.length-1];
+if(last){
+document.getElementById('current-price').textContent=last.close?.toFixed(5)||'--';
+const change=last.close-last.open;
+const pct=((change/last.open)*100).toFixed(2);
+document.getElementById('price-change').innerHTML=`<span class="${change>=0?'gain':'loss'}">${change>=0?'+':''}${change.toFixed(5)} (${pct}%)</span>`;
+}
+}catch(e){
+console.error('K线加载失败:',e);
+}
+}
+
+function generateMockKline(symbol,now,count){
+const data=[];
+let price=symbol.includes('BTC')?45000:symbol.includes('XAU')?2000:1.1;
+for(let i=count;i>=0;i--){
+const t=now-i*3600;
+const o=price;
+price*=(1+(Math.random()-0.5)*0.01);
+const h=Math.max(o,price)*(1+Math.random()*0.002);
+const l=Math.min(o,price)*(1-Math.random()*0.002);
+const c=price;
+data.push({time:t,open:o,high:h,low:l,close:c});
+}
+return data;
+}
+
+async function renderTradingQuotes(){
+const quotes=document.getElementById('quotes-list');
+const symbols=['EURUSD','GBPUSD','USDJPY','XAUUSD','BTCUSD'];
+const data=[];
+for(const s of symbols){
+try{
+const res=await api(`/market/quote/${s}`);
+if(res&&res.price){
+data.push({symbol:s,...res});
+}else{
+data.push({symbol:s,price:(Math.random()*2+0.9).toFixed(5),change:(Math.random()-0.5).toFixed(2)});
+}
+}catch{
+data.push({symbol:s,price:(Math.random()*2+0.9).toFixed(5),change:(Math.random()-0.5).toFixed(2)});
+}
+}
+quotes.innerHTML=data.map(q=>`
+<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #404045">
+<span style="font-weight:600;color:#fff">${q.symbol}</span>
+<span style="text-align:right">
+<span style="color:#fff">${q.price}</span>
+<span class="${parseFloat(q.change)>=0?'gain':'loss'}" style="margin-left:8px;font-size:12px">${parseFloat(q.change)>=0?'+':''}${q.change}%</span>
+</span>
+</div>`).join('');
+}
+
+// ===== MARKET PAGE =====
+function renderMarket(){
+const content=document.getElementById('main-content');
+content.innerHTML=`
+<div style="padding:24px">
+<h2 style="font-size:20px;font-weight:600;color:#fff;margin-bottom:20px">📈 行情分析</h2>
+<div class="quote-grid">
+<div class="quote-card"><div class="quote-symbol">沪深300</div><div class="quote-price">3,852.34</div><div class="quote-change gain">+1.25%</div></div>
+<div class="quote-card"><div class="quote-symbol">上证指数</div><div class="quote-price">3,241.56</div><div class="quote-change gain">+0.87%</div></div>
+<div class="quote-card"><div class="quote-symbol">纳斯达克</div><div class="quote-price">14,253.89</div><div class="quote-change loss">-0.45%</div></div>
+<div class="quote-card"><div class="quote-symbol">标普500</div><div class="quote-price">4,892.34</div><div class="quote-change gain">+0.32%</div></div>
+<div class="quote-card"><div class="quote-symbol">道琼斯</div><div class="quote-price">38,547.12</div><div class="quote-change gain">+0.18%</div></div>
+<div class="quote-card"><div class="quote-symbol">恒生指数</div><div class="quote-price">18,234.56</div><div class="quote-change loss">-0.62%</div></div>
+</div>
+</div>`;
+}
+
+// ===== CRYPTO PAGE =====
+function renderCrypto(){
+const content=document.getElementById('main-content');
+content.innerHTML=`
+<div style="padding:24px">
+<h2 style="font-size:20px;font-weight:600;color:#fff;margin-bottom:20px">🪙 加密货币</h2>
+<div id="crypto-list" style="color:#b9bbbe">加载中...</div>
+</div>`;
+loadCryptoData();
+}
+
+async function loadCryptoData(){
+try{
+const res=await api('/market/crypto');
+const el=document.getElementById('crypto-list');
+if(res&&res.length){
+el.innerHTML=`<div class="quote-grid">${res.map(c=>`
+<div class="quote-card">
+<div style="display:flex;align-items:center;gap:8px">
+<span style="font-size:24px">${c.icon||'🪙'}</span>
+<span class="quote-symbol">${c.symbol}</span>
+</div>
+<div class="quote-price">${c.price}</div>
+<div class="quote-change ${parseFloat(c.change)>=0?'gain':'loss'}">${parseFloat(c.change)>=0?'+':''}${c.change}%</div>
+</div>`).join('')}</div>`;
+}else{
+el.innerHTML=`<div class="quote-grid">
+<div class="quote-card"><div style="display:flex;align-items:center;gap:8px"><span style="font-size:24px">₿</span><span class="quote-symbol">BTC</span></div><div class="quote-price">$45,234.56</div><div class="quote-change gain">+2.34%</div></div>
+<div class="quote-card"><div style="display:flex;align-items:center;gap:8px"><span style="font-size:24px">Ξ</span><span class="quote-symbol">ETH</span></div><div class="quote-price">$2,456.78</div><div class="quote-change gain">+1.87%</div></div>
+<div class="quote-card"><div style="display:flex;align-items:center;gap:8px"><span style="font-size:24px">💎</span><span class="quote-symbol">SOL</span></div><div class="quote-price">$98.45</div><div class="quote-change gain">+5.23%</div></div>
+<div class="quote-card"><div style="display:flex;align-items:center;gap:8px"><span style="font-size:24px">🔷</span><span class="quote-symbol">XRP</span></div><div class="quote-price">$0.5234</div><div class="quote-change loss">-1.23%</div></div>
+</div>`;
+}
+}catch(e){
+document.getElementById('crypto-list').innerHTML='<p>加载失败</p>';
+}
+}
+
+// ===== FOREX PAGE =====
+function renderForex(){
+const content=document.getElementById('main-content');
+content.innerHTML=`
+<div style="padding:24px">
+<h2 style="font-size:20px;font-weight:600;color:#fff;margin-bottom:20px">💱 外汇贵金属</h2>
+<div class="quote-grid">
+<div class="quote-card"><div class="quote-symbol">EUR/USD</div><div class="quote-price">1.0867</div><div class="quote-change gain">+0.12%</div></div>
+<div class="quote-card"><div class="quote-symbol">GBP/USD</div><div class="quote-price">1.2734</div><div class="quote-change gain">+0.08%</div></div>
+<div class="quote-card"><div class="quote-symbol">USD/JPY</div><div class="quote-price">154.23</div><div class="quote-change loss">-0.15%</div></div>
+<div class="quote-card"><div class="quote-symbol">XAU/USD 黄金</div><div class="quote-price">$2,345.67</div><div class="quote-change gain">+0.45%</div></div>
+<div class="quote-card"><div class="quote-symbol">XAG/USD 白银</div><div class="quote-price">$27.89</div><div class="quote-change gain">+0.78%</div></div>
+<div class="quote-card"><div class="quote-symbol">WTI 原油</div><div class="quote-price">$78.45</div><div class="quote-change loss">-0.34%</div></div>
+</div>
+</div>`;
+}
+
+// ===== KLINE PAGE =====
+function renderKline(){
+const content=document.getElementById('main-content');
+content.innerHTML=`
+<div style="padding:16px;height:100%;display:flex;flex-direction:column">
+<div style="display:flex;gap:12px;margin-bottom:16px">
+<select class="exchange-select" id="kline-exchange" onchange="loadKlineChart()">
+<option value="binance">Binance</option>
+<option value="mt5">MT5</option>
+</select>
+<select class="exchange-select" id="kline-symbol" onchange="loadKlineChart()">
+<option value="BTCUSDT">BTC/USDT</option>
+<option value="ETHUSDT">ETH/USDT</option>
+<option value="EURUSD">EUR/USD</option>
+<option value="XAUUSD">XAU/USD</option>
+</select>
+<div class="kline-controls" style="margin:0">
+<button class="kline-btn active" onclick="setChartPeriod('1m',this)">1分钟</button>
+<button class="kline-btn" onclick="setChartPeriod('5m',this)">5分钟</button>
+<button class="kline-btn" onclick="setChartPeriod('15m',this)">15分钟</button>
+<button class="kline-btn" onclick="setChartPeriod('1h',this)">1小时</button>
+<button class="kline-btn" onclick="setChartPeriod('1d',this)">日线</button>
+</div>
+</div>
+<div id="main-kline-chart" style="flex:1;min-height:400px;background:#36393f;border-radius:8px"></div>
+</div>`;
+loadKlineChart();
+}
+
+let mainChart=null;
+function setChartPeriod(period,btn){
+document.querySelectorAll('#kline-chart .kline-btn, #main-kline-chart .kline-btn').forEach(b=>b.classList.remove('active'));
+btn.classList.add('active');
+S.chartPeriod=period;
+if(mainChart)loadKlineChart();
+}
+
+async function loadKlineChart(){
+const exchange=document.getElementById('kline-exchange')?.value||'binance';
+const symbol=document.getElementById('kline-symbol')?.value||'BTCUSDT';
+const period=S.chartPeriod||'1h';
+const container=document.getElementById('main-kline-chart');
+if(!container)return;
+
+if(mainChart){mainChart.remove();mainChart=null;}
+mainChart=LightweightCharts.createChart(container,{layout:{background:{type:'solid',color:'#36393f'},textColor:'#b9bbbe'},grid:{vertLines:{color:'#404045'},horzLines:{color:'#404045'}},width:container.clientWidth,height:container.clientHeight-20||400});
+
+const candleSeries=mainChart.addCandlestickSeries({upColor:'#23a559',downColor:'#ed4245',borderVisible:false});
+try{
+const res=await api(`/market/kline/${symbol}?period=${period}&limit=200`);
+if(res&&res.length){
+candleSeries.setData(res.map(d=>({time:d.time,open:d.open,high:d.high,low:d.low,close:d.close})));
+mainChart.timeScale().fitContent();
+}else{
+const now=Math.floor(Date.now()/1000);
+candleSeries.setData(generateMockKline(symbol,now,200));
+mainChart.timeScale().fitContent();
+}
+}catch(e){
+const now=Math.floor(Date.now()/1000);
+candleSeries.setData(generateMockKline(symbol,now,200));
+mainChart.timeScale().fitContent();
+}
+}
+
+// ===== CHAT PAGE =====
+function renderChat(){
+const content=document.getElementById('main-content');
+content.innerHTML=`
+<div style="display:flex;flex-direction:column;height:100%">
+<div class="chat-messages" id="chat-messages" style="flex:1;overflow-y:auto">
+<div style="text-align:center;color:#72767d;padding:40px">
+<p style="font-size:14px">💬 聊天室</p>
+<p style="font-size:12px;margin-top:8px">与全球交易者实时交流</p>
+</div>
+</div>
+<div class="chat-input-area">
+<input type="text" id="chat-input" class="chat-input" placeholder="发送消息... (Enter发送)" onkeydown="if(event.key==='Enter')sendChat()">
+<button onclick="sendChat()" class="btn btn-primary">发送</button>
+</div>
+</div>`;
+document.getElementById('right-panel').style.display='flex';
+document.getElementById('right-panel-header').innerHTML='👥 在线用户';
+renderOnlineUsers();
+}
+
+async function renderOnlineUsers(){
+const el=document.getElementById('members-list');
+document.getElementById('online-count').textContent='5';
+el.innerHTML=`
+<div class="member-item"><div class="avatar avatar-sm" style="background:linear-gradient(135deg,#23a559,#23a559)"></div><span class="member-name">交易大师</span></div>
+<div class="member-item"><div class="avatar avatar-sm" style="background:linear-gradient(135deg,#5865f2,#7289da)"></div><span class="member-name">量化新手</span></div>
+<div class="member-item"><div class="avatar avatar-sm" style="background:linear-gradient(135deg,#f04747,#c77dff)"></div><span class="member-name">黄金多头</span></div>
+`;
+}
+
+function sendChat(){
+const input=document.getElementById('chat-input');
+const msg=input.value.trim();
+if(!msg)return;
+addChatMessage(S.user?.username||'匿名',msg);
+input.value='';
+}
+
+function addChatMessage(user,msg){
+const el=document.getElementById('chat-messages');
+const colors=['#5865f2','#23a559','#f04747','#f9c74f','#90be6d'];
+const color=colors[user.charCodeAt(0)%colors.length];
+const time=new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
+el.innerHTML+=`
+<div class="message fade-in">
+<div class="msg-avatar" style="background:${color}">${user[0].toUpperCase()}</div>
+<div style="flex:1">
+<div class="message-header"><span class="msg-author">${esc(user)}</span><span class="msg-time">${time}</span></div>
+<div class="msg-content">${esc(msg)}</div>
+</div>
+</div>`;
+el.scrollTop=el.scrollHeight;
+}
 
 // ===== AUTH =====
-function doLogout(){S.token='';S.user=null;localStorage.removeItem('qt_token');localStorage.removeItem('qt_user');renderAll()}
-function showAuth(tab='login'){
-openModal(`
-<div class="flex gap-4 mb-5 border-b border-gray-700/50 pb-3">
-<button onclick="showAuth('login')" class="text-sm font-medium pb-1 ${tab==='login'?'text-sky-400 border-b-2 border-sky-400':'text-gray-500'}">登录</button>
-<button onclick="showAuth('register')" class="text-sm font-medium pb-1 ${tab==='register'?'text-sky-400 border-b-2 border-sky-400':'text-gray-500'}">注册</button>
-</div>
+function showAuth(tab){
+openModal(`<h3 class="font-semibold mb-4">${tab==='login'?'登录':'注册'}</h3>
 <form onsubmit="handleAuth(event,'${tab}')" class="space-y-3">
 ${tab==='register'?'<input name="email" type="email" required class="input" placeholder="邮箱">':''}
 <input name="username" required class="input" placeholder="用户名">
@@ -140,1699 +677,828 @@ ${tab==='register'?'<input name="email" type="email" required class="input" plac
 </form>`);
 }
 async function handleAuth(e,mode){
-e.preventDefault();const fd=new FormData(e.target);const data=Object.fromEntries(fd);
+e.preventDefault();
+const fd=new FormData(e.target);
+const data=Object.fromEntries(fd);
 const r=await api('/auth/'+mode,{method:'POST',body:JSON.stringify(data)});
 if(r?.access_token){S.token=r.access_token;S.user=r.user;localStorage.setItem('qt_token',S.token);localStorage.setItem('qt_user',JSON.stringify(S.user));closeModal();toast(mode==='login'?'欢迎回来！':'注册成功！','success');renderAll()}else{toast(r?.detail||'失败','error')}
 }
-
-// ===== NAV =====
-const NAV_ITEMS=[{id:'feed',icon:'🏠',label:'首页'},{id:'discover',icon:'🔍',label:'发现'},{id:'quantai',icon:'🎯',label:'交易广场'},{id:'market',icon:'📈',label:'行情'},{id:'crypto',icon:'🪙',label:'加密货币'},{id:'forex',icon:'💱',label:'外汇贵金属'},{id:'kline',icon:'📊',label:'K线'},{id:'communities',icon:'🌐',label:'社区'}];
-function renderNav(){
-document.getElementById('nav-links').innerHTML=NAV_ITEMS.map(n=>`<a href="#" onclick="nav('${n.id}')" class="px-3 py-1.5 rounded-lg text-sm no-underline transition ${S.page===n.id?'bg-white/10 text-white font-medium':'text-gray-400 hover:text-white'}">${n.icon} ${n.label}</a>`).join('');
-const nr=document.getElementById('nav-right');
-if(S.user){nr.innerHTML=`<div class="flex items-center gap-1">
-<div class="relative"><button onclick="toggleNotif()" class="relative p-2 rounded-lg hover:bg-white/5 transition text-gray-400">🔔<span id="notif-badge" class="badge" style="display:none">0</span></button></div>
-<div class="relative"><button onclick="nav('messages')" class="relative p-2 rounded-lg hover:bg-white/5 transition text-gray-400">💬<span id="msg-badge" class="badge" style="display:none">0</span></button></div>
-<div class="relative"><button onclick="openFriendRequests()" class="relative p-2 rounded-lg hover:bg-white/5 transition text-gray-400">👥<span id="friend-badge" class="badge" style="display:none">0</span></button></div>
-</div><span class="text-sm text-gray-400 hidden md:inline">${S.user.username}</span><button onclick="doLogout()" class="btn btn-ghost text-xs">退出</button>`}else{nr.innerHTML=`<button onclick="showAuth('login')" class="btn btn-ghost text-sm">登录</button><button onclick="showAuth('register')" class="btn btn-primary text-sm">注册</button>`}
-loadNotifCount();
+function doLogout(){
+S.token='';S.user=null;localStorage.removeItem('qt_token');localStorage.removeItem('qt_user');toast('已退出','info');renderAll();
 }
 
-// ===== NOTIFICATIONS =====
-async function loadNotifCount(){
-if(!S.user)return;
-const[r,m,f]=await Promise.all([api('/notifications/'),api('/messages/unread/count'),api('/users/friend-requests')]);
-if(r){
-const b=document.getElementById('notif-badge');
-if(r.unread_count>0){b.style.display='flex';b.textContent=r.unread_count}else{b.style.display='none'}}
-if(m){
-const mb=document.getElementById('msg-badge');
-if(m.unread>0){mb.style.display='flex';mb.textContent=m.unread}else{mb.style.display='none'}}
-if(f){
-const fb=document.getElementById('friend-badge');
-const count=f?.length||0;
-if(count>0){fb.style.display='flex';fb.textContent=count}else{fb.style.display='none'}}
-}
-function toggleNotif(){
-openModal('<h3 class="font-semibold mb-3">通知</h3><div id="notif-list" class="space-y-2"><p class="text-gray-500 text-sm">加载中...</p></div>');
-loadNotifs();
-}
-async function loadNotifs(){
-const r=await api('/notifications/');if(!r)return;
-const el=document.getElementById('notif-list');
-if(!r.notifications.length){el.innerHTML='<p class="text-gray-500 text-sm">暂无通知</p>';return}
-el.innerHTML=r.notifications.map(n=>`<div class="p-3 rounded-lg ${n.is_read?'glass2':'glass'} cursor-pointer hover:bg-white/5 transition" onclick="readNotif(${n.id})"><div class="text-sm">${esc(n.content)}</div><div class="text-xs text-gray-500 mt-1">${timeAgo(n.created_at)}</div></div>`).join('');
-api('/notifications/read-all',{method:'POST'});loadNotifCount();
-}
-function openFriendRequests(){
-S._viewUserId=S.user.id;
-S.page='profile';
-S._profileTab='friend-requests';
-renderNav();
-renderPage();
-}
-async function readNotif(id){await api('/notifications/'+id+'/read',{method:'POST'});loadNotifs();loadNotifCount()}
-
-// ===== SIDEBARS =====
-async function renderSidebars(){
-// Left
-const sl=document.getElementById('sidebar-l');
-if(S.user){sl.innerHTML=`<div class="glass rounded-xl p-4"><div class="flex items-center gap-3 mb-3"><div class="avatar avatar-lg" onclick="S.page='profile';S._viewUserId=S.user.id;renderNav();renderPage()">${S.user.username[0].toUpperCase()}</div><div><div class="font-semibold" onclick="S.page='profile';S._viewUserId=S.user.id;renderNav();renderPage()" style="cursor:pointer">${S.user.username}</div><div class="text-xs text-gray-500">${S.user.bio||''}</div></div></div><button onclick="S.page='profile';S._viewUserId=S.user.id;renderNav();renderPage()" class="btn btn-ghost w-full text-xs">查看主页</button></div>`}else{sl.innerHTML=`<div class="glass rounded-xl p-5 text-center"><div class="text-gray-500 text-sm mb-3">加入 QuantTalk</div><button onclick="showAuth('register')" class="btn btn-primary w-full text-sm">注册</button></div>`}
-// 好友列表
-if(S.user){
-sl.innerHTML+=`<div class="glass rounded-xl p-4"><h3 class="text-xs font-semibold text-gray-500 mb-3">👥 我的好友</h3><div id="sidebar-friends" class="space-y-2 text-sm"><span class="text-gray-600 text-xs">加载中...</span></div></div>`;
-// 异步加载好友列表
+// ===== GUILD & CHANNEL =====
+async function renderGuilds(){
+const el=document.getElementById('guilds-list');
 try{
-const friends=await api('/users/friends');
-if(friends&&friends.length){
-const displayFriends=friends.slice(0,5);
-const moreCount=friends.length-5;
-document.getElementById('sidebar-friends').innerHTML=displayFriends.map(f=>`<div class="flex items-center gap-2 p-1 rounded hover:bg-white/5 cursor-pointer" onclick="openChat(${f.id},'${esc(f.username)}')"><div class="avatar avatar-sm">${f.username[0].toUpperCase()}</div><span class="text-xs text-gray-300 truncate flex-1">${f.username}</span>${f.is_online?'<span class="w-2 h-2 rounded-full bg-green-500 flex-shrink-0"></span>':''}</div>`).join('')+(moreCount>0?`<div class="text-center mt-2"><button onclick="S.page='profile';S._viewUserId=S.user.id;S._profileTab='friends';renderNav();renderPage()" class="text-xs text-sky-400 hover:text-sky-300">还有${moreCount}个好友 →</button></div>`:`<div class="text-center mt-2"><button onclick="showAddFriendModal()" class="text-xs text-sky-400 hover:text-sky-300">添加好友</button></div>`);
-}else{
-document.getElementById('sidebar-friends').innerHTML=`<p class="text-gray-600 text-xs text-center">暂无好友</p><button onclick="showAddFriendModal()" class="btn btn-primary w-full text-xs mt-2">添加好友</button>`;
-}
-}catch(e){document.getElementById('sidebar-friends').innerHTML=`<p class="text-gray-600 text-xs">加载失败</p>`;}
-}
-sl.innerHTML+=`<div class="glass rounded-xl p-4"><h3 class="text-xs font-semibold text-gray-500 mb-3">🔥 热门标签</h3><div id="sidebar-tags" class="flex flex-wrap gap-1.5"><span class="text-gray-600 text-xs">加载中</span></div></div>`;
-
-// Right
-const sr=document.getElementById('sidebar-r');
-sr.innerHTML=`<div class="glass rounded-xl p-4"><h3 class="text-xs font-semibold text-gray-500 mb-3">📈 市场概况</h3><div id="sidebar-market" class="space-y-2 text-sm"><span class="text-gray-600">加载中</span></div></div><div class="glass rounded-xl p-4"><h3 class="text-xs font-semibold text-gray-500 mb-3">🪙 加密货币</h3><div id="sidebar-crypto" class="space-y-2 text-sm"><span class="text-gray-600">加载中</span></div></div><div class="glass rounded-xl p-4"><h3 class="text-xs font-semibold text-gray-500 mb-3">💱 外汇贵金属</h3><div id="sidebar-forex" class="space-y-2 text-sm"><span class="text-gray-600">加载中</span></div></div>`;
-
-// Load data
-try{
-const [m,s,t,c,f]=await Promise.all([
-api('/market/indices'),api('/market/hot-stocks'),api('/market/trending-tags'),
-api('/market/crypto'),api('/market/forex')
-]);
-if(m?.indices)document.getElementById('sidebar-market').innerHTML=m.indices.slice(0,4).map(i=>`<div class="flex justify-between"><span class="text-gray-400">${i.name}</span><span class="${i.change>=0?'gain':'loss'}">${i.change_pct>=0?'+':''}${i.change_pct.toFixed(2)}%</span></div>`).join('');
-if(s?.stocks)document.getElementById('sidebar-stocks').innerHTML=s.stocks.slice(0,5).map(i=>`<div class="flex justify-between"><span class="text-gray-400">${i.name}</span><span class="${i.change_pct>=0?'gain':'loss'}">${i.change_pct>=0?'+':''}${i.change_pct.toFixed(2)}%</span></div>`).join('');
-if(c?.crypto)document.getElementById('sidebar-crypto').innerHTML=c.crypto.slice(0,5).map(i=>`<div class="flex justify-between"><span class="text-gray-400">${i.name}</span><span class="${i.change_pct>=0?'gain':'loss'}">${i.change_pct>=0?'+':''}${i.change_pct.toFixed(2)}%</span></div>`).join('');
-if(f?.forex)document.getElementById('sidebar-forex').innerHTML=f.forex.slice(0,4).map(i=>`<div class="flex justify-between"><span class="text-gray-400">${i.name}</span><span class="${i.change_pct>=0?'gain':'loss'}">${i.change_pct>=0?'+':''}${i.change_pct.toFixed(3)}%</span></div>`).join('');
-if(t?.tags)document.getElementById('sidebar-tags').innerHTML=t.tags.slice(0,10).map(i=>`<span class="tag" onclick="searchByTag('${i.name}')">${i.name}</span>`).join('');
-}catch(e){}
+const guilds=await api('/guilds')||[];
+el.innerHTML=guilds.map(g=>`<div class="guild-icon ${S.guildId===g.id?'active':''}" onclick="selectGuild(${g.id})" title="${g.name}">${g.icon||g.name[0].toUpperCase()}</div>`).join('');
+}catch(e){el.innerHTML='';}
 }
 
-// ===== PAGE ROUTER =====
-function nav(page){S.page=page;renderNav();renderPage()}
-function renderPage(){
-const app=document.getElementById('app');
-switch(S.page){
-case'feed':renderFeed(app);break;
-case'discover':renderDiscover(app);break;
-case'quantai':renderQuantAI(app);break;
-case'market':renderMarket(app);break;
-case'crypto':renderCrypto(app);break;
-case'forex':renderForex(app);break;
-case'kline':renderKline(app);break;
-case'messages':renderMessages(app);break;
-case'communities':renderCommunities(app);break;
-case'profile':renderProfile(app);break;
-case'community':renderCommunityView(app);break;
-default:renderFeed(app);
-}
-}
-function renderAll(){renderNav();renderSidebars();renderPage()}
-
-// ===== POST CARD =====
-function postCard(p){
-const a=p.author||{};const tags=p.tags?p.tags.split(',').map(t=>t.trim()).filter(Boolean).map(t=>`<span class="tag" onclick="searchByTag('${t}')">${t}</span>`).join(' '):'';
-return`<article class="glass rounded-xl p-4 fade-in">
-<div class="flex gap-3">
-<div class="avatar cursor-pointer" onclick="viewProfile(${a.id})">${(a.username||'?')[0].toUpperCase()}</div>
-<div class="flex-1 min-w-0">
-<div class="flex items-center gap-2"><span class="font-semibold text-sm cursor-pointer hover:text-sky-400" onclick="viewProfile(${a.id})">${a.username||'匿名'}</span><span class="text-xs text-gray-600">${timeAgo(p.created_at)}</span></div>
-${p.title?`<div class="font-semibold mt-1.5">${esc(p.title)}</div>`:''}
-<p class="mt-1 text-sm text-gray-300 leading-relaxed whitespace-pre-wrap">${esc(p.content)}</p>
-${tags?`<div class="flex flex-wrap gap-1.5 mt-2.5">${tags}</div>`:''}
-<div class="flex items-center gap-4 mt-3 text-sm text-gray-500">
-<button onclick="likePost(${p.id})" class="hover:text-red-400 transition flex items-center gap-1">${p.is_liked?'❤️':'🤍'} ${p.likes_count||0}</button>
-<button onclick="toggleComments(${p.id})" class="hover:text-sky-400 transition flex items-center gap-1">💬 ${p.comments_count||0}</button>
-<span class="flex items-center gap-1">👁 ${p.views||0}</span>
-</div>
-<div id="comments-${p.id}" class="hidden mt-3 pt-3 border-t border-gray-700/30"></div>
-</div></div></article>`;
+function selectGuild(id){
+S.guildId=id;
+document.querySelectorAll('.guild-icon').forEach(g=>g.classList.remove('active'));
+event.target.classList.add('active');
+renderChannels(id);
 }
 
-// ===== FEED =====
-async function renderFeed(el){
-let form='';
-if(S.user)form=`<div class="glass rounded-xl p-4 mb-4 fade-in">
-<textarea id="post-box" class="input" rows="3" placeholder="分享你的交易策略、市场观点..."></textarea>
-<div class="flex items-center justify-between mt-2">
-<div class="flex items-center gap-2">
-<button type="button" onclick="toggleEmojiPicker('post-box','emoji-picker-post')" class="btn btn-ghost text-lg px-2">😎</button>
-<div id="emoji-picker-post" class="hidden fixed bg-gray-800 border border-gray-700 rounded-lg p-3 shadow-xl z-50" style="max-width:320px">
-<div class="text-xs text-gray-500 mb-2">量化 & 加密货币表情</div>
-<div class="grid grid-cols-8 gap-1">
-<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','📈')">📈</span>
-<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','📉')">📉</span>
-<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','💹')">💹</span>
-<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','💰')">💰</span>
-<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','🪙')">🪙</span>
-<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','₿')">₿</span>
-<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','🟢')">🟢</span>
-<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','🔴')">🔴</span>
-<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','📊')">📊</span>
-<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','💎')">💎</span>
-<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','🚀')">🚀</span>
-<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','🔥')">🔥</span>
-<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','⚡')">⚡</span>
-<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','🎯')">🎯</span>
-<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','✅')">✅</span>
-<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','❌')">❌</span>
-<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','🔔')">🔔</span>
-<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','📋')">📋</span>
-<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','📌')">📌</span>
-<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','🏆')">🏆</span>
-<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','💵')">💵</span>
-<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','📐')">📐</span>
-<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','🤖')">🤖</span>
-<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','🧠')">🧠</span>
-<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','💡')">💡</span>
-<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','🌙')">🌙</span>
-<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','☀️')">☀️</span>
-<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','🌊')">🌊</span>
-<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','⛓️')">⛓️</span>
-<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','🔐')">🔐</span>
-<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','📈')">📈</span>
-<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','📉')">📉</span>
-<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','🛡️')">🛡️</span>
-<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','💸')">💸</span>
-<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','🎲')">🎲</span>
-<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','📱')">📱</span>
-<span class="emoji-btn cursor-pointer p-1 hover:bg-gray-700 rounded" onclick="insertEmoji('post-box','💻')">💻</span>
+async function renderChannels(guildId){
+const el=document.getElementById('channels-list');
+el.innerHTML=`
+<div class="channel-group">
+<div class="channel-group-header">📊 交易大厅</div>
+<div class="channel-item" onclick="joinChannel('general','text')"><span class="ch-icon">#</span>综合讨论</div>
+<div class="channel-item" onclick="joinChannel('mt4','text')"><span class="ch-icon">#</span>MT4交易</div>
+<div class="channel-item" onclick="joinChannel('mt5','text')"><span class="ch-icon">#</span>MT5交易</div>
+<div class="channel-item" onclick="joinChannel('crypto','text')"><span class="ch-icon">#</span>加密货币</div>
 </div>
+<div class="channel-group">
+<div class="channel-group-header">📈 行情分析</div>
+<div class="channel-item" onclick="joinChannel('analysis','text')"><span class="ch-icon">#</span>技术分析</div>
+<div class="channel-item" onclick="joinChannel('signals','text')"><span class="ch-icon">#</span>交易信号</div>
+<div class="channel-item" onclick="joinChannel('news','text')"><span class="ch-icon">#</span>市场新闻</div>
 </div>
+<div class="channel-group">
+<div class="channel-group-header">🎤 语音交易</div>
+<div class="channel-item" onclick="joinChannel('voice1','voice')"><span class="ch-icon">🔊</span>交易喊单</div>
+<div class="channel-item" onclick="joinChannel('voice2','voice')"><span class="ch-icon">🔊</span>复盘讨论</div>
 </div>
-<input id="post-tags" class="input" style="width:200px" placeholder="标签，逗号分隔">
-<button onclick="submitPost()" class="btn btn-primary">发布</button>
-</div>
+<div class="channel-group">
+<div class="channel-group-header">🌐 社区</div>
+<div class="channel-item" onclick="joinChannel('lounge','text')"><span class="ch-icon">#</span>休闲闲聊</div>
+<div class="channel-item" onclick="joinChannel('help','text')"><span class="ch-icon">#</span>帮助中心</div>
 </div>`;
-const r=await api(S.user?'/posts/feed':'/posts/');const posts=r?.posts||[];
-el.innerHTML=form+(posts.length?`<div class="space-y-3">${posts.map(postCard).join('')}</div>`:'<div class="glass rounded-xl p-12 text-center text-gray-500">暂无动态</div>');
 }
 
-async function submitPost(){
-const c=document.getElementById('post-box')?.value?.trim();if(!c)return toast('请输入内容','error');
-const t=document.getElementById('post-tags')?.value?.trim()||'';
-const r=await api('/posts/',{method:'POST',body:JSON.stringify({content:c,tags:t})});
-if(r?.id){toast('发布成功','success');renderPage()}else toast(r?.detail||'失败','error');
+function joinChannel(id,type){
+S.channelId=id;
+document.querySelectorAll('.channel-item').forEach(c=>c.classList.remove('active'));
+event.target.classList.add('active');
+document.getElementById('right-panel').style.display=type==='text'?'flex':'none';
+if(type==='text'){
+nav('chat');
+document.getElementById('main-header-title').textContent='#'+id;
 }
-async function likePost(id){const r=await api('/posts/'+id+'/like',{method:'POST'});if(r)renderPage()}
-async function toggleComments(id){
-const el=document.getElementById('comments-'+id);if(el.classList.contains('hidden')){el.classList.remove('hidden');
-el.innerHTML='<p class="text-gray-600 text-sm">加载中...</p>';
-const r=await api('/posts/'+id+'/comments');const comments=r||[];
-el.innerHTML=(comments.length?comments.map(c=>`<div class="flex gap-2 mb-2 text-sm"><div class="avatar avatar-sm">${(c.author?.username||'?')[0].toUpperCase()}</div><div><span class="font-medium text-xs">${c.author?.username||'匿名'}</span> <span class="text-gray-600 text-xs">${timeAgo(c.created_at)}</span><p class="text-gray-300 mt-0.5">${esc(c.content)}</p></div></div>`).join(''):'<p class="text-gray-600 text-sm">暂无评论</p>')+(S.user?`<div class="relative"><form onsubmit="submitComment(event,${id})" class="flex gap-2 mt-2"><input id="comment-input-${id}" name="content" required class="input flex-1" placeholder="写评论..."><button type="button" class="btn btn-ghost text-lg px-2" onclick="toggleEmojiPicker('comment-input-${id}','emoji-picker-comment-${id}')">😎</button><button type="submit" class="btn btn-primary text-xs">发送</button></form><div id="emoji-picker-comment-${id}" class="hidden absolute bottom-12 left-0 bg-gray-800 border border-gray-700 rounded-lg p-2 shadow-xl z-50" style="max-width:280px"><div class="text-xs text-gray-500 mb-1">量化表情</div><div class="grid grid-cols-8 gap-1">${['📈','📉','💹','💰','🪙','₿','🟢','🔴','📊','💎','🚀','🔥','⚡','🎯','✅','❌','🔔','📋','🏆','💵','🤖','🧠','💡','🌙'].map(e=>`<span class="cursor-pointer p-1 hover:bg-gray-700 rounded text-sm" onclick="insertEmoji('comment-input-${id}','${e}')">${e}</span>`).join('')}</div></div></div>`:'<p class="text-gray-600 text-xs mt-2">登录后可评论</p>');
-
-}else{el.classList.add('hidden')}
-}
-async function submitComment(e,id){
-e.preventDefault();const fd=new FormData(e.target);
-const r=await api('/posts/'+id+'/comments',{method:'POST',body:JSON.stringify({content:fd.get('content')})});
-if(r?.id){toast('评论成功','success');toggleComments(id);setTimeout(()=>toggleComments(id),100)}else toast('失败','error');
 }
 
-// ===== SEARCH =====
-function showSearch(){
-openModal(`<h3 class="font-semibold mb-3">🔍 搜索</h3><input id="search-input" class="input mb-3" placeholder="搜索帖子、用户..." oninput="doSearch(this.value)"><div id="search-results" class="space-y-2 max-h-80 overflow-y-auto"></div>`);
-}
-async function doSearch(q){
-if(!q.trim()){document.getElementById('search-results').innerHTML='';return}
-const[pr,ur]=await Promise.all([api('/posts/?q='+encodeURIComponent(q)),api('/users/search?q='+encodeURIComponent(q))]);
-const posts=pr?.posts||[];const users=ur||[];
-let html='';
-if(users.length)html+=users.map(u=>`<div class="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 cursor-pointer" onclick="closeModal();viewProfile(${u.id})"><div class="avatar avatar-sm">${u.username[0].toUpperCase()}</div><span class="text-sm">${u.username}</span></div>`).join('');
-if(posts.length)html+=posts.map(p=>`<div class="p-2 rounded-lg hover:bg-white/5 cursor-pointer" onclick="closeModal();toggleComments(${p.id})"><div class="text-xs text-gray-500">${p.author?.username} · ${timeAgo(p.created_at)}</div><div class="text-sm">${esc(p.content).substring(0,80)}...</div></div>`).join('');
-if(!html)html='<p class="text-gray-600 text-sm">无结果</p>';
-document.getElementById('search-results').innerHTML=html;
-}
-function searchByTag(tag){S.page='feed';renderNav();const app=document.getElementById('app');app.innerHTML='<p class="text-gray-500 text-center py-8">搜索中...</p>';api('/posts/?tag='+encodeURIComponent(tag)).then(r=>{const posts=r?.posts||[];app.innerHTML=`<div class="mb-3"><button onclick="nav('feed')" class="btn btn-ghost text-xs">← 返回首页</button> <span class="tag ml-2">${tag}</span></div>`+(posts.length?`<div class="space-y-3">${posts.map(postCard).join('')}</div>`:'<p class="text-gray-500 text-center py-8">无相关帖子</p>')})}
-
-// ===== USER PROFILE =====
-function viewProfile(id){
-S._viewUserId=id;S.page='profile';renderNav();renderPage();
-}
-async function renderProfile(el){
-const uid=S._viewUserId;if(!uid)return;
-const r=await api('/users/'+uid);if(!r){el.innerHTML='<p class="text-gray-500">用户不存在</p>';return}
-const isSelf=S.user&&S.user.id===uid;
-// 获取好友状态
-let friendStatus={is_friend:false,has_pending_request_from_me:false,has_pending_request_to_me:false};
-if(!isSelf && S.user){
-friendStatus=await api('/users/friend-status/'+uid)||friendStatus;
-}
-const isFriend=friendStatus.is_friend;
-const hasReqFromMe=friendStatus.has_pending_request_from_me;
-const hasReqToMe=friendStatus.has_pending_request_to_me;
-S._profileTab=isSelf?'posts':'posts'; // 默认显示帖子
-let actionButtons='';
-if(isSelf){
-actionButtons=`<button onclick="showProfileEdit()" class="btn btn-ghost text-sm">编辑资料</button>`;
-}else if(isFriend){
-actionButtons=`<button onclick="openChat(${uid},'${esc(r.username)}')" class="btn btn-ghost text-sm">💬 发私信</button>
-<button onclick="doRemoveFriend(${uid})" class="btn btn-danger text-sm">删除好友</button>
-<button onclick="doFollow(${uid})" class="btn btn-ghost text-sm">${r.is_following?'已关注':'关注'}</button>`;
-}else if(hasReqFromMe){
-actionButtons=`<button onclick="openChat(${uid},'${esc(r.username)}')" class="btn btn-ghost text-sm">💬 发私信</button>
-<button class="btn btn-ghost text-sm" disabled>⏳ 等待对方确认</button>
-<button onclick="doFollow(${uid})" class="btn btn-ghost text-sm">${r.is_following?'已关注':'关注'}</button>`;
-}else if(hasReqToMe){
-actionButtons=`<button onclick="openChat(${uid},'${esc(r.username)}')" class="btn btn-ghost text-sm">💬 发私信</button>
-<button onclick="acceptFriendRequestFrom(${uid})" class="btn btn-primary text-sm">✅ 接受好友申请</button>
-<button onclick="doFollow(${uid})" class="btn btn-ghost text-sm">${r.is_following?'已关注':'关注'}</button>`;
-}else{
-actionButtons=`<button onclick="openChat(${uid},'${esc(r.username)}')" class="btn btn-ghost text-sm">💬 发私信</button>
-<button onclick="showSendFriendRequest(${uid})" class="btn btn-primary text-sm">➕ 添加好友</button>
-<button onclick="doFollow(${uid})" class="btn btn-ghost text-sm">${r.is_following?'已关注':'关注'}</button>`;
-}
-el.innerHTML=`<div class="fade-in">
-<div class="glass rounded-xl p-6 mb-4">
-<div class="flex items-center gap-4">
-<div class="avatar avatar-lg">${r.username[0].toUpperCase()}</div>
-<div class="flex-1"><div class="text-xl font-bold">${r.username}${isFriend?' <span class="text-xs bg-sky-500/20 text-sky-400 px-2 py-0.5 rounded">好友</span>':''}</div><div class="text-sm text-gray-400 mt-1">${esc(r.bio||'量化交易爱好者')}</div><div class="text-xs text-gray-600 mt-2">📅 ${timeAgo(r.created_at)}加入 · 👥 ${r.followers_count} 粉丝 · ✍️ ${r.posts_count} 帖子</div></div>
-${actionButtons}
-</div></div>
-${isSelf?`<div class="flex gap-2 mb-4 flex-wrap">
-<button onclick="switchProfileTab('posts')" class="btn btn-sm ${S._profileTab==='posts'?'btn-primary':'btn-ghost'}">📝 帖子</button>
-<button onclick="switchProfileTab('friends')" class="btn btn-sm ${S._profileTab==='friends'?'btn-primary':'btn-ghost'}">👥 好友</button>
-<button onclick="switchProfileTab('friend-requests')" class="btn btn-sm ${S._profileTab==='friend-requests'?'btn-primary':'btn-ghost'}">📥 好友申请</button>
-<button onclick="showAddFriendModal()" class="btn btn-sm btn-primary">➕ 添加好友</button>
-<button onclick="switchProfileTab('exchanges')" class="btn btn-sm ${S._profileTab==='exchanges'?'btn-primary':'btn-ghost'}">🔗 交易所配置</button>
-<button onclick="switchProfileTab('chat-settings')" class="btn btn-sm ${S._profileTab==='chat-settings'?'btn-primary':'btn-ghost'}">💬 聊天设置</button>
-</div>`:''}
-<div id="profile-content"><p class="text-gray-600 text-sm text-center py-4">加载中...</p></div>
-</div>`;
-if(isSelf){
-if(S._profileTab==='friends'){renderMyFriends();}
-else if(S._profileTab==='friend-requests'){renderFriendRequests();}
-else if(S._profileTab==='exchanges'){renderExchangeConfigs();}
-else if(S._profileTab==='chat-settings'){renderChatSettings();}
-else{renderProfilePosts(uid);}
-}else{
-renderProfilePosts(uid);
-}
-}
-function switchProfileTab(tab){
-S._profileTab=tab;
-const content=document.getElementById('profile-content');
-if(tab==='friends'){
-renderMyFriends();
-}else if(tab==='friend-requests'){
-renderFriendRequests();
-}else if(tab==='exchanges'){
-renderExchangeConfigs();
-}else if(tab==='chat-settings'){
-renderChatSettings();
-}else{
-renderProfilePosts(S._viewUserId);
-}
-}
-// 好友申请弹窗
-function showSendFriendRequest(userId){
-openModal(`<h3 class="font-semibold mb-4">发送好友申请</h3>
-<form onsubmit="sendFriendRequest(event,${userId})" class="space-y-3">
-<div class="text-sm text-gray-400 mb-2">添加附言（可选）</div>
-<textarea id="friend-req-msg" class="input" rows="3" placeholder="我是...，想加个好友~"></textarea>
-<button type="submit" class="btn btn-primary w-full">发送申请</button>
+function showCreateGuild(){
+openModal(`<h3>创建服务器</h3>
+<form onsubmit="createGuild(event)" class="space-y-3" style="margin-top:16px">
+<input name="name" required class="input" placeholder="服务器名称">
+<button type="submit" class="btn btn-primary w-full">创建</button>
 </form>`);
 }
-async function sendFriendRequest(e,userId){
+async function createGuild(e){
 e.preventDefault();
-const msg=document.getElementById('friend-req-msg').value;
-const r=await api('/users/friend-request',{method:'POST',body:JSON.stringify({to_user_id:userId,message:msg})});
-if(r?.message==='friend request sent'){closeModal();toast('好友申请已发送！','success');renderProfile(document.getElementById('app'));}
-else{toast(r?.detail||'发送失败','error')}
+const fd=new FormData(e.target);
+const data=Object.fromEntries(fd);
+const r=await api('/guilds',{method:'POST',body:JSON.stringify(data)});
+if(r?.id){closeModal();toast('服务器创建成功！','success');renderGuilds();}
+else{toast(r?.detail||'创建失败','error');}
 }
-async function acceptFriendRequestFrom(userId){
-const r=await api('/users/friend-requests');
-if(!r)return;
-const req=r.find(x=>x.from_user_id===userId&&x.status==='PENDING');
-if(req){await api('/users/friend-request/'+req.id+'/accept',{method:'POST'});toast('已成为好友！','success');renderProfile(document.getElementById('app'));}
+
+function showHome(){
+S.page='home';
+document.querySelectorAll('.guild-icon').forEach(g=>g.classList.remove('active'));
+document.querySelector('.guild-icon.home').classList.add('active');
+document.getElementById('current-server-name').textContent='QuantTalk';
+document.getElementById('channels-list').innerHTML=`
+<div class="channel-group">
+<div class="channel-group-header">快速访问</div>
+<div class="channel-item" onclick="nav('trading')"><span class="ch-icon">📊</span>交易大厅</div>
+<div class="channel-item" onclick="nav('market')"><span class="ch-icon">📈</span>行情分析</div>
+<div class="channel-item" onclick="nav('crypto')"><span class="ch-icon">🪙</span>加密货币</div>
+<div class="channel-item" onclick="nav('forex')"><span class="ch-icon">💱</span>外汇贵金属</div>
+<div class="channel-item" onclick="nav('kline')"><span class="ch-icon">📊</span>K线分析</div>
+</div>
+<div class="channel-group">
+<div class="channel-group-header">💬 社交</div>
+<div class="channel-item" onclick="nav('friends')"><span class="ch-icon">👥</span>好友</div>
+<div class="channel-item" onclick="nav('messages')"><span class="ch-icon">✉️</span>私信</div>
+<div class="channel-item" onclick="nav('groups')"><span class="ch-icon">👥</span>群聊</div>
+<div class="channel-item" onclick="nav('chat')"><span class="ch-icon">🌐</span>公共聊天室</div>
+</div>
+<div class="channel-group">
+<div class="channel-group-header">📜 成绩单</div>
+<div class="channel-item" onclick="nav('portfolio')"><span class="ch-icon">📊</span>我的成绩单</div>
+</div>`;
+renderPage();
 }
-async function doRemoveFriend(userId){
-if(!confirm('确定要删除该好友吗？'))return;
-const r=await api('/users/friend/'+userId,{method:'DELETE'});
-if(r?.message==='friend removed'){toast('已删除好友','success');renderProfile(document.getElementById('app'));}
-else{toast(r?.detail||'删除失败','error')}
-}
-// 添加好友弹窗 - 搜索用户并发送申请
-function showAddFriendModal(){
-openModal(`<h3 class="font-semibold mb-4">添加好友</h3>
-<div class="space-y-3">
-<input id="add-friend-search" class="input" placeholder="搜索用户名..." oninput="searchAddFriend(this.value)">
-<div id="add-friend-results" class="max-h-60 overflow-y-auto space-y-2"></div>
+
+function toggleUserMenu(){
+if(!S.user){showAuth('login');return;}
+openModal(`<h3>账户设置</h3>
+<div style="margin-top:16px">
+<div style="display:flex;align-items:center;gap:12px;padding:12px;background:#404045;border-radius:8px;margin-bottom:12px">
+<div class="avatar-lg">${S.user.username[0].toUpperCase()}</div>
+<div><div style="font-weight:600;color:#fff">${S.user.username}</div><div style="font-size:12px;color:#b9bbbe">${S.user.email||''}</div></div>
+</div>
+<button onclick="closeModal();S.page='profile';renderPage()" class="btn btn-ghost w-full" style="margin-bottom:8px">👤 个人主页</button>
+<button onclick="doLogout()" class="btn btn-danger w-full">🚪 退出登录</button>
 </div>`);
 }
-async function searchAddFriend(q){
-const resultsEl=document.getElementById('add-friend-results');
-if(!q.trim()){resultsEl.innerHTML='';return;}
-const users=await api('/users/search?q='+encodeURIComponent(q));
-if(!users?.length){resultsEl.innerHTML='<p class="text-gray-500 text-sm">未找到用户</p>';return;}
-let html='';
-for(const u of users){
-const status=await api('/users/friend-status/'+u.id)||{};
-let btn='';
-if(status.is_friend){
-btn='<span class="text-xs text-green-400">已是好友</span>';
-}else if(status.has_pending_request_from_me){
-btn='<span class="text-xs text-yellow-400">已发送申请</span>';
-}else if(status.has_pending_request_to_me){
-btn='<button onclick="acceptFriendById('+u.id+')" class="btn btn-primary btn-xs">接受申请</button>';
+
+// ===== UTILS =====
+function openModal(html){document.getElementById('modal-body').innerHTML=html;document.getElementById('modal').style.display='flex'}
+function closeModal(){document.getElementById('modal').style.display='none'}
+function timeAgo(d){const s=Math.floor((Date.now()-new Date(d))/(1000));if(s<60)return'刚刚';if(s<3600)return Math.floor(s/60)+'分钟前';if(s<86400)return Math.floor(s/3600)+'小时前';return Math.floor(s/86400)+'天前';}
+
+// ===== FRIENDS PAGE =====
+function renderFriends(){
+if(!S.user){showAuth('login');return;}
+const content=document.getElementById('main-content');
+content.innerHTML=`
+<div style="padding:24px">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+<h2 style="font-size:20px;font-weight:600;color:#fff">👥 好友</h2>
+<button onclick="showAddFriendModal()" class="btn btn-primary">添加好友</button>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+<div class="quote-card">
+<div style="font-weight:600;color:#fff;margin-bottom:12px">在线好友</div>
+<div id="online-friends-list" style="color:#b9bbbe">加载中...</div>
+</div>
+<div class="quote-card">
+<div style="font-weight:600;color:#fff;margin-bottom:12px">离线好友</div>
+<div id="offline-friends-list" style="color:#b9bbbe">加载中...</div>
+</div>
+</div>
+<div style="margin-top:24px">
+<div style="font-weight:600;color:#fff;margin-bottom:12px">待处理请求</div>
+<div id="friend-requests" style="color:#b9bbbe">加载中...</div>
+</div>
+</div>`;
+loadFriendsList();
+loadFriendRequests();
+}
+
+async function loadFriendsList(){
+try{
+const res=await api('/users/friends');
+const online=document.getElementById('online-friends-list');
+const offline=document.getElementById('offline-friends-list');
+if(res&&res.length){
+const onlineList=res.filter(f=>f.is_online);
+const offlineList=res.filter(f=>!f.is_online);
+online.innerHTML=onlineList.length?onlineList.map(f=>friendItem(f)).join(''):'<p style="color:#72767d">暂无在线好友</p>';
+offline.innerHTML=offlineList.length?offlineList.map(f=>friendItem(f)).join(''):'<p style="color:#72767d">暂无离线好友</p>';
 }else{
-btn='<button onclick="quickSendFriendReq('+u.id+')" class="btn btn-primary btn-xs">添加</button>';
+online.innerHTML='<p style="color:#72767d">暂无好友</p>';
+offline.innerHTML='';
 }
-html+=`<div class="flex items-center justify-between p-2 rounded hover:bg-white/5">
-<div class="flex items-center gap-2"><div class="avatar avatar-sm">${u.username[0].toUpperCase()}</div><span class="text-sm">${u.username}</span></div>
-${btn}
-</div>`;
+}catch(e){
+document.getElementById('online-friends-list').innerHTML='<p>加载失败</p>';
 }
-resultsEl.innerHTML=html;
 }
-async function quickSendFriendReq(userId){
-const msg=prompt('添加附言（可选，直接确定跳过）：')||'';
-const r=await api('/users/friend-request',{method:'POST',body:JSON.stringify({to_user_id:userId,message:msg})});
-if(r?.message==='friend request sent'){toast('申请已发送！','success');searchAddFriend(document.getElementById('add-friend-search').value);}
-else{toast(r?.detail||'发送失败','error')}
-}
-async function acceptFriendById(userId){
-const reqs=await api('/users/friend-requests')||[];
-const req=reqs.find(x=>x.from_user_id===userId&&x.status==='PENDING');
-if(req){await api('/users/friend-request/'+req.id+'/accept',{method:'POST'});toast('已成为好友！','success');searchAddFriend(document.getElementById('add-friend-search').value);}
-}
-// 我的好友列表
-async function renderMyFriends(){
-const content=document.getElementById('profile-content');
-const r=await api('/users/friends');
-const friends=r||[];
-if(!friends.length){content.innerHTML='<div class="glass rounded-xl p-6 text-center"><p class="text-gray-500">暂无好友</p><p class="text-xs text-gray-600 mt-2">点击「添加好友」去认识新朋友吧</p></div>';return}
-content.innerHTML=`<div class="grid grid-cols-2 md:grid-cols-3 gap-3">${friends.map(f=>`<div class="glass rounded-xl p-4 text-center cursor-pointer hover:bg-white/5 transition" onclick="viewProfile(${f.id})">
-<div class="avatar avatar-lg mx-auto mb-2">${f.username[0].toUpperCase()}</div>
-<div class="font-medium text-sm">${f.username}</div>
-<div class="text-xs text-gray-500 mt-1">👥 ${f.friends_count} 好友</div>
-${f.is_online?'<span class="text-xs text-green-400">● 在线</span>':'<span class="text-xs text-gray-600">○ 离线</span>'}
-</div>`).join('')}</div>`;
-}
-// 好友申请管理
-async function renderFriendRequests(){
-const content=document.getElementById('profile-content');
-const[received,sent]=await Promise.all([api('/users/friend-requests'),api('/users/friend-requests/sent')]);
-const receivedReqs=received||[];
-const sentReqs=sent||[];
-content.innerHTML=`<div class="space-y-4">
-<div class="glass rounded-xl p-4">
-<h4 class="font-semibold text-sm mb-3">📥 收到的申请 (${receivedReqs.length})</h4>
-${receivedReqs.length?receivedReqs.map(r=>`<div class="flex items-center gap-3 py-3 border-b border-gray-700/30 last:border-0">
-<div class="avatar cursor-pointer" onclick="viewProfile(${r.from_user_id})">${r.from_username[0].toUpperCase()}</div>
-<div class="flex-1 min-w-0">
-<div class="font-medium text-sm cursor-pointer hover:text-sky-400" onclick="viewProfile(${r.from_user_id})">${r.from_username}</div>
-${r.message?`<div class="text-xs text-gray-500 mt-0.5">"${esc(r.message)}"</div>`:''}
-<div class="text-xs text-gray-600 mt-0.5">${timeAgo(r.created_at)}</div>
-</div>
-<div class="flex gap-2">
-<button onclick="acceptFriendReq(${r.id})" class="btn btn-primary btn-xs">接受</button>
-<button onclick="rejectFriendReq(${r.id})" class="btn btn-ghost btn-xs text-red-400">拒绝</button>
-</div>
-</div>`).join(''):'<p class="text-gray-500 text-sm text-center py-4">暂无收到的申请</p>'}
-</div>
-<div class="glass rounded-xl p-4">
-<h4 class="font-semibold text-sm mb-3">📤 发出的申请 (${sentReqs.length})</h4>
-${sentReqs.length?sentReqs.map(r=>`<div class="flex items-center gap-3 py-3 border-b border-gray-700/30 last:border-0">
-<div class="avatar cursor-pointer" onclick="viewProfile(${r.to_user_id})">${r.to_username[0].toUpperCase()}</div>
-<div class="flex-1 min-w-0">
-<div class="font-medium text-sm cursor-pointer hover:text-sky-400" onclick="viewProfile(${r.to_user_id})">${r.to_username}</div>
-${r.message?`<div class="text-xs text-gray-500 mt-0.5">"${esc(r.message)}"</div>`:''}
-<div class="text-xs text-gray-600 mt-0.5">${timeAgo(r.created_at)}</div>
-</div>
-<div class="text-xs text-yellow-400">⏳ 等待确认</div>
-</div>`).join(''):'<p class="text-gray-500 text-sm text-center py-4">暂无发出的申请</p>'}
-</div>
-</div>`;
-}
-async function acceptFriendReq(reqId){
-const r=await api('/users/friend-request/'+reqId+'/accept',{method:'POST'});
-if(r?.message==='friend request accepted'){toast('已成为好友！','success');renderFriendRequests();}
-else{toast(r?.detail||'操作失败','error')}
-}
-async function rejectFriendReq(reqId){
-const r=await api('/users/friend-request/'+reqId+'/reject',{method:'POST'});
-if(r?.message==='friend request rejected'){toast('已拒绝','success');renderFriendRequests();}
-else{toast(r?.detail||'操作失败','error')}
-}
-// 交易所配置
-async function renderExchangeConfigs(){
-const content=document.getElementById('profile-content');
-const r=await api('/exchanges/');
-const configs=r||[];
-content.innerHTML=`<div class="glass rounded-xl p-4">
-<div class="flex items-center justify-between mb-4"><h3 class="font-semibold">🔗 交易所配置</h3><button onclick="showAddExchange()" class="btn btn-primary btn-sm">+ 添加交易所</button></div>
-${configs.length?configs.map(c=>`<div class="flex items-center justify-between py-3 border-b border-gray-700/30 last:border-0">
-<div class="flex items-center gap-3"><span class="text-lg">${getExchangeIcon(c.exchange)}</span><div><div class="font-medium text-sm">${getExchangeName(c.exchange)}</div><div class="text-xs text-gray-500">${c.label||'API Key: '+c.api_key_masked}</div></div></div>
-<div class="flex items-center gap-2">
-<span class="text-xs px-2 py-1 rounded ${c.is_verified?'bg-green-500/20 text-green-400':'bg-yellow-500/20 text-yellow-400'}">${c.is_verified?'已验证':'未验证'}</span>
-<span class="text-xs px-2 py-1 rounded ${c.is_enabled?'bg-blue-500/20 text-blue-400':'bg-gray-500/20 text-gray-400'}">${c.is_enabled?'启用':'禁用'}</span>
-<button onclick="showEditExchange(${c.id})" class="btn btn-ghost btn-xs">编辑</button>
-<button onclick="deleteExchange(${c.id})" class="btn btn-ghost btn-xs text-red-400">删除</button>
-</div>
-</div>`).join(''):'<p class="text-gray-500 text-center py-6">暂无交易所配置，点击上方按钮添加</p>'}
-<div class="mt-4 p-3 bg-yellow-500/10 rounded-lg"><p class="text-xs text-yellow-400">⚠️ API Key 仅用于获取行情和执行交易，不会泄露给第三方。 请确保只在可信的交易所创建只读或交易权限的 API Key。</p></div>
-</div>`;
-}
-// 聊天样式设置
-async function renderChatSettings(){
-const content=document.getElementById('profile-content');
-const r=await api('/users/chat-settings');
-const settings=r||{};
-content.innerHTML=`<div class="glass rounded-xl p-4">
-<h3 class="font-semibold mb-4">💬 聊天样式设置</h3>
 
-<div class="space-y-4">
-<!-- 字体大小 -->
-<div>
-<label class="text-sm text-gray-400 block mb-2">字体大小</label>
-<div class="flex gap-2">
-<button onclick="updateChatSetting('font_size','small')" class="btn btn-sm ${settings.font_size==='small'?'btn-primary':'btn-ghost'}">小</button>
-<button onclick="updateChatSetting('font_size','medium')" class="btn btn-sm ${settings.font_size==='medium'||!settings.font_size?'btn-primary':'btn-ghost'}">中</button>
-<button onclick="updateChatSetting('font_size','large')" class="btn btn-sm ${settings.font_size==='large'?'btn-primary':'btn-ghost'}">大</button>
+function friendItem(f){
+return`<div style="display:flex;align-items:center;gap:10px;padding:8px;border-radius:4px;cursor:pointer" onclick="openPrivateChat(${f.id},'${esc(f.username)}')">
+<div class="avatar avatar-sm" style="position:relative">
+${f.username[0].toUpperCase()}
+${f.is_online?'<span style="position:absolute;bottom:-2px;right:-2px;width:10px;height:10px;background:#23a559;border-radius:50%;border:2px solid #36393f"></span>':''}
 </div>
-</div>
-
-<!-- 自己的气泡背景 -->
-<div>
-<label class="text-sm text-gray-400 block mb-2">自己的气泡颜色</label>
-<div class="flex gap-2 flex-wrap">
-${['#2d4a6f','#2d5a4f','#5a4a2d','#4a2d5a','#2d5a5a','#5a2d3d','#3d4a5a','#4a5a3d'].map(c=>`<button onclick="updateChatSetting('bubble_bg_self','${c}')" class="w-8 h-8 rounded-full border-2 ${settings.bubble_bg_self===c||(!settings.bubble_bg_self&&c==='#2d4a6f')?'border-white':'border-transparent'}" style="background:${c}"></button>`).join('')}
-</div>
-</div>
-
-<!-- 对方的气泡背景 -->
-<div>
-<label class="text-sm text-gray-400 block mb-2">对方的气泡颜色</label>
-<div class="flex gap-2 flex-wrap">
-${['#21262d','#1a1f26','#282d36','#2d333b','#373e47','#404854','#484f58','#525a64'].map(c=>`<button onclick="updateChatSetting('bubble_bg_other','${c}')" class="w-8 h-8 rounded-full border-2 ${settings.bubble_bg_other===c||(!settings.bubble_bg_other&&c==='#21262d')?'border-white':'border-gray-600'}" style="background:${c}"></button>`).join('')}
-</div>
-</div>
-
-<!-- 字体颜色 -->
-<div>
-<label class="text-sm text-gray-400 block mb-2">气泡字体颜色</label>
-<div class="flex gap-2 flex-wrap">
-${['#e6edf3','#c9d1d9','#adbac7','#8b949e','#d2a8ff','#a5d6ff','#7ee787'].map(c=>`<button onclick="updateChatSetting('bubble_text_color','${c}')" class="w-8 h-8 rounded-full border-2 ${settings.bubble_text_color===c||(!settings.bubble_text_color&&c==='#e6edf3')?'border-white':'border-gray-600'}" style="background:${c}"></button>`).join('')}
-</div>
-</div>
-
-<!-- 预览 -->
-<div class="mt-6 pt-4 border-t border-gray-700/30">
-<label class="text-sm text-gray-400 block mb-2">预览效果</label>
-<div class="bg-gray-900/50 rounded-lg p-4 space-y-2">
-<div class="flex justify-start"><div class="max-w-[70%] rounded-lg px-3 py-2 text-sm" style="background:${settings.bubble_bg_other||'#21262d'};color:${settings.bubble_text_color||'#e6edf3'};font-size:${settings.font_size==='small'?'12px':settings.font_size==='large'?'18px':'14px'}">你好啊</div></div>
-<div class="flex justify-end"><div class="max-w-[70%] rounded-lg px-3 py-2 text-sm" style="background:${settings.bubble_bg_self||'#2d4a6f'};color:${settings.bubble_text_color||'#e6edf3'};font-size:${settings.font_size==='small'?'12px':settings.font_size==='large'?'18px':'14px'}">我在大连，你呢？</div></div>
-</div>
-</div>
-</div>
+<div style="flex:1"><div style="font-weight:500;color:#fff">${f.username}</div></div>
 </div>`;
 }
 
-async function updateChatSetting(key,value){
-    const r=await api('/users/chat-settings',{method:'PUT',body:JSON.stringify({[key]:value})});
-    if(r && !r.detail){
-        S.chatSettings=r;
-        applyChatSettings();
-        toast('设置已保存','success');
-        renderChatSettings();
-    }else{
-        toast('保存失败','error');
-    }
+async function loadFriendRequests(){
+try{
+const res=await api('/users/friend-requests');
+const el=document.getElementById('friend-requests');
+if(res&&res.length){
+el.innerHTML=res.map(r=>`
+<div style="display:flex;align-items:center;gap:10px;padding:10px;background:#404045;border-radius:8px;margin-bottom:8px">
+<div class="avatar">${r.from_user?.username?.[0]?.toUpperCase()||'?'}</div>
+<div style="flex:1">
+<div style="font-weight:500;color:#fff">${r.from_user?.username||'未知用户'}</div>
+<div style="font-size:11px;color:#72767d">想添加你为好友</div>
+</div>
+<div style="display:flex;gap:8px">
+<button onclick="acceptFriend(${r.id})" class="btn btn-primary" style="padding:4px 12px;font-size:12px">接受</button>
+<button onclick="rejectFriend(${r.id})" class="btn btn-ghost" style="padding:4px 12px;font-size:12px">拒绝</button>
+</div>
+</div>`).join('');
+}else{
+el.innerHTML='<p style="color:#72767d">暂无待处理请求</p>';
+}
+}catch(e){
+document.getElementById('friend-requests').innerHTML='<p>加载失败</p>';
+}
 }
 
-function applyChatSettings(){
-const settings=S.chatSettings||{};
-const fontSize=settings.font_size==='small'?'12px':settings.font_size==='large'?'18px':'14px';
-document.querySelectorAll('.chat-bubble-self').forEach(el=>{
-el.style.background=settings.bubble_bg_self||'#2d4a6f';
-el.style.color=settings.bubble_text_color||'#e6edf3';
-el.style.fontSize=fontSize;
-});
-document.querySelectorAll('.chat-bubble-other').forEach(el=>{
-el.style.background=settings.bubble_bg_other||'#21262d';
-el.style.color=settings.bubble_text_color||'#ffffff';
-el.style.fontSize=fontSize;
-});
+function showAddFriendModal(){
+openModal(`<h3>添加好友</h3>
+<div style="margin-top:16px">
+<p style="color:#b9bbbe;font-size:13px;margin-bottom:12px">输入用户名添加好友</p>
+<form onsubmit="addFriend(event)" class="space-y-3">
+<input name="username" required class="input" placeholder="用户名">
+<button type="submit" class="btn btn-primary w-full">发送请求</button>
+</form>
+</div>`);
 }
-
-async function initChatSettings(){
-const r=await api('/users/chat-settings');
-S.chatSettings=r||{};
-applyChatSettings();
-}
-
-async function renderProfilePosts(uid){
-const content=document.getElementById('profile-content');
-const pr=await api('/posts/?user_id='+uid+'&limit=20');const posts=pr?.posts||[];
-content.innerHTML=posts.length?`<div class="space-y-3">${posts.map(postCard).join('')}</div>`:'<p class="text-gray-500 text-center py-8">暂无帖子</p>';
-}
-function getExchangeIcon(ex){
-const icons={binance:'₿',okx:'○',bybit:'◉',huobi:'◆',gateio:'▣',kucoin:'◇',bitget:'◎',mexc:'◈'};
-return icons[ex]||'●';
-}
-function getExchangeName(ex){
-const names={binance:'Binance',okx:'OKX',bybit:'Bybit',huobi:'Huobi',gateio:'Gate.io',kucoin:'KuCoin',bitget:'Bitget',mexc:'MEXC'};
-return names[ex]||ex;
-}
-async function showAddExchange(){
-const supported=await api('/exchanges/supported');
-const options=supported.map(e=>`<option value="${e.id}">${e.icon} ${e.name}${e.need_passphrase?' (需要Passphrase)':''}</option>`).join('');
-openModal(`<h3 class="font-semibold mb-4">添加交易所</h3>
-<form onsubmit="addExchange(event)" class="space-y-3">
-<div><label class="text-xs text-gray-500 block mb-1">交易所</label><select id="ex-exchange" class="input" required>${options}</select></div>
-<div><label class="text-xs text-gray-500 block mb-1">API Key</label><input id="ex-apikey" class="input" placeholder="请输入 API Key" required></div>
-<div><label class="text-xs text-gray-500 block mb-1">API Secret</label><input id="ex-secret" type="password" class="input" placeholder="请输入 API Secret" required></div>
-<div id="ex-passphrase-wrap" style="display:none"><label class="text-xs text-gray-500 block mb-1">Passphrase</label><input id="ex-passphrase" class="input" placeholder="请输入 Passphrase"></div>
-<div><label class="text-xs text-gray-500 block mb-1">标签（可选）</label><input id="ex-label" class="input" placeholder="如：我的现货账户"></div>
-<div class="p-3 bg-blue-500/10 rounded-lg"><p class="text-xs text-blue-400">建议创建只读权限的 API Key，仅勾选"读取"权限即可。</p></div>
-<button type="submit" class="btn btn-primary w-full">添加并验证</button></form>`);
-document.getElementById('ex-exchange').addEventListener('change',function(){
-const sel=supported.find(s=>s.id===this.value);
-document.getElementById('ex-passphrase-wrap').style.display=sel?.need_passphrase?'block':'none';
-});
-}
-async function addExchange(e){
+async function addFriend(e){
 e.preventDefault();
-const data={exchange:document.getElementById('ex-exchange').value,api_key:document.getElementById('ex-apikey').value,api_secret:document.getElementById('ex-secret').value,passphrase:document.getElementById('ex-passphrase').value||null,label:document.getElementById('ex-label').value||''};
-const r=await api('/exchanges/',{method:'POST',body:JSON.stringify(data)});
-if(r?.id){closeModal();toast('添加成功，正在验证连接...','success');renderExchangeConfigs();}else toast(r?.detail||'添加失败','error');
+const fd=new FormData(e.target);
+const username=fd.get('username');
+const res=await api('/users/friend-request/'+encodeURIComponent(username),{method:'POST'});
+if(res?.ok){closeModal();toast('请求已发送！','success');}
+else{toast(res?.detail||'添加失败','error');}
 }
-async function showEditExchange(id){
-const r=await api('/exchanges/'+id);if(!r)return;
-openModal(`<h3 class="font-semibold mb-4">编辑 ${getExchangeName(r.exchange)}</h3>
-<form onsubmit="editExchange(event,${id})" class="space-y-3">
-<div><label class="text-xs text-gray-500 block mb-1">API Key</label><input id="ed-apikey" class="input" value="${esc(r.api_key_masked.replace('...','xxxxxxxxxxxx'))}" placeholder="留空则不修改"></div>
-<div><label class="text-xs text-gray-500 block mb-1">API Secret</label><input id="ed-secret" type="password" class="input" placeholder="留空则不修改"></div>
-<div><label class="text-xs text-gray-500 block mb-1">Passphrase</label><input id="ed-passphrase" type="password" class="input" placeholder="留空则不修改"></div>
-<div><label class="text-xs text-gray-500 block mb-1">标签</label><input id="ed-label" class="input" value="${esc(r.label||'')}"></div>
-<div class="flex items-center gap-2"><input type="checkbox" id="ed-enabled" ${r.is_enabled?'checked':''}><label for="ed-enabled" class="text-sm">启用此交易所</label></div>
-<button type="submit" class="btn btn-primary w-full">保存</button></form>`);
+async function acceptFriend(id){
+const res=await api('/users/friend-request/'+id+'/accept',{method:'POST'});
+if(res?.ok){toast('已成为好友！','success');loadFriendsList();loadFriendRequests();}
+else{toast(res?.detail||'操作失败','error');}
 }
-async function editExchange(e,id){
-e.preventDefault();
-const apikey=document.getElementById('ed-apikey').value;
-const data={};
-if(apikey&&!apikey.includes('xxxx'))data.api_key=apikey;
-const secret=document.getElementById('ed-secret').value;if(secret)data.api_secret=secret;
-const passphrase=document.getElementById('ed-passphrase').value;if(passphrase)data.passphrase=passphrase;
-data.label=document.getElementById('ed-label').value;
-data.is_enabled=document.getElementById('ed-enabled').checked;
-const r=await api('/exchanges/'+id,{method:'PUT',body:JSON.stringify(data)});
-if(r?.id){closeModal();toast('保存成功','success');renderExchangeConfigs();}else toast(r?.detail||'保存失败','error');
+async function rejectFriend(id){
+const res=await api('/users/friend-request/'+id+'/reject',{method:'POST'});
+if(res?.ok){loadFriendRequests();}
+else{toast(res?.detail||'操作失败','error');}
 }
-async function deleteExchange(id){
-if(!confirm('确定要删除此交易所配置吗？'))return;
-const r=await api('/exchanges/'+id,{method:'DELETE'});
-if(r?.message){toast('删除成功','success');renderExchangeConfigs();}else toast(r?.detail||'删除失败','error');
-}
-async function doFollow(uid){
-if(!S.user)return showAuth('login');const r=await api('/users/follow/'+uid,{method:'POST'});if(r){toast(r.message,'success');renderPage()}
-}
-function showProfileEdit(){
-if(!S.user)return;
-const avatarUrl=S.user.avatar||'';
-openModal(`<h3 class="font-semibold mb-4">编辑资料</h3>
-<form onsubmit="saveProfile(event)" class="space-y-3">
-<div class="flex items-center gap-4 mb-4">
-<div class="relative">
-<img id="avatar-preview" src="${avatarUrl||'https://api.dicebear.com/7.x/avataaars/svg?seed='+S.user.username}" class="w-20 h-20 rounded-full object-cover border-2 border-base-300">
-<label class="absolute bottom-0 right-0 bg-primary text-primary-content rounded-full p-1.5 cursor-pointer hover:bg-primary/80 transition-colors" title="更换头像">
-<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-<input type="file" id="avatar-input" accept="image/*" class="hidden" onchange="previewAvatar(this)">
-</label>
+
+// ===== MESSAGES PAGE =====
+function renderMessages(){
+if(!S.user){showAuth('login');return;}
+const content=document.getElementById('main-content');
+content.innerHTML=`
+<div style="display:flex;height:100%">
+<div style="width:280px;border-right:1px solid #202225;display:flex;flex-direction:column">
+<div style="padding:12px 16px;border-bottom:1px solid #202225">
+<input type="text" class="input" placeholder="搜索对话..." id="msg-search" oninput="filterConversations()">
 </div>
-<div class="text-sm text-gray-500">点击图标更换头像<br>支持 JPG/PNG/GIF/WebP</div>
+<div id="conversations-list" style="flex:1;overflow-y:auto"></div>
 </div>
-<div><label class="text-xs text-gray-500 block mb-1">用户名</label><input class="input" value="${esc(S.user.username)}" disabled></div>
-<div><label class="text-xs text-gray-500 block mb-1">简介</label><textarea id="edit-bio" class="input" rows="2">${esc(S.user.bio||'')}</textarea></div>
-<div class="divider"></div><h4 class="text-sm font-medium">修改密码（可选）</h4>
-<div><label class="text-xs text-gray-500 block mb-1">原密码</label><input name="old_password" type="password" class="input"></div>
-<div><label class="text-xs text-gray-500 block mb-1">新密码</label><input name="new_password" type="password" class="input"></div>
-<button type="submit" class="btn btn-primary w-full">保存</button></form>`);
-}
-function previewAvatar(input){
-if(input.files&&input.files[0]){
-const reader=new FileReader();
-reader.onload=function(e){document.getElementById('avatar-preview').src=e.target.result;}
-reader.readAsDataURL(input.files[0]);
-}
-}
-async function saveProfile(e){
-e.preventDefault();
-const fd=new FormData();
-fd.append('bio',document.getElementById('edit-bio').value);
-const avatarInput=document.getElementById('avatar-input');
-if(avatarInput.files&&avatarInput.files[0]){
-fd.append('avatar',avatarInput.files[0]);
-}
-const pw=document.querySelector('[name="old_password"]').value;
-if(pw){
-fd.append('old_password',pw);
-fd.append('new_password',document.querySelector('[name="new_password"]').value);
-}
-const r=await api('/users/profile',{method:'PUT',body:fd});
-if(r?.message||r?.id){
-const mr=await api('/auth/me');
-if(mr){S.user=mr;localStorage.setItem('qt_user',JSON.stringify(mr));renderAll();renderNav();}
-closeModal();toast('保存成功','success');
-}else toast(r?.detail||'失败','error');
-}
-
-// ===== DISCOVER =====
-async function renderDiscover(el){
-const tr=await api('/market/trending-tags');const tags=tr?.tags||[];
-el.innerHTML=`<div class="fade-in space-y-4">
-<div class="flex items-center justify-between"><h2 class="text-lg font-bold">🔍 发现</h2><button onclick="showSearch()" class="btn btn-ghost text-sm">🔍 搜索</button></div>
-<div class="glass rounded-xl p-5"><h3 class="font-semibold text-sm mb-3">热门话题</h3><div class="space-y-2.5">${tags.map((t,i)=>`<div class="flex items-center justify-between py-2 ${i<tags.length-1?'border-b border-gray-700/30':''}"><div class="flex items-center gap-3"><span class="text-xs font-bold ${i<3?'text-sky-400':'text-gray-600'} w-6">#${i+1}</span><span class="tag">${t.name}</span></div><span class="text-xs text-gray-600">${t.count} 讨论</span></div>`).join('')}</div></div>
-<div class="glass rounded-xl p-5"><h3 class="font-semibold text-sm mb-3">💡 功能亮点</h3>
-<div class="grid grid-cols-2 gap-3">
-<div class="glass2 rounded-lg p-4"><div class="text-xl mb-2">📊</div><div class="font-medium text-sm">策略分享</div><div class="text-xs text-gray-500 mt-1">分享量化交易策略</div></div>
-<div class="glass2 rounded-lg p-4"><div class="text-xl mb-2">💬</div><div class="font-medium text-sm">实时讨论</div><div class="text-xs text-gray-500 mt-1">WebSocket 实时通讯</div></div>
-<div class="glass2 rounded-lg p-4"><div class="text-xl mb-2">🌐</div><div class="font-medium text-sm">社区频道</div><div class="text-xs text-gray-500 mt-1">类 Discord 社区系统</div></div>
-<div class="glass2 rounded-lg p-4"><div class="text-xl mb-2">📈</div><div class="font-medium text-sm">行情追踪</div><div class="text-xs text-gray-500 mt-1">全球市场实时数据</div></div>
-</div></div></div>`;
-}
-
-
-// ===== MARKET =====
-async function renderMarket(el){
-const[ir,sr]=await Promise.all([api('/market/indices'),api('/market/hot-stocks')]);
-const idx=ir?.indices||[];const stk=sr?.stocks||[];
-el.innerHTML=`<div class="fade-in space-y-4">
-<div class="flex items-center gap-2 border-b border-gray-700/50 pb-2">
-<button onclick="nav('market')" class="text-sm font-medium pb-1 px-2 ${'market'==='market'?'text-sky-400 border-b-2 border-sky-400':'text-gray-500 hover:text-white'}">股票</button>
-<button onclick="nav('crypto')" class="text-sm font-medium pb-1 px-2 text-gray-500 hover:text-white">🪙 加密货币</button>
-<button onclick="nav('forex')" class="text-sm font-medium pb-1 px-2 text-gray-500 hover:text-white">💱 外汇贵金属</button>
+<div style="flex:1;display:flex;flex-direction:column">
+<div id="chat-area" style="flex:1;display:flex;align-items:center;justify-content:center;color:#72767b">
+<p>选择一个对话开始聊天</p>
 </div>
-<h2 class="text-lg font-bold">📈 A股 · 港股 · 美股</h2>
-<div class="grid grid-cols-2 md:grid-cols-3 gap-3">${idx.map(i=>`<div class="glass rounded-xl p-4"><div class="text-xs text-gray-500">${i.name}</div><div class="text-lg font-bold mt-1">${i.price.toLocaleString()}</div><div class="text-sm ${i.change>=0?'gain':'loss'}">${i.change>=0?'↑':'↓'} ${i.change>=0?'+':''}${i.change} (${i.change_pct>=0?'+':''}${i.change_pct.toFixed(2)}%)</div></div>`).join('')}</div>
-<h2 class="text-lg font-bold mt-6">🏷️ 热门股票</h2>
-<div class="glass rounded-xl overflow-hidden"><table class="w-full text-sm"><thead><tr class="text-gray-500 text-xs border-b border-gray-700/30"><th class="text-left p-3">名称</th><th class="text-left p-3">代码</th><th class="text-right p-3">价格</th><th class="text-right p-3">涨跌</th></tr></thead><tbody>${stk.map(s=>`<tr class="border-b border-gray-700/20 hover:bg-white/5"><td class="p-3 font-medium">${s.name}</td><td class="p-3 text-gray-500">${s.code}</td><td class="p-3 text-right">${s.price}</td><td class="p-3 text-right ${s.change_pct>=0?'gain':'loss'}">${s.change_pct>=0?'+':''}${s.change_pct.toFixed(2)}%</td></tr>`).join('')}</tbody></table></div></div>`;
-}
-
-// ===== CRYPTO =====
-async function renderCrypto(el){
-const r=await api('/market/crypto');
-const list=r?.crypto||[];
-el.innerHTML=`<div class="fade-in space-y-4">
-<div class="flex items-center gap-2 border-b border-gray-700/50 pb-2">
-<button onclick="nav('market')" class="text-sm font-medium pb-1 px-2 text-gray-500 hover:text-white">股票</button>
-<button onclick="nav('crypto')" class="text-sm font-medium pb-1 px-2 text-sky-400 border-b-2 border-sky-400">🪙 加密货币</button>
-<button onclick="nav('forex')" class="text-sm font-medium pb-1 px-2 text-gray-500 hover:text-white">💱 外汇贵金属</button>
+<div class="chat-input-area">
+<input type="text" id="dm-input" class="chat-input" placeholder="发送消息..." onkeydown="if(event.key==='Enter')sendDm()">
+<button onclick="sendDm()" class="btn btn-primary">发送</button>
 </div>
-<h2 class="text-lg font-bold">🪙 加密货币市场</h2><p class="text-xs text-gray-500">数据来源：Binance 实时行情</p>
-<div class="glass rounded-xl overflow-hidden">
-<table class="w-full text-sm">
-<thead><tr class="text-gray-500 text-xs border-b border-gray-700/30">
-<th class="text-left p-3">品种</th><th class="text-right p-3">价格 (USDT)</th><th class="text-right p-3">24h涨跌</th><th class="text-right p-3">24h成交量</th><th class="text-right p-3">操作</th>
-</tr></thead>
-<tbody>${list.map(c=>`<tr class="border-b border-gray-700/20 hover:bg-white/5">
-<td class="p-3"><div class="font-medium">${c.name}</div><div class="text-xs text-gray-500">${c.symbol.toUpperCase()}</div></td>
-<td class="p-3 text-right font-medium">$${Number(c.price).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:c.price<1?4:2})}</td>
-<td class="p-3 text-right ${c.change_pct>=0?'gain':'loss'}">${c.change_pct>=0?'+':''}${c.change_pct.toFixed(2)}%</td>
-<td class="p-3 text-right text-gray-400">$${(c.volume/1000000).toFixed(1)}M</td>
-<td class="p-3 text-right"><button onclick="gotoKline('${c.symbol}')" class="btn btn-ghost text-xs">K线</button></td>
-</tr>`).join('')}</tbody>
-</table></div></div>`;
-}
-
-// ===== FOREX =====
-async function renderForex(el){
-const r=await api('/market/forex');
-const list=r?.forex||[];
-el.innerHTML=`<div class="fade-in space-y-4">
-<div class="flex items-center gap-2 border-b border-gray-700/50 pb-2">
-<button onclick="nav('market')" class="text-sm font-medium pb-1 px-2 text-gray-500 hover:text-white">股票</button>
-<button onclick="nav('crypto')" class="text-sm font-medium pb-1 px-2 text-gray-500 hover:text-white">🪙 加密货币</button>
-<button onclick="nav('forex')" class="text-sm font-medium pb-1 px-2 text-sky-400 border-b-2 border-sky-400">💱 外汇贵金属</button>
 </div>
-<h2 class="text-lg font-bold">💱 外汇 · 贵金属 · 原油 · 指数</h2><p class="text-xs text-gray-500">数据来源：${r?.dataSource === 'api2trade' ? 'API2Trade MT4/MT5' : r?.dataSource === 'mt5' ? 'MT5 真实账户 (MetaApi)' : '模拟数据'}</p>
-<div class="glass rounded-xl overflow-hidden">
-<table class="w-full text-sm">
-<thead><tr class="text-gray-500 text-xs border-b border-gray-700/30">
-<th class="text-left p-3">品种</th><th class="text-right p-3">当前价格</th><th class="text-right p-3">实时涨跌</th><th class="text-right p-3">类型</th><th class="text-right p-3">操作</th>
-</tr></thead>
-<tbody>${list.map(f=>`<tr class="border-b border-gray-700/20 hover:bg-white/5">
-<td class="p-3"><div class="font-medium">${f.name}</div><div class="text-xs text-gray-500">${f.symbol.toUpperCase()}</div></td>
-<td class="p-3 text-right font-medium">${f.price.toFixed(f.price<10?4:2)}</td>
-<td class="p-3 text-right ${f.change_pct>=0?'gain':'loss'}">${f.change_pct>=0?'+':''}${f.change_pct.toFixed(3)}%</td>
-<td class="p-3 text-right text-gray-500 text-xs">${f.symbol.startsWith('xau')||f.symbol.startsWith('xag')?'贵金属':f.symbol.startsWith('wti')||f.symbol.startsWith('bren')?'原油':f.symbol.startsWith('us30')||f.symbol.startsWith('us100')||f.symbol.startsWith('de')||f.symbol.startsWith('jp')?'指数':'外汇'}</td>
-<td class="p-3 text-right"><button onclick="gotoKline('${f.symbol}')" class="btn btn-ghost text-xs">K线</button></td>
-</tr>`).join('')}</tbody>
-</table></div>
-<div class="glass rounded-xl p-4 mt-4">
-<h3 class="text-sm font-semibold mb-3 text-gray-400">💡 支持品种</h3>
-<div class="grid grid-cols-3 gap-2 text-xs text-gray-500">
-<div>🟡 外汇直盘：EUR/USD, GBP/USD, USD/JPY, USD/CHF, AUD/USD, USD/CAD, NZD/USD</div>
-<div>🟠 外汇交叉盘：EUR/GBP, EUR/JPY, GBP/JPY, EUR/CHF, AUD/JPY, EUR/AUD, GBP/AUD</div>
-<div>🟩 贵金属：黄金(XAU/USD), 白银(XAG/USD), 铂金(XPT/USD), 钯金(XPD/USD)</div>
-<div>🟠 原油：WTI原油, 布伦特原油, 天然气</div>
-<div>🔵 指数：道琼斯30, 纳斯达克100, 标普500, 德国DAX40, 恒生指数, 日经225</div>
-</div>
-</div></div>`;
-}
-
-function gotoKline(symbol){
-klineSymbol=symbol;nav('kline');
-}
-
-// ===== QUANTAI TRADING SQUARE =====
-async function renderQuantAI(el){
-    if(!S.user){el.innerHTML=`<div class="glass rounded-xl p-12 text-center"><div class="text-gray-500 mb-3">登录后访问 QuantAI 交易广场</div><button onclick="showAuth('login')" class="btn btn-primary">登录</button></div>`;return}
-
-    el.innerHTML=`<div class="fade-in space-y-4">
-        <div class="flex items-center justify-between">
-            <div>
-                <h2 class="text-lg font-bold">🎯 QuantAI 交易广场</h2>
-                <p class="text-xs text-gray-500 mt-1">同步交易信号 · 跨平台联动</p>
-            </div>
-            <div class="flex gap-2">
-                <button onclick="showCreateSignal()" class="btn btn-primary text-sm">+ 发布信号</button>
-                <button onclick="showPortfolioSync()" class="btn btn-ghost text-sm">同步持仓</button>
-            </div>
-        </div>
-
-        <!-- 快捷操作 -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <div class="glass rounded-xl p-4 text-center cursor-pointer hover:bg-white/5 transition" onclick="showCreateSignal()">
-                <div class="text-2xl mb-1">📊</div><div class="text-sm font-medium">发布信号</div><div class="text-xs text-gray-500">分享交易思路</div>
-            </div>
-            <div class="glass rounded-xl p-4 text-center cursor-pointer hover:bg-white/5 transition" onclick="nav('kline')">
-                <div class="text-2xl mb-1">📈</div><div class="text-sm font-medium">查看K线</div><div class="text-xs text-gray-500">实时行情分析</div>
-            </div>
-            <div class="glass rounded-xl p-4 text-center cursor-pointer hover:bg-white/5 transition" onclick="showPortfolioSync()">
-                <div class="text-2xl mb-1">💼</div><div class="text-sm font-medium">同步持仓</div><div class="text-xs text-gray-500">QuantAI 联动</div>
-            </div>
-            <div class="glass rounded-xl p-4 text-center cursor-pointer hover:bg-white/5 transition" onclick="showMySignals()">
-                <div class="text-2xl mb-1">📋</div><div class="text-sm font-medium">我的信号</div><div class="text-xs text-gray-500">管理历史信号</div>
-            </div>
-        </div>
-
-        <!-- 信号流 -->
-        <div class="flex items-center gap-3 mb-3">
-            <h3 class="text-sm font-semibold text-gray-400">交易信号</h3>
-            <div class="flex gap-1" id="signal-filter">
-                <button onclick="loadSignals('')" class="text-xs px-2 py-1 rounded bg-sky-500/20 text-sky-400">全部</button>
-                <button onclick="loadSignals('LONG')" class="text-xs px-2 py-1 rounded bg-white/5 text-gray-500">做多</button>
-                <button onclick="loadSignals('SHORT')" class="text-xs px-2 py-1 rounded bg-white/5 text-gray-500">做空</button>
-            </div>
-        </div>
-        <div id="signals-feed"><div class="text-center py-8 text-gray-500 text-sm">加载中...</div></div>
-    </div>`;
-
-    await loadSignals('');
-}
-
-let _signalDirection = '';
-
-async function loadSignals(direction){
-    _signalDirection = direction;
-    const el = document.getElementById('signals-feed');
-    if(!el) return;
-    const params = direction ? `?direction=${direction}` : '';
-    const r = await api('/quantai/square' + params);
-    const signals = r?.signals || [];
-    if(!signals.length){
-        el.innerHTML = `<div class="glass rounded-xl p-8 text-center"><div class="text-gray-500 text-sm mb-2">暂无信号</div><button onclick="showCreateSignal()" class="btn btn-primary text-sm">成为第一个发布者</button></div>`;
-        return;
-    }
-    el.innerHTML = signals.map(s => signalCard(s)).join('');
-}
-
-function signalCard(s){
-    const dirColor = s.direction === 'LONG' ? 'gain' : 'loss';
-    const dirLabel = s.direction === 'LONG' ? '多' : '空';
-    const dirBg = s.direction === 'LONG' ? 'rgba(34,197,94,.1)' : 'rgba(239,68,68,.1)';
-    const statusColor = s.status === 'ACTIVE' ? 'text-green-400' : 'text-gray-500';
-    return `<div class="glass rounded-xl p-4">
-        <div class="flex items-start justify-between mb-3">
-            <div class="flex items-center gap-2">
-                <div class="avatar avatar-sm">${(s.author?.username||'?')[0].toUpperCase()}</div>
-                <div>
-                    <div class="text-sm font-medium">${esc(s.author?.username||'未知')}</div>
-                    <div class="text-xs text-gray-500">${timeAgo(s.created_at)}</div>
-                </div>
-            </div>
-            <div class="flex items-center gap-2">
-                <span class="text-xs px-2 py-0.5 rounded" style="background:${dirBg};color:${s.direction==='LONG'?'#22c55e':'#ef4444'}">${dirLabel} ${s.symbol}</span>
-                <span class="text-xs ${statusColor}">${s.status==='ACTIVE'?'进行中':'已平仓'}</span>
-            </div>
-        </div>
-        <div class="grid grid-cols-3 gap-3 mb-3 text-sm">
-            <div><div class="text-xs text-gray-500">入场价</div><div class="font-medium">${s.entry_price >= 1 ? s.entry_price.toLocaleString() : s.entry_price.toFixed(6)}</div></div>
-            <div><div class="text-xs text-gray-500">止损</div><div class="font-medium loss">${s.stop_loss ? (s.stop_loss >= 1 ? s.stop_loss.toLocaleString() : s.stop_loss.toFixed(6)) : '-'}</div></div>
-            <div><div class="text-xs text-gray-500">止盈</div><div class="font-medium gain">${s.take_profit ? (s.take_profit >= 1 ? s.take_profit.toLocaleString() : s.take_profit.toFixed(6)) : '-'}</div></div>
-        </div>
-        ${s.notes ? `<div class="text-xs text-gray-400 mb-3">${esc(s.notes)}</div>` : ''}
-        ${s.tags ? `<div class="flex gap-1 mb-3 flex-wrap">${s.tags.split(',').map(t=>`<span class="tag" style="font-size:10px;padding:1px 6px">${t.trim()}</span>`).join('')}</div>` : ''}
-        <div class="flex items-center justify-between pt-2 border-t border-gray-700/20">
-            <div class="flex gap-3 text-xs text-gray-500">
-                <span>👍 ${s.likes_count || 0}</span>
-                <span>💬 ${s.comments_count || 0}</span>
-                <span>⏱ ${s.timeframe}</span>
-            </div>
-            <div class="flex gap-2">
-                ${s.status==='ACTIVE'&&s.user_id===S.user?.id?`<button onclick="showCloseSignal(${s.id},'${s.symbol}')" class="btn btn-ghost text-xs">平仓</button>`:''}
-                <button onclick="gotoKline('${s.symbol.toLowerCase()}')" class="btn btn-ghost text-xs">K线</button>
-            </div>
-        </div>
-    </div>`;
-}
-
-function showCreateSignal(){
-    if(!S.user){showAuth('login');return}
-    openModal(`<h3 class="font-semibold mb-4">📊 发布交易信号</h3>
-    <form onsubmit="handleCreateSignal(event)" class="space-y-3">
-        <div class="grid grid-cols-2 gap-3">
-            <div><label class="text-xs text-gray-500">交易品种</label><input name="symbol" required class="input" placeholder="如 BTCUSDT"></div>
-            <div><label class="text-xs text-gray-500">方向</label><select name="direction" class="input"><option value="LONG">做多 ↑</option><option value="SHORT">做空 ↓</option></select></div>
-        </div>
-        <div class="grid grid-cols-3 gap-3">
-            <div><label class="text-xs text-gray-500">入场价格</label><input name="entry_price" type="number" step="any" required class="input"></div>
-            <div><label class="text-xs text-gray-500">止损</label><input name="stop_loss" type="number" step="any" class="input"></div>
-            <div><label class="text-xs text-gray-500">止盈</label><input name="take_profit" type="number" step="any" class="input"></div>
-        </div>
-        <div class="grid grid-cols-2 gap-3">
-            <div><label class="text-xs text-gray-500">信号类型</label><select name="signal_type" class="input"><option value="MANUAL">手动</option><option value="STRATEGY">策略</option><option value="AUTO">自动</option></select></div>
-            <div><label class="text-xs text-gray-500">时间周期</label><select name="timeframe" class="input"><option value="1m">1分钟</option><option value="5m">5分钟</option><option value="15m">15分钟</option><option value="1h">1小时</option><option value="4h">4小时</option><option value="1d">日线</option><option value="1w">周线</option></select></div>
-        </div>
-        <div><label class="text-xs text-gray-500">策略名称</label><input name="strategy_name" class="input" placeholder="可选"></div>
-        <div><label class="text-xs text-gray-500">信号说明</label><textarea name="notes" class="input" rows="2" placeholder="分析逻辑、理由..."></textarea></div>
-        <div><label class="text-xs text-gray-500">标签（逗号分隔）</label><input name="tags" class="input" placeholder="BTC, 突破, 顺势"></div>
-        <button type="submit" class="btn btn-primary w-full">发布信号</button>
-    </form>`);
-}
-
-async function handleCreateSignal(e){
-    e.preventDefault();
-    const fd = new FormData(e.target);
-    const data = Object.fromEntries(fd);
-    data.entry_price = parseFloat(data.entry_price);
-    if(data.stop_loss) data.stop_loss = parseFloat(data.stop_loss);
-    if(data.take_profit) data.take_profit = parseFloat(data.take_profit);
-    const r = await api('/quantai/signals', {method:'POST',body:JSON.stringify(data)});
-    if(r?.id){closeModal();toast('信号发布成功！','success');await loadSignals(_signalDirection)}
-    else{toast(r?.detail||'发布失败','error')}
-}
-
-function showCloseSignal(id, symbol){
-    openModal(`<h3 class="font-semibold mb-4">📊 平仓信号 ${symbol}</h3>
-    <form onsubmit="handleCloseSignal(event,${id})" class="space-y-3">
-        <div><label class="text-xs text-gray-500">平仓盈亏 (%)</label><input name="pnl_pct" type="number" step="0.01" required class="input" placeholder="如 2.5 或 -1.2"></div>
-        <button type="submit" class="btn btn-primary w-full">确认平仓</button>
-    </form>`);
-}
-
-async function handleCloseSignal(e, id){
-    e.preventDefault();
-    const pnl = parseFloat(new FormData(e.target).get('pnl_pct'));
-    const r = await api(`/quantai/signals/${id}/close?pnl_pct=${pnl}`, {method:'PUT'});
-    if(r?.message){closeModal();toast('平仓成功','success');await loadSignals(_signalDirection)}
-    else{toast(r?.detail||'失败','error')}
-}
-
-function showPortfolioSync(){
-    if(!S.user){showAuth('login');return}
-    openModal(`<h3 class="font-semibold mb-4">💼 同步持仓到 QuantAI</h3>
-    <p class="text-xs text-gray-500 mb-3">将您的持仓数据同步到 QuantAI 交易广场，与 QuantTalk 联动展示。</p>
-    <div class="space-y-2 mb-4">
-        <div class="glass2 rounded-lg p-3 text-sm">
-            <div class="text-gray-500 text-xs mb-1">支持以下数据同步</div>
-            <div class="text-gray-300">• 持仓品种与数量</div>
-            <div class="text-gray-300">• 开仓价格与当前价格</div>
-            <div class="text-gray-300">• 浮动盈亏统计</div>
-        </div>
-        <div class="text-xs text-gray-600">📝 实际对接需要 QuantAI API 配置完成后再使用此功能</div>
-    </div>
-    <button onclick="closeModal()" class="btn btn-ghost w-full">知道了</button>`);
-}
-
-function showMySignals(){
-    nav('profile');
-}
-
-// ===== MESSAGES / PRIVATE CHAT =====
-let _activeChatUser = null;
-let _pendingChat = null; // 待跳转后打开的聊天
-let _msgPolling = null;
-
-async function renderMessages(el){
-    if(!S.user){el.innerHTML=`<div class="glass rounded-xl p-12 text-center"><div class="text-gray-500 mb-3">登录后使用私信</div><button onclick="showAuth('login')" class="btn btn-primary">登录</button></div>`;return}
-
-    el.innerHTML=`<div class="fade-in h-[calc(100vh-100px)]">
-        <div class="flex gap-4 h-full">
-            <!-- 对话列表 -->
-            <div class="w-[280px] flex-shrink-0 glass rounded-xl overflow-hidden flex flex-col">
-                <div class="p-4 border-b border-gray-700/20">
-                    <div class="flex items-center justify-between mb-2"><h3 class="font-semibold text-sm">💬 私信</h3></div>
-                    <input class="input text-xs" placeholder="搜索用户..." oninput="searchUserForChat(this.value)" id="user-search-input">
-                    <div id="user-search-results" class="mt-2 space-y-1"></div>
-                </div>
-                <div id="conv-list" class="flex-1 overflow-y-auto"><div class="p-4 text-center text-gray-500 text-sm">加载中...</div></div>
-            </div>
-            <!-- 聊天区域 -->
-            <div class="flex-1 glass rounded-xl overflow-hidden flex flex-col">
-                <div id="chat-area" class="flex-1 flex items-center justify-center text-gray-500 text-sm">
-                    <div class="text-center"><div class="text-4xl mb-2">💬</div><div>选择一个对话开始聊天</div></div>
-                </div>
-            </div>
-        </div>
-    </div>`;
-
-    await loadConversations();
-    startMsgPolling();
-    
-    // 如果有待打开的聊天会话，打开它
-    if(_pendingChat){
-        const pending = _pendingChat;
-        _pendingChat = null;
-        await openChat(pending.id, pending.username);
-    }
+</div>`;
+document.getElementById('right-panel').style.display='none';
+loadConversations();
 }
 
 async function loadConversations(){
-    const el = document.getElementById('conv-list');
-    if(!el) return;
-    const r = await api('/messages/conversations');
-    const convs = r || [];
-    if(!convs.length){
-        el.innerHTML = `<div class="p-4 text-center text-gray-500 text-sm">暂无对话</div>`;
-        return;
-    }
-    el.innerHTML = convs.map(c => `<div class="p-3 border-b border-gray-700/10 hover:bg-white/5 cursor-pointer transition ${_activeChatUser===c.user_id?'bg-white/5':''}" onclick="openChat(${c.user_id},'${esc(c.username)}')">
-        <div class="flex items-center gap-2 mb-1">
-            <div class="avatar avatar-sm">${(c.username||'?')[0].toUpperCase()}</div>
-            <div class="text-sm font-medium flex-1 truncate">${esc(c.username)}</div>
-            <div class="text-xs text-gray-500">${timeAgo(c.last_time)}</div>
-        </div>
-        <div class="text-xs text-gray-400 truncate pl-8">${esc(c.last_message||'')}</div>
-        ${c.unread_count>0?`<span class="badge ml-8">${c.unread_count}</span>`:''}
-    </div>`).join('');
-}
-
-let _searchTimer = null;
-async function searchUserForChat(q){
-    clearTimeout(_searchTimer);
-    const el = document.getElementById('user-search-results');
-    if(!el) return;
-    if(!q || q.length < 1){el.innerHTML='';return}
-    _searchTimer = setTimeout(async()=>{
-        const r = await api('/users/search?q='+encodeURIComponent(q));
-        const users = r || [];
-        el.innerHTML = users.slice(0,5).map(u=>`<div class="flex items-center gap-2 p-2 rounded-lg hover:bg-white/5 cursor-pointer" onclick="openChat(${u.id},'${esc(u.username)}')">
-            <div class="avatar avatar-sm">${(u.username||'?')[0].toUpperCase()}</div>
-            <div class="text-sm">${esc(u.username)}</div>
-        </div>`).join('') || '<div class="text-xs text-gray-500 p-2">未找到用户</div>';
-    },300);
-}
-
-async function openChat(userId, username){
-    // 如果不在私信页面，先跳转
-    if(S.page !== 'messages'){
-        _pendingChat = {id: userId, username};
-        nav('messages');
-        return;
-    }
-    _activeChatUser = {id: userId, username};
-    await loadConversations();
-    const chatEl = document.getElementById('chat-area');
-    chatEl.innerHTML = `<div class="flex flex-col h-full">
-        <div class="flex items-center gap-2 p-4 border-b border-gray-700/20">
-            <div class="avatar avatar-sm">${(username||'?')[0].toUpperCase()}</div>
-            <div class="text-sm font-medium">${esc(username)}</div>
-            <button onclick="nav('messages')" class="ml-auto text-gray-500 hover:text-white text-sm">← 返回</button>
-        </div>
-        <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-3"></div>
-        <div class="p-4 border-t border-gray-700/20">
-            <div class="relative">
-            <form onsubmit="sendChatMsg(event)" class="flex gap-2">
-                <input id="chat-input" class="input flex-1" placeholder="发送消息..." autocomplete="off">
-                <button type="button" onclick="toggleEmojiPicker('chat-input','emoji-picker-chat')" class="btn btn-ghost text-lg px-2">😎</button>
-                <button type="submit" class="btn btn-primary">发送</button>
-            </form>
-            <div id="emoji-picker-chat" class="hidden absolute bottom-12 right-0 bg-gray-800 border border-gray-700 rounded-lg p-2 shadow-xl z-50" style="max-width:280px">
-<div class="text-xs text-gray-500 mb-1">量化表情</div>
-<div class="grid grid-cols-8 gap-1">${['📈','📉','💹','💰','🪙','₿','🟢','🔴','📊','💎','🚀','🔥','⚡','🎯','✅','❌','🔔','📋','🏆','💵','🤖','🧠','💡','🌙'].map(e=>`<span class="cursor-pointer p-1 hover:bg-gray-700 rounded text-sm" onclick="insertEmoji('chat-input','${e}')">${e}</span>`).join('')}</div>
+try{
+const res=await api('/messages/conversations');
+const el=document.getElementById('conversations-list');
+if(res&&res.length){
+el.innerHTML=res.map(c=>`
+<div class="channel-item ${S.currentDmUser===c.user_id?'active':''}" onclick="openPrivateChat(${c.user_id},'${esc(c.username)}')">
+<div class="avatar avatar-sm" style="position:relative;margin-right:10px">
+${c.username[0].toUpperCase()}
+${c.is_online?'<span style="position:absolute;bottom:-2px;right:-2px;width:8px;height:8px;background:#23a559;border-radius:50%;border:2px solid #2b2d31"></span>':''}
 </div>
-            </div>
-        </div>
-    </div>`;
-    await loadChatMessages(userId);
-}
-
-async function loadChatMessages(userId){
-    const el = document.getElementById('chat-messages');
-    if(!el) return;
-    const r = await api(`/messages/${userId}?limit=50`);
-    const msgs = r || [];
-    const settings = S.chatSettings||{};
-    const fontSize = settings.font_size==='small'?'12px':settings.font_size==='large'?'18px':'14px';
-    el.innerHTML = msgs.map(m => {
-        const isMe = m.sender_id === S.user.id;
-        const bgColor = isMe?(settings.bubble_bg_self||'#2d4a6f'):(settings.bubble_bg_other||'#21262d');
-        const textColor = settings.bubble_text_color||'#e6edf3';
-        return `<div class="flex ${isMe?'justify-end':'justify-start'}">
-            <div class="max-w-[70%] ${isMe?'chat-bubble-self':'chat-bubble-other'} rounded-xl px-3 py-2" style="background:${bgColor};color:${textColor};font-size:${fontSize}">
-                <div class="text-sm">${esc(m.content)}</div>
-                <div class="text-xs text-gray-500 text-right mt-1">${timeAgo(m.created_at)}</div>
-            </div>
-        </div>`;
-    }).join('');
-    el.scrollTop = el.scrollHeight;
-}
-
-async function sendChatMsg(e){
-    e.preventDefault();
-    if(!_activeChatUser) return;
-    const input = document.getElementById('chat-input');
-    const content = input.value.trim();
-    if(!content) return;
-    const r = await api('/messages/', {method:'POST', body:JSON.stringify({receiver_id:_activeChatUser.id,content})});
-    if(r?.id){input.value='';await loadChatMessages(_activeChatUser.id)}
-    else{toast('发送失败','error')}
-}
-
-function startMsgPolling(){
-    if(_msgPolling) clearInterval(_msgPolling);
-    _msgPolling = setInterval(async()=>{
-        if(S.page!=='messages'||!_activeChatUser) return;
-        await loadChatMessages(_activeChatUser.id);
-        await loadConversations();
-        await loadNotifCount();
-    },5000);
-}
-
-// ===== COMMUNITIES =====
-async function renderCommunities(el){
-if(!S.user){el.innerHTML=`<div class="glass rounded-xl p-12 text-center"><div class="text-gray-500 mb-3">登录后查看社区</div><button onclick="showAuth('login')" class="btn btn-primary">登录</button></div>`;return}
-const[cr,mr]=await Promise.all([api('/communities/'),api('/communities/my')]);
-const comms=cr?.communities||[];const myComms=mr||[];
-el.innerHTML=`<div class="fade-in space-y-4">
-<div class="flex items-center justify-between"><h2 class="text-lg font-bold">🌐 社区</h2><button onclick="showCreateCommunity()" class="btn btn-primary text-sm">+ 创建社区</button></div>
-${myComms.length?`<div class="glass rounded-xl p-4"><h3 class="text-sm font-semibold text-gray-500 mb-3">我的社区</h3><div class="space-y-2">${myComms.map(c=>`<div class="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 cursor-pointer" onclick="openCommunity(${c.id})"><div class="avatar avatar-sm">${(c.display_name||c.name)[0].toUpperCase()}</div><div class="flex-1"><div class="text-sm font-medium">${c.display_name}</div><div class="text-xs text-gray-600">${c.members_count} 成员</div></div></div>`).join('')}</div></div>`:''}
-<div class="glass rounded-xl p-4"><h3 class="text-sm font-semibold text-gray-500 mb-3">发现社区</h3><div class="space-y-2">${comms.length?comms.map(c=>`<div class="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition glass2"><div class="avatar cursor-pointer" onclick="openCommunity(${c.id})">${(c.display_name||c.name)[0].toUpperCase()}</div><div class="flex-1 min-w-0 cursor-pointer" onclick="openCommunity(${c.id})"><div class="text-sm font-medium">${c.display_name}</div><div class="text-xs text-gray-500 truncate">${c.description||'暂无简介'}</div><div class="text-xs text-gray-600 mt-1">${c.members_count} 成员 · ${c.channels_count} 频道</div></div>${c.is_member?`<button onclick="joinCommunity(${c.id})" class="btn btn-ghost text-xs">已加入</button>`:`<button onclick="joinCommunity(${c.id})" class="btn btn-primary text-xs">加入</button>`}</div>`).join(''):'<p class="text-gray-600 text-sm">暂无公开社区</p>'}</div></div></div>`;
-}
-
-function showCreateCommunity(){
-openModal(`<h3 class="font-semibold mb-4">创建社区</h3>
-<form onsubmit="createCommunity(event)" class="space-y-3">
-<div><label class="text-xs text-gray-500 block mb-1">社区ID（英文，唯一）</label><input name="name" required class="input" placeholder="如 quant-strategies"></div>
-<div><label class="text-xs text-gray-500 block mb-1">社区名称</label><input name="display_name" required class="input" placeholder="如 量化策略交流"></div>
-<div><label class="text-xs text-gray-500 block mb-1">简介</label><textarea name="description" class="input" rows="2" placeholder="社区描述..."></textarea></div>
-<button type="submit" class="btn btn-primary w-full">创建</button></form>`);
-}
-async function createCommunity(e){
-e.preventDefault();const fd=new FormData(e.target);
-const r=await api('/communities/',{method:'POST',body:JSON.stringify(Object.fromEntries(fd))});
-if(r?.id){closeModal();toast('社区创建成功','success');openCommunity(r.id)}else toast(r?.detail||'失败','error');
-}
-async function joinCommunity(id){const r=await api('/communities/'+id+'/join',{method:'POST'});if(r){toast(r.message,'success');renderPage()}}
-function openCommunity(id){S.communityId=id;S.page='community';renderNav();renderPage()}
-
-// ===== COMMUNITY VIEW =====
-let communityMembers = [];
-let onlineUsersCache = {};
-
-async function renderCommunityView(el){
-const cid=S.communityId;if(!cid){el.innerHTML='<p class="text-gray-500">未选择社区</p>';return}
-const r=await api('/communities/'+cid);if(!r){el.innerHTML='<p class="text-gray-500">社区不存在</p>';return}
-
-// 加载成员列表
-try{const mr=await api('/communities/'+cid+'/members');communityMembers=mr?.members||[];}catch(e){communityMembers=[]}
-
-// 获取在线用户
-try{const or=await api('/api/online-users');onlineUsersCache={};(or?.users||[]).forEach(u=>{onlineUsersCache[u.user_id]=u;});}catch(e){}
-
-const channels=r.channels||[];
-const textCh=channels.filter(c=>c.channel_type==='text');
-const voiceCh=channels.filter(c=>c.channel_type==='voice');
-S._currentChannel=textCh[0]?.id||null;
-
-// 统计在线成员
-const onlineCount=communityMembers.filter(m=>onlineUsersCache[m.user_id]||m.is_online).length;
-
-el.innerHTML=`<div class="fade-in flex gap-4">
-<!-- Channel list -->
-<div class="w-[200px] flex-shrink-0 hidden md:block">
-<div class="glass rounded-xl p-3 mb-4"><button onclick="nav('communities')" class="btn btn-ghost text-xs w-full">← 返回社区列表</button></div>
-<div class="glass rounded-xl p-3">
-<div class="text-xs font-semibold text-gray-500 mb-2 px-1">💬 文字频道</div>
-${textCh.map((c,i)=>`<div class="px-2 py-1.5 rounded-md text-sm cursor-pointer hover:bg-white/5 transition ${i===0?'bg-white/10 text-white font-medium':'text-gray-400'}" onclick="selectChannel(${c.id},this)" data-ch="${c.id}"># ${c.name}</div>`).join('')}
-${voiceCh.length?`<div class="text-xs font-semibold text-gray-500 mt-4 mb-2 px-1">🎤 语音频道</div>${voiceCh.map(c=>`<div class="px-2 py-1.5 rounded-md text-sm text-gray-500 cursor-pointer hover:text-gray-300">🔊 ${c.name}</div>`).join('')}`:''}
-${S.user&&r.owner_id===S.user.id?`<div class="divider"></div><button onclick="showCreateChannel(${cid})" class="btn btn-ghost text-xs w-full mt-1">+ 创建频道</button>`:''}
+<div style="flex:1;min-width:0">
+<div style="font-weight:500;color:#fff">${c.username}</div>
+<div style="font-size:11px;color:#72767d;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.last_message||''}</div>
 </div>
+${c.unread?'<span class="badge" style="position:static;min-width:18px;height:18px">'+c.unread+'</span>':''}
+</div>`).join('');
+}else{
+el.innerHTML='<p style="padding:16px;color:#72767d;text-align:center">暂无对话</p>';
+}
+}catch(e){
+document.getElementById('conversations-list').innerHTML='<p style="padding:16px;color:#72767d">加载失败</p>';
+}
+}
 
-<!-- Members sidebar -->
-<div class="glass rounded-xl p-3 mt-4">
-<div class="flex items-center justify-between mb-2">
-<div class="text-xs font-semibold text-gray-500 px-1">👥 成员 <span class="text-sky-400">${onlineCount}/${communityMembers.length}</span></div>
-<button onclick="refreshMembers()" class="text-xs text-gray-500 hover:text-sky-400">🔄</button>
+function openPrivateChat(userId,username){
+S.currentDmUser=userId;
+document.querySelectorAll('#conversations-list .channel-item').forEach(c=>c.classList.remove('active'));
+event.target.closest('.channel-item')?.classList.add('active');
+const chatArea=document.getElementById('chat-area');
+chatArea.innerHTML=`<div style="padding:16px;flex:1;overflow-y:auto" id="dm-messages"></div>
+<div style="padding:8px 16px;border-top:1px solid #202225;background:#2b2d31">
+<div style="font-weight:600;color:#fff">正在与 ${username} 聊天</div>
+</div>`;
+loadDmHistory(userId);
+}
+
+async function loadDmHistory(userId){
+try{
+const res=await api('/messages/'+userId);
+const el=document.getElementById('dm-messages');
+if(res&&res.length){
+el.innerHTML=res.map(m=>`
+<div class="message" style="margin-bottom:12px">
+<div class="msg-avatar" style="background:${m.sender_id===S.user.id?'#5865f2':'#f04747'}">${(m.sender_id===S.user.id?S.user.username:m.sender_username)[0].toUpperCase()}</div>
+<div>
+<div class="message-header"><span class="msg-author">${m.sender_id===S.user.id?'你':m.sender_username}</span><span class="msg-time">${new Date(m.created_at).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'})}</span></div>
+<div class="msg-content">${esc(m.content)}</div>
 </div>
-<div id="members-list" class="space-y-1 max-h-[200px] overflow-y-auto">
-${communityMembers.slice(0,10).map(m=>renderMemberItem(m)).join('')}
-${communityMembers.length>10?`<div class="text-xs text-gray-600 text-center py-1">还有${communityMembers.length-10}名成员...</div>`:''}
+</div>`).join('');
+el.scrollTop=el.scrollHeight;
+}else{
+el.innerHTML='<p style="text-align:center;color:#72767d">暂无消息</p>';
+}
+}catch(e){
+document.getElementById('dm-messages').innerHTML='<p>加载失败</p>';
+}
+}
+
+async function sendDm(){
+const input=document.getElementById('dm-input');
+const msg=input.value.trim();
+if(!msg||!S.currentDmUser)return;
+try{
+await api('/messages/'+S.currentDmUser,{method:'POST',body:JSON.stringify({content:msg})});
+input.value='';
+loadDmHistory(S.currentDmUser);
+}catch(e){
+toast('发送失败','error');
+}
+}
+
+function filterConversations(){
+const search=document.getElementById('msg-search').value.toLowerCase();
+document.querySelectorAll('#conversations-list .channel-item').forEach(c=>{
+c.style.display=c.textContent.toLowerCase().includes(search)?'flex':'none';
+});
+}
+
+// ===== GROUPS PAGE =====
+function renderGroups(){
+if(!S.user){showAuth('login');return;}
+const content=document.getElementById('main-content');
+content.innerHTML=`
+<div style="padding:24px">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+<h2 style="font-size:20px;font-weight:600;color:#fff">👥 群聊</h2>
+<div style="display:flex;gap:8px">
+<button onclick="showCreateGroup()" class="btn btn-primary">创建群聊</button>
+<button onclick="showJoinGroup()" class="btn btn-ghost">加入群聊</button>
 </div>
 </div>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px" id="my-groups-list">
+加载中...
 </div>
-<!-- Chat area -->
-<div class="flex-1 min-w-0">
-<div class="glass rounded-xl flex flex-col" style="height:calc(100vh - 140px)">
-<div class="p-3 border-b border-gray-700/30 flex items-center justify-between">
-<div class="font-semibold text-sm" id="channel-header"># ${textCh[0]?.name||'选择频道'}</div>
-<div class="text-xs text-gray-500" id="online-indicator"><span class="inline-block w-2 h-2 rounded-full bg-green-500 mr-1"></span><span id="channel-online-count">1</span> 在线</div>
+<h3 style="font-size:16px;font-weight:600;color:#fff;margin:24px 0 12px">🆕 发现群聊</h3>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px" id="public-groups-list">
+加载中...
 </div>
-<div class="flex-1 overflow-y-auto p-4 space-y-3" id="chat-messages"><p class="text-gray-600 text-sm text-center">加载中...</p></div>
-${S.user?`<div class="p-3 border-t border-gray-700/30">
-<div class="flex gap-2 items-center">
-<div class="flex-shrink-0"><div class="avatar avatar-sm relative">${(S.user.username||'?')[0].toUpperCase()}<span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-green-500 border-2 border-[#141c2e]" id="my-status-dot"></span></div></div>
-<form onsubmit="sendChannelMsg(event)" class="flex gap-2 flex-1"><input id="msg-input" class="input flex-1" placeholder="发送消息..." autocomplete="off"><button type="submit" class="btn btn-primary text-sm">发送</button></form>
-</div></div>`:'<div class="p-3 border-t border-gray-700/30 text-center text-gray-600 text-sm">登录后可发送消息</div>'}
-</div></div></div>`;
-if(S._currentChannel)loadChannelMessages(S._currentChannel);connectWS();
+</div>`;
+loadMyGroups();
+loadPublicGroups();
 }
 
-function renderMemberItem(m){
-const isOnline=onlineUsersCache[m.user_id]||m.is_online;
-const statusClass=isOnline?'bg-green-500':'bg-gray-500';
-const statusText=isOnline?'在线':'离线';
-const statusColor=isOnline?'text-green-400':'text-gray-500';
-return`<div class="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-white/5 transition">
-<div class="relative flex-shrink-0">
-<div class="avatar avatar-sm">${(m.username||'?')[0].toUpperCase()}</div>
-<span class="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full ${statusClass} border border-[#141c2e]"></span>
+async function loadMyGroups(){
+try{
+const res=await api('/groups/');
+const el=document.getElementById('my-groups-list');
+if(res&&res.length){
+el.innerHTML=res.map(g=>groupCard(g)).join('');
+}else{
+el.innerHTML='<p style="color:#72767d;grid-column:1/-1">你还没有加入任何群聊</p>';
+}
+}catch(e){
+document.getElementById('my-groups-list').innerHTML='<p>加载失败</p>';
+}
+}
+
+async function loadPublicGroups(){
+try{
+const res=await api('/groups/public/list');
+const el=document.getElementById('public-groups-list');
+if(res&&res.length){
+el.innerHTML=res.map(g=>groupCard(g,false)).join('');
+}else{
+el.innerHTML='<p style="color:#72767d;grid-column:1/-1">暂无公开群聊</p>';
+}
+}catch(e){
+document.getElementById('public-groups-list').innerHTML='<p>加载失败</p>';
+}
+}
+
+function groupCard(g,joined=true){
+return`
+<div class="quote-card" style="cursor:pointer" onclick="openGroupChat(${g.id},'${esc(g.name)}')">
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+<div class="avatar" style="width:48px;height:48px;font-size:20px">${g.avatar||g.name[0].toUpperCase()}</div>
+<div style="flex:1">
+<div style="font-weight:600;color:#fff;font-size:15px">${g.name}</div>
+<div style="font-size:12px;color:#939ba2">${g.member_count} 成员</div>
 </div>
-<div class="flex-1 min-w-0">
-<div class="text-xs font-medium truncate">${m.username}</div>
-<div class="text-[10px] ${statusColor}">${statusText}</div>
 </div>
-${m.role==='owner'?'<span class="text-[10px] text-yellow-400">👑</span>':''}
+${g.description?`<p style="font-size:13px;color:#b9bbbe;margin-bottom:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${g.description}</p>`:''}
+<div style="display:flex;justify-content:space-between;align-items:center">
+${joined?'<span style="font-size:12px;color:#23a559">已加入</span>':'<button class="btn btn-primary" style="padding:4px 12px;font-size:12px" onclick="event.stopPropagation();joinGroup('+g.id+')">加入</button>'}
+<button class="btn btn-ghost" style="padding:4px 12px;font-size:12px" onclick="event.stopPropagation();copyInvite(${g.id})">邀请</button>
+</div>
 </div>`;
 }
 
-async function refreshMembers(){
-try{const mr=await api('/communities/'+S.communityId+'/members');communityMembers=mr?.members||[];}catch(e){communityMembers=[]}
-try{const or=await api('/api/online-users');onlineUsersCache={};(or?.users||[]).forEach(u=>{onlineUsersCache[u.user_id]=u;});}catch(e){}
-document.getElementById('members-list').innerHTML=communityMembers.slice(0,10).map(m=>renderMemberItem(m)).join('')+(communityMembers.length>10?`<div class="text-xs text-gray-600 text-center py-1">还有${communityMembers.length-10}名成员...</div>`:'');
+function showCreateGroup(){
+openModal(`<h3>创建群聊</h3>
+<form onsubmit="createGroup(event)" class="space-y-3" style="margin-top:16px">
+<input name="name" required class="input" placeholder="群名称">
+<textarea name="description" class="input" placeholder="群描述（可选）" rows="2"></textarea>
+<label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+<input type="checkbox" name="is_private"> 私密群组
+</label>
+<button type="submit" class="btn btn-primary w-full">创建</button>
+</form>`);
+}
+async function createGroup(e){
+e.preventDefault();
+const fd=new FormData(e.target);
+const data={name:fd.get('name'),description:fd.get('description')||'',is_private:fd.get('is_private')==='on'};
+const res=await api('/groups/',{method:'POST',body:JSON.stringify(data)});
+if(res?.id){closeModal();toast('群聊创建成功！','success');loadMyGroups();}
+else{toast(res?.detail||'创建失败','error');}
+}
+function showJoinGroup(){
+openModal(`<h3>加入群聊</h3>
+<form onsubmit="joinGroupByCode(event)" class="space-y-3" style="margin-top:16px">
+<input name="group_id" type="number" required class="input" placeholder="群ID">
+<input name="invite_code" required class="input" placeholder="邀请码">
+<button type="submit" class="btn btn-primary w-full">加入</button>
+</form>`);
+}
+async function joinGroupByCode(e){
+e.preventDefault();
+const fd=new FormData(e.target);
+const res=await api('/groups/'+fd.get('group_id')+'/join/'+fd.get('invite_code'),{method:'POST'});
+if(res?.ok){closeModal();toast('加入成功！','success');loadMyGroups();}
+else{toast(res?.detail||'加入失败','error');}
+}
+async function joinGroup(groupId){
+const res=await api('/groups/'+groupId+'/join',{method:'POST'});
+if(res?.ok){toast('加入成功！','success');loadMyGroups();}
+else{toast(res?.detail||'加入失败','error');}
+}
+async function copyInvite(groupId){
+try{
+const res=await api('/groups/'+groupId+'/invite');
+if(res?.invite_code){
+await navigator.clipboard.writeText('群ID: '+groupId+' 邀请码: '+res.invite_code);
+toast('邀请信息已复制！','success');
+}
+}catch(e){toast('获取邀请失败','error');}
 }
 
-async function loadChannelMessages(chId){
-const r=await api(`/communities/${S.communityId}/channels/${chId}/messages`);
-const el=document.getElementById('chat-messages');
-if(!r||!r.length){el.innerHTML='<p class="text-gray-600 text-sm text-center">暂无消息，开始聊天吧！</p>';return}
-el.innerHTML=r.map(m=>{const t=new Date(m.created_at).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});const isOnline=onlineUsersCache[m.author_id]||false;return`<div class="flex gap-2.5"><div class="relative flex-shrink-0"><div class="avatar avatar-sm">${(m.author?.username||'?')[0].toUpperCase()}</div><span class="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full ${isOnline?'bg-green-500':'bg-gray-500'} border border-[#141c2e]"></span></div><div><div class="flex items-center gap-2"><span class="font-medium text-xs">${m.author?.username||'匿名'}</span><span class="text-xs text-gray-600">${t}</span></div><p class="text-sm text-gray-300 mt-0.5">${esc(m.content)}</p></div></div>`}).join('');
+function openGroupChat(groupId,groupName){
+S.page='groupchat';
+S.currentGroupId=groupId;
+const content=document.getElementById('main-content');
+const title=document.getElementById('main-header-title');
+title.textContent='👥 '+groupName;
+
+content.innerHTML=`
+<div style="display:flex;height:100%">
+<div style="flex:1;display:flex;flex-direction:column">
+<div style="flex:1;overflow-y:auto;padding:16px" id="group-messages"></div>
+<div class="chat-input-area">
+<input type="text" id="group-input" class="chat-input" placeholder="发送消息..." onkeydown="if(event.key==='Enter')sendGroupMsg()">
+<button onclick="sendGroupMsg()" class="btn btn-primary">发送</button>
+</div>
+</div>
+<div style="width:240px;border-left:1px solid #202225;padding:12px">
+<div style="font-weight:600;color:#fff;margin-bottom:12px">👥 成员</div>
+<div id="group-members"></div>
+</div>
+</div>`;
+document.getElementById('right-panel').style.display='none';
+loadGroupMessages(groupId);
+loadGroupMembers(groupId);
+}
+
+async function loadGroupMessages(groupId){
+try{
+const res=await api('/groups/'+groupId+'/messages');
+const el=document.getElementById('group-messages');
+if(res&&res.length){
+el.innerHTML=res.map(m=>`
+<div class="message" style="margin-bottom:12px">
+<div class="msg-avatar" style="background:#${Math.floor(Math.random()*16777215).toString(16).padStart(6,'0')}">${m.author_username[0].toUpperCase()}</div>
+<div>
+<div class="message-header"><span class="msg-author">${m.author_username}</span><span class="msg-time">${new Date(m.created_at).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'})}</span></div>
+<div class="msg-content">${esc(m.content)}</div>
+</div>
+</div>`).join('');
 el.scrollTop=el.scrollHeight;
+}else{
+el.innerHTML='<p style="text-align:center;color:#72767d">群聊暂无消息</p>';
 }
-function selectChannel(chId,el){
-S._currentChannel=chId;document.querySelectorAll('[data-ch]').forEach(e=>{e.classList.remove('bg-white/10','text-white','font-medium');e.classList.add('text-gray-400')});
-el?.classList.add('bg-white/10','text-white','font-medium');el?.classList.remove('text-gray-400');
-const ch=document.querySelector(`[data-ch="${chId}"]`);document.getElementById('channel-header').textContent='# '+(ch?.textContent?.trim()||chId);
-loadChannelMessages(chId);connectWS();
+}catch(e){
+document.getElementById('group-messages').innerHTML='<p>加载失败</p>';
 }
-function showCreateChannel(cid){
-openModal(`<h3 class="font-semibold mb-4">创建频道</h3>
-<form onsubmit="createChannel(event,${cid})" class="space-y-3">
-<div><label class="text-xs text-gray-500 block mb-1">频道名称</label><input name="name" required class="input" placeholder="如 市场分析"></div>
-<div><label class="text-xs text-gray-500 block mb-1">类型</label><select name="channel_type" class="input"><option value="text">文字频道</option><option value="voice">语音频道</option></select></div>
-<div><label class="text-xs text-gray-500 block mb-1">描述</label><input name="description" class="input" placeholder="频道描述"></div>
-<button type="submit" class="btn btn-primary w-full">创建</button></form>`);
 }
-async function createChannel(e,cid){
-e.preventDefault();const fd=new FormData(e.target);
-const r=await api(`/communities/${cid}/channels`,{method:'POST',body:JSON.stringify(Object.fromEntries(fd))});
-if(r?.id){closeModal();toast('频道创建成功','success');renderPage()}else toast(r?.detail||'失败','error');
-}
-async function sendChannelMsg(e){
-e.preventDefault();const inp=document.getElementById('msg-input');const content=inp.value.trim();if(!content||!S._currentChannel)return;
-if(S.ws?.readyState===1){S.ws.send(JSON.stringify({content}));inp.value=''}
-else{const r=await api(`/communities/${S.communityId}/channels/${S._currentChannel}/messages`,{method:'POST',body:JSON.stringify({content})});if(r)loadChannelMessages(S._currentChannel)}
-inp.focus();
-}
-let wsHeartbeatInterval=null;
-let wsPingTimeout=null;
 
-function connectWS(){
-if(S.ws){S.ws.close();S.ws=null}
-if(wsHeartbeatInterval){clearInterval(wsHeartbeatInterval);wsHeartbeatInterval=null;}
-if(wsPingTimeout){clearTimeout(wsPingTimeout);wsPingTimeout=null;}
-if(!S.token||!S._currentChannel)return;
-const proto=location.protocol==='https:'?'wss:':'ws:';
-S.ws=new WebSocket(`${proto}//${location.host}/api/ws/channel/${S._currentChannel}?token=${S.token}`);
-
-// 更新在线状态指示
-document.getElementById('channel-online-count').textContent=communityMembers.filter(m=>onlineUsersCache[m.user_id]||m.is_online).length+1;
-
-S.ws.onopen=()=>{
-// 启动心跳（每25秒发送一次）
-wsHeartbeatInterval=setInterval(()=>{
-if(S.ws?.readyState===1){
-S.ws.send(JSON.stringify({type:'heartbeat'}));
-// 设置响应超时
-wsPingTimeout=setTimeout(()=>{
-if(S.ws?.readyState===1){
-document.getElementById('my-status-dot').className='absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-yellow-500 border-2 border-[#141c2e]';
+async function loadGroupMembers(groupId){
+try{
+const res=await api('/groups/'+groupId+'/members');
+const el=document.getElementById('group-members');
+if(res&&res.length){
+el.innerHTML=res.map(m=>`
+<div class="member-item">
+<div class="avatar avatar-sm">${m.username[0].toUpperCase()}</div>
+<div style="flex:1">
+<div class="member-name">${m.username}</div>
+${m.is_owner?'<span class="member-badge badge-owner">群主</span>':m.is_admin?'<span class="member-badge badge-admin">管理</span>':''}
+</div>
+</div>`).join('');
+}else{
+el.innerHTML='<p style="color:#72767d">暂无成员</p>';
 }
-},5000);
+}catch(e){}
 }
-},25000);
+
+async function sendGroupMsg(){
+const input=document.getElementById('group-input');
+const msg=input.value.trim();
+if(!msg||!S.currentGroupId)return;
+try{
+await api('/groups/'+S.currentGroupId+'/messages',{method:'POST',body:JSON.stringify({content:msg})});
+input.value='';
+loadGroupMessages(S.currentGroupId);
+}catch(e){toast('发送失败','error');}
+}
+
+// ===== PORTFOLIO / SCOREBOARD =====
+function renderPortfolio(){
+if(!S.user){showAuth('login');return;}
+const content=document.getElementById('main-content');
+content.innerHTML=`
+<div style="padding:24px">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+<h2 style="font-size:20px;font-weight:600;color:#fff">📜 成绩单</h2>
+<div style="display:flex;gap:8px">
+<button onclick="showAddTrade()" class="btn btn-primary">+ 记录交易</button>
+<button onclick="showAddReport()" class="btn btn-ghost">+ 发布回测</button>
+</div>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px" id="stats-cards">
+加载中...
+</div>
+
+<div style="margin-bottom:24px">
+<div style="display:flex;gap:8px;margin-bottom:12px">
+<button class="kline-btn active" onclick="switchPortfolioTab('trades',this)">📈 交易记录</button>
+<button class="kline-btn" onclick="switchPortfolioTab('reports',this)">📊 回测报告</button>
+</div>
+<div id="portfolio-content">加载中...</div>
+</div>
+</div>`;
+document.getElementById('right-panel').style.display='none';
+loadPortfolioStats();
+loadMyTrades();
+}
+
+async function loadPortfolioStats(){
+try{
+const res=await api('/portfolio/trades/stats');
+const el=document.getElementById('stats-cards');
+el.innerHTML=`
+<div class="quote-card" style="text-align:center">
+<div style="font-size:28px;font-weight:700;color:#fff">${res.total_trades}</div>
+<div style="color:#939ba2;font-size:12px">总交易次数</div>
+</div>
+<div class="quote-card" style="text-align:center">
+<div style="font-size:28px;font-weight:700 ${res.total_pnl>=0?'color:#23a559':'color:#ed4245'}">${res.total_pnl>=0?'+':''}${res.total_pnl?.toFixed(2)||0}</div>
+<div style="color:#939ba2;font-size:12px">总盈亏</div>
+</div>
+<div class="quote-card" style="text-align:center">
+<div style="font-size:28px;font-weight:700 color:#fff">${res.win_rate?.toFixed(1)||0}%</div>
+<div style="color:#939ba2;font-size:12px">胜率</div>
+</div>
+<div class="quote-card" style="text-align:center">
+<div style="font-size:28px;font-weight:700 color:#fff">${res.best_trade?.toFixed(2)||0}</div>
+<div style="color:#939ba2;font-size:12px">最佳交易</div>
+</div>`;
+}catch(e){
+document.getElementById('stats-cards').innerHTML='<p>加载失败</p>';
+}
+}
+
+function switchPortfolioTab(tab,btn){
+document.querySelectorAll('#portfolio-content+.kline-btn, .kline-controls .kline-btn').forEach(b=>b.classList.remove('active'));
+btn.classList.add('active');
+if(tab==='trades')loadMyTrades();
+else loadPublicReports();
+}
+
+async function loadMyTrades(){
+try{
+const res=await api('/portfolio/trades');
+const el=document.getElementById('portfolio-content');
+if(res&&res.length){
+el.innerHTML=`
+<table style="width:100%;border-collapse:collapse">
+<thead><tr style="border-bottom:1px solid #404045;color:#939ba2;font-size:12px;text-align:left">
+<th style="padding:8px">品种</th><th>方向</th><th>入场价</th><th>出场价</th><th>盈亏</th><th>时间</th></tr>
+</thead>
+<tbody>${res.map(t=>`
+<tr style="border-bottom:1px solid #36393f;color:#dcddde;font-size:13px">
+<td style="padding:8px;font-weight:600">${t.symbol}</td>
+<td style="color:${t.direction==='long'?'#23a559':'#ed4245'}">${t.direction==='long'?'多':'空'}</td>
+<td>${t.entry_price}</td>
+<td>${t.exit_price||'-'}</td>
+<td class="${t.pnl>=0?'gain':'loss'}">${t.pnl?(t.pnl>=0?'+':'')+t.pnl.toFixed(2):'-'}</td>
+<td style="color:#72767d">${new Date(t.entry_time).toLocaleDateString()}</td>
+</tr>`).join('')}</tbody>
+</table>`;
+}else{
+el.innerHTML='<p style="color:#72767d;text-align:center;padding:40px">暂无交易记录</p>';
+}
+}catch(e){
+document.getElementById('portfolio-content').innerHTML='<p>加载失败</p>';
+}
+}
+
+async function loadPublicReports(){
+try{
+const res=await api('/portfolio/reports/public');
+const el=document.getElementById('portfolio-content');
+if(res&&res.length){
+el.innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px">${res.map(r=>`
+<div class="quote-card">
+<div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:12px">
+<div>
+<div style="font-weight:600;color:#fff;font-size:15px">${r.name}</div>
+<div style="font-size:12px;color:#939ba2">${r.username} · ${new Date(r.created_at).toLocaleDateString()}</div>
+</div>
+<span class="tag">${r.symbol}</span>
+</div>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">
+<div style="text-align:center"><div style="font-size:18px;font-weight:600;color:#fff">${r.win_rate?.toFixed(1)}%</div><div style="font-size:10px;color:#939ba2">胜率</div></div>
+<div style="text-align:center"><div style="font-size:18px;font-weight:600 color:#fff">${r.profit_factor?.toFixed(2)}</div><div style="font-size:10px;color:#939ba2">盈亏比</div></div>
+<div style="text-align:center"><div style="font-size:18px;font-weight:600 ${r.total_return>=0?'color:#23a559':'color:#ed4245'}">${r.total_return>=0?'+':''}${r.total_return?.toFixed(1)}%</div><div style="font-size:10px;color:#939ba2">收益率</div></div>
+</div>
+<div style="display:flex;gap:8px">
+<button onclick="likeReport(${r.id})" class="btn btn-ghost" style="padding:4px 12px;font-size:12px">❤️ ${r.likes_count||0}</button>
+<button onclick="viewReport(${r.id})" class="btn btn-primary" style="padding:4px 12px;font-size:12px">查看详情</button>
+</div>
+</div>`).join('')}</div>`;
+}else{
+el.innerHTML='<p style="color:#72767d;text-align:center;padding:40px">暂无回测报告</p>';
+}
+}catch(e){
+document.getElementById('portfolio-content').innerHTML='<p>加载失败</p>';
+}
+}
+
+function showAddTrade(){
+openModal(`<h3>记录交易</h3>
+<form onsubmit="addTrade(event)" class="space-y-3" style="margin-top:16px">
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+<input name="symbol" required class="input" placeholder="品种 (如 BTCUSDT)">
+<select name="direction" class="input">
+<option value="long">多</option>
+<option value="short">空</option>
+</select>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+<input name="entry_price" type="number" step="0.00001" required class="input" placeholder="入场价">
+<input name="exit_price" type="number" step="0.00001" class="input" placeholder="出场价（平仓后填）">
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+<input name="quantity" type="number" step="0.001" required class="input" placeholder="数量">
+<input name="pnl" type="number" step="0.01" class="input" placeholder="盈亏金额">
+</div>
+<input name="strategy_name" class="input" placeholder="策略名称（可选）">
+<textarea name="notes" class="input" rows="2" placeholder="备注（可选）"></textarea>
+<button type="submit" class="btn btn-primary w-full">保存</button>
+</form>`);
+}
+async function addTrade(e){
+e.preventDefault();
+const fd=new FormData(e.target);
+const data={
+symbol:fd.get('symbol'),
+direction:fd.get('direction'),
+entry_price:parseFloat(fd.get('entry_price')),
+exit_price:fd.get('exit_price')?parseFloat(fd.get('exit_price')):null,
+quantity:parseFloat(fd.get('quantity')),
+pnl:fd.get('pnl')?parseFloat(fd.get('pnl')):null,
+entry_time:new Date().toISOString(),
+exit_time:fd.get('exit_price')?new Date().toISOString():null,
+strategy_name:fd.get('strategy_name')||null,
+notes:fd.get('notes')||null
 };
-
-S.ws.onmessage=(e)=>{
-const m=JSON.parse(e.data);
-if(m.type==='message'){
-const el=document.getElementById('chat-messages');
-if(el.querySelector('.text-gray-600.text-sm.text-center'))el.innerHTML='';
-const t=new Date(m.created_at).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
-const isOnline=onlineUsersCache[m.author_id]||false;
-el.innerHTML+=`<div class="flex gap-2.5 fade-in"><div class="relative flex-shrink-0"><div class="avatar avatar-sm">${(m.author_username||'?')[0].toUpperCase()}</div><span class="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full ${isOnline?'bg-green-500':'bg-gray-500'} border border-[#141c2e]"></span></div><div><div class="flex items-center gap-2"><span class="font-medium text-xs">${m.author_username||'匿名'}</span><span class="text-xs text-gray-600">${t}</span></div><p class="text-sm text-gray-300 mt-0.5">${esc(m.content)}</p></div></div>`;
-el.scrollTop=el.scrollHeight;
-}else if(m.type==='user_joined'){
-// 新用户加入
-toast(`${m.username} 加入了频道`, 'info');
-// 刷新成员
-refreshMembers();
-}else if(m.type==='user_left'){
-// 用户离开
-refreshMembers();
-}else if(m.type==='status_changed'){
-// 状态变更
-refreshMembers();
-}else if(m.type==='heartbeat_ack'){
-// 心跳响应
-document.getElementById('my-status-dot').className='absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-green-500 border-2 border-[#141c2e]';
-if(wsPingTimeout){clearTimeout(wsPingTimeout);wsPingTimeout=null;}
-}else if(m.type==='ping'){
-// 服务器ping
-S.ws?.send(JSON.stringify({type:'heartbeat'}));
+const res=await api('/portfolio/trades',{method:'POST',body:JSON.stringify(data)});
+if(res?.id){closeModal();toast('交易记录已保存！','success');renderPortfolio();}
+else{toast(res?.detail||'保存失败','error');}
 }
+
+function showAddReport(){
+openModal(`<h3>发布回测报告</h3>
+<form onsubmit="addReport(event)" class="space-y-3" style="margin-top:16px">
+<input name="name" required class="input" placeholder="报告名称">
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+<input name="strategy_name" required class="input" placeholder="策略名称">
+<select name="symbol" class="input">
+<option value="BTCUSDT">BTC/USDT</option>
+<option value="ETHUSDT">ETH/USDT</option>
+<option value="EURUSD">EUR/USD</option>
+<option value="XAUUSD">XAU/USD</option>
+</select>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+<input name="total_trades" type="number" required class="input" placeholder="总交易数">
+<input name="win_rate" type="number" step="0.1" required class="input" placeholder="胜率%">
+<input name="profit_factor" type="number" step="0.01" required class="input" placeholder="盈亏比">
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+<input name="max_drawdown" type="number" step="0.1" required class="input" placeholder="最大回撤%">
+<input name="total_return" type="number" step="0.1" required class="input" placeholder="总收益率%">
+</div>
+<label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+<input type="checkbox" name="is_public" checked> 公开报告
+</label>
+<button type="submit" class="btn btn-primary w-full">发布</button>
+</form>`);
+}
+async function addReport(e){
+e.preventDefault();
+const fd=new FormData(e.target);
+const data={
+name:fd.get('name'),
+strategy_name:fd.get('strategy_name'),
+symbol:fd.get('symbol'),
+period:'1h',
+start_date:new Date(Date.now()-30*24*3600*1000).toISOString().split('T')[0],
+end_date:new Date().toISOString().split('T')[0],
+total_trades:parseInt(fd.get('total_trades')),
+win_rate:parseFloat(fd.get('win_rate')),
+profit_factor:parseFloat(fd.get('profit_factor')),
+max_drawdown:parseFloat(fd.get('max_drawdown')),
+total_return:parseFloat(fd.get('total_return')),
+is_public:fd.get('is_public')==='on'
 };
-
-S.ws.onclose=()=>{
-if(wsHeartbeatInterval){clearInterval(wsHeartbeatInterval);wsHeartbeatInterval=null;}
-if(wsPingTimeout){clearTimeout(wsPingTimeout);wsPingTimeout=null;}
-document.getElementById('my-status-dot').className='absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-gray-500 border-2 border-[#141c2e]';
-setTimeout(()=>{if(S.page==='community'&&S._currentChannel)connectWS()},5000);
-};
-
-S.ws.onerror=()=>{
-if(wsHeartbeatInterval){clearInterval(wsHeartbeatInterval);wsHeartbeatInterval=null;}
-document.getElementById('my-status-dot').className='absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-red-500 border-2 border-[#141c2e]';
-};
+const res=await api('/portfolio/reports',{method:'POST',body:JSON.stringify(data)});
+if(res?.id){closeModal();toast('回测报告已发布！','success');renderPortfolio();}
+else{toast(res?.detail||'发布失败','error');}
 }
 
-// ===== KLINE CHART =====
-let klineChart = null;
-let klineCandleSeries = null;
-let klineVolumeSeries = null;
-let klineSymbol = 'sh000001';
-let klinePeriod = '1d';
-let klineUpdateInterval = null;
-
-const KLINE_PERIODS = [
-    {value: '1m', label: '1分钟'},
-    {value: '5m', label: '5分钟'},
-    {value: '15m', label: '15分钟'},
-    {value: '30m', label: '30分钟'},
-    {value: '1h', label: '1小时'},
-    {value: '4h', label: '4小时'},
-    {value: '1d', label: '日K'},
-    {value: '1w', label: '周K'},
-];
-
-const KLINE_SYMBOLS = [
-    // A股
-    {symbol: 'sh000001', name: '上证指数', market: 'A'},
-    {symbol: 'sz399001', name: '深证成指', market: 'A'},
-    {symbol: 'sz399006', name: '创业板指', market: 'A'},
-    {symbol: 'sh000300', name: '沪深300', market: 'A'},
-    {symbol: 'sh000016', name: '上证50', market: 'A'},
-    {symbol: 'sh000688', name: '科创50', market: 'A'},
-    // 港股
-    {symbol: 'hkHSI', name: '恒生指数', market: 'HK'},
-    {symbol: 'hk00700', name: '腾讯控股', market: 'HK'},
-    {symbol: 'hk09988', name: '阿里巴巴', market: 'HK'},
-    // 美股
-    {symbol: 'usIXIC', name: '纳斯达克', market: 'US'},
-    {symbol: 'usSPX', name: '标普500', market: 'US'},
-    {symbol: 'usAAPL', name: '苹果', market: 'US'},
-    {symbol: 'usNVDA', name: '英伟达', market: 'US'},
-    {symbol: 'usTSLA', name: '特斯拉', market: 'US'},
-    // 加密货币
-    {symbol: 'btcusdt', name: 'BTC/USDT', market: 'CRYPTO'},
-    {symbol: 'ethusdt', name: 'ETH/USDT', market: 'CRYPTO'},
-    {symbol: 'bnbusdt', name: 'BNB/USDT', market: 'CRYPTO'},
-    {symbol: 'solusdt', name: 'SOL/USDT', market: 'CRYPTO'},
-    {symbol: 'xrpusdt', name: 'XRP/USDT', market: 'CRYPTO'},
-    {symbol: 'adausdt', name: 'ADA/USDT', market: 'CRYPTO'},
-    {symbol: 'dogeusdt', name: 'DOGE/USDT', market: 'CRYPTO'},
-    {symbol: 'avaxusdt', name: 'AVAX/USDT', market: 'CRYPTO'},
-    {symbol: 'dotusdt', name: 'DOT/USDT', market: 'CRYPTO'},
-    {symbol: 'linkusdt', name: 'LINK/USDT', market: 'CRYPTO'},
-    {symbol: 'maticusdt', name: 'MATIC/USDT', market: 'CRYPTO'},
-    {symbol: 'ltcusdt', name: 'LTC/USDT', market: 'CRYPTO'},
-    {symbol: 'aptusdt', name: 'APT/USDT', market: 'CRYPTO'},
-    {symbol: 'arbusdt', name: 'ARB/USDT', market: 'CRYPTO'},
-    {symbol: 'opusdt', name: 'OP/USDT', market: 'CRYPTO'},
-    {symbol: 'injusdt', name: 'INJ/USDT', market: 'CRYPTO'},
-    {symbol: 'suiusdt', name: 'SUI/USDT', market: 'CRYPTO'},
-    {symbol: 'nearusdt', name: 'NEAR/USDT', market: 'CRYPTO'},
-    // 外汇
-    {symbol: 'eurusd', name: 'EUR/USD', market: 'FX'},
-    {symbol: 'gbpusd', name: 'GBP/USD', market: 'FX'},
-    {symbol: 'usdjpy', name: 'USD/JPY', market: 'FX'},
-    {symbol: 'usdchf', name: 'USD/CHF', market: 'FX'},
-    {symbol: 'audusd', name: 'AUD/USD', market: 'FX'},
-    {symbol: 'usdcad', name: 'USD/CAD', market: 'FX'},
-    {symbol: 'nzdusd', name: 'NZD/USD', market: 'FX'},
-    {symbol: 'eurgbp', name: 'EUR/GBP', market: 'FX'},
-    {symbol: 'eurjpy', name: 'EUR/JPY', market: 'FX'},
-    {symbol: 'gbpjpy', name: 'GBP/JPY', market: 'FX'},
-    // 贵金属 & 原油 & 指数
-    {symbol: 'xauusd', name: '黄金(USD)', market: 'METAL'},
-    {symbol: 'xagusd', name: '白银(USD)', market: 'METAL'},
-    {symbol: 'wtiusd', name: 'WTI原油', market: 'ENERGY'},
-    {symbol: 'brentusd', name: '布伦特原油', market: 'ENERGY'},
-    {symbol: 'us30', name: '道琼斯30', market: 'INDEX'},
-    {symbol: 'us100', name: '纳斯达克100', market: 'INDEX'},
-    {symbol: 'de40', name: '德国DAX40', market: 'INDEX'},
-    {symbol: 'jp225', name: '日经225', market: 'INDEX'},
-]
-
-function getKlineSymbolOptions(){
-    return KLINE_MARKET_GROUPS.map(g=>`<optgroup label="${g.label}">${g.items.map(s=>`<option value="${s.symbol}" ${s.symbol===klineSymbol?'selected':''}>${s.name}</option>`).join('')}</optgroup>`).join('');
+async function likeReport(id){
+const res=await api('/portfolio/reports/'+id+'/like',{method:'POST'});
+if(res){loadPublicReports();}
 }
 
-const KLINE_MARKET_GROUPS = [
-    {label: '📊 A股/港股/美股', items: KLINE_SYMBOLS.filter(s=>['A','HK','US'].includes(s.market))},
-    {label: '🪙 加密货币', items: KLINE_SYMBOLS.filter(s=>s.market==='CRYPTO')},
-    {label: '💱 外汇', items: KLINE_SYMBOLS.filter(s=>['FX','METAL','ENERGY','INDEX'].includes(s.market))},
-];;
-
-async function renderKline(el){
-    el.innerHTML = `<div class="fade-in">
-        <div class="flex items-center justify-between mb-4">
-            <h2 class="text-lg font-bold">📊 K线图表</h2>
-            <div class="flex items-center gap-2">
-                <select id="kline-symbol" class="input text-sm" style="width:160px" onchange="changeKlineSymbol(this.value)">
-                    ${getKlineSymbolOptions()}
-                </select>
-                <select id="kline-period" class="input text-sm" style="width:100px" onchange="changeKlinePeriod(this.value)">
-                    ${KLINE_PERIODS.map(p => `<option value="${p.value}" ${p.value === klinePeriod ? 'selected' : ''}>${p.label}</option>`).join('')}
-                </select>
-                <button onclick="refreshKline()" class="btn btn-ghost text-sm">🔄 刷新</button>
-            </div>
-        </div>
-
-        <!-- Market Quick View -->
-        <div class="glass rounded-xl p-3 mb-4">
-            <div class="text-xs text-gray-500 mb-2">快捷行情</div>
-            <div class="flex gap-3 overflow-x-auto pb-1" id="kline-quick-market">
-                ${KLINE_SYMBOLS.slice(0, 8).map(s => `
-                    <div class="flex-shrink-0 px-3 py-2 rounded-lg hover:bg-white/5 cursor-pointer transition min-w-[80px]" onclick="switchSymbol('${s.symbol}')" data-sym="${s.symbol}">
-                        <div class="text-xs text-gray-500">${s.name}</div>
-                        <div class="text-sm font-medium" id="quick-price-${s.symbol}">--</div>
-                    </div>
-                `).join('')}
-            </div>
-            <div class="flex gap-2 mt-2">
-                <button onclick="loadQuickMarket('stock')" class="text-xs px-2 py-1 rounded bg-white/5 text-gray-400 hover:text-white" id="quick-btn-stock">📊 股票</button>
-                <button onclick="loadQuickMarket('crypto')" class="text-xs px-2 py-1 rounded bg-white/5 text-gray-400 hover:text-white" id="quick-btn-crypto">🪙 加密货币</button>
-                <button onclick="loadQuickMarket('forex')" class="text-xs px-2 py-1 rounded bg-white/5 text-gray-400 hover:text-white" id="quick-btn-forex">💱 外汇贵金属</button>
-            </div>
-        </div>
-
-        <!-- K线图表容器 -->
-        <div class="glass rounded-xl p-4">
-            <!-- 实时数据概览 -->
-            <div class="flex items-center gap-6 mb-4 pb-3 border-b border-gray-700/30" id="kline-overview">
-                <div>
-                    <div class="text-xs text-gray-500">当前价格</div>
-                    <div class="text-2xl font-bold" id="kline-price">--</div>
-                </div>
-                <div>
-                    <div class="text-xs text-gray-500">涨跌额</div>
-                    <div class="text-lg font-medium" id="kline-change">--</div>
-                </div>
-                <div>
-                    <div class="text-xs text-gray-500">涨跌幅</div>
-                    <div class="text-lg font-medium" id="kline-change-pct">--</div>
-                </div>
-                <div>
-                    <div class="text-xs text-gray-500">成交量</div>
-                    <div class="text-lg font-medium" id="kline-volume">--</div>
-                </div>
-                <div>
-                    <div class="text-xs text-gray-500">数据来源</div>
-                    <div class="text-sm font-medium text-sky-400" id="kline-source">--</div>
-                </div>
-            </div>
-
-            <!-- 图表 -->
-            <div id="kline-chart" style="height: 450px; width: 100%;"></div>
-        </div>
-
-        <!-- 操作提示 -->
-        <div class="mt-3 text-xs text-gray-600">
-            💡 提示：支持鼠标滚轮缩放、拖拽移动查看历史数据 | 加密货币数据来自 Binance 实时行情
-        </div>
-    </div>`;
-
-    // 初始化图表
-    initKlineChart();
-
-    // 加载数据
-    await loadKlineData();
-
-    // 加载快速行情（默认加载股票）
-    await loadQuickMarket('stock');
-
-    // 启动实时更新
-    startKlineUpdate();
-}
-
-function initKlineChart(){
-    // 清理旧图表
-    if(klineChart){
-        klineChart.remove();
-        klineChart = null;
-    }
-    
-    const container = document.getElementById('kline-chart');
-    if(!container) return;
-    
-    container.innerHTML = '';
-    
-    klineChart = LightweightCharts.createChart(container, {
-        layout: {
-            background: { type: 'solid', color: 'transparent' },
-            textColor: '#94a3b8',
-        },
-        grid: {
-            vertLines: { color: 'rgba(100, 116, 139, 0.1)' },
-            horzLines: { color: 'rgba(100, 116, 139, 0.1)' },
-        },
-        crosshair: {
-            mode: LightweightCharts.CrosshairMode.Normal,
-            vertLine: { color: '#38bdf8', width: 1, style: 2 },
-            horzLine: { color: '#38bdf8', width: 1, style: 2 },
-        },
-        rightPriceScale: {
-            borderColor: 'rgba(100, 116, 139, 0.2)',
-        },
-        timeScale: {
-            borderColor: 'rgba(100, 116, 139, 0.2)',
-            timeVisible: true,
-            secondsVisible: false,
-        },
-        handleScroll: { vertTouchDrag: false },
-    });
-    
-    // 蜡烛图系列
-    klineCandleSeries = klineChart.addCandlestickSeries({
-        upColor: '#22c55e',
-        downColor: '#ef4444',
-        borderUpColor: '#22c55e',
-        borderDownColor: '#ef4444',
-        wickUpColor: '#22c55e',
-        wickDownColor: '#ef4444',
-    });
-    
-    // 成交量系列
-    klineVolumeSeries = klineChart.addHistogramSeries({
-        color: '#38bdf8',
-        priceFormat: { type: 'volume' },
-        priceScaleId: '',
-    });
-    
-    klineVolumeSeries.priceScale().applyOptions({
-        scaleMargins: { top: 0.85, bottom: 0 },
-    });
-    
-    // 响应窗口大小变化
-    const resizeObserver = new ResizeObserver(entries => {
-        if(klineChart && entries[0]){
-            const { width, height } = entries[0].contentRect;
-            klineChart.resize(width, height);
-        }
-    });
-    resizeObserver.observe(container);
-}
-
-async function loadKlineData(){
-    try {
-        const r = await api(`/market/kline/${klineSymbol}?period=${klinePeriod}&limit=200`);
-        if(!r || !r.data) return;
-
-        // 数据来源
-        const srcEl = document.getElementById('kline-source');
-        if(srcEl) srcEl.textContent = r.source === 'binance' ? 'Binance 实时' : '模拟数据';
-
-        // 更新概览
-        if(r.latest){
-            const priceEl = document.getElementById('kline-price');
-            const changeEl = document.getElementById('kline-change');
-            const pctEl = document.getElementById('kline-change-pct');
-            const price = r.latest.price || 0;
-            const change = r.latest.change || 0;
-            const pct = r.latest.change_pct || 0;
-            priceEl.textContent = price >= 1000 ? price.toLocaleString() : price.toFixed(price < 1 ? 6 : 2);
-            changeEl.textContent = (change >= 0 ? '+' : '') + (Math.abs(change) >= 1 ? change.toFixed(2) : change.toFixed(6));
-            changeEl.className = 'text-lg font-medium ' + (change >= 0 ? 'gain' : 'loss');
-            pctEl.textContent = (pct >= 0 ? '+' : '') + pct.toFixed(2) + '%';
-            pctEl.className = 'text-lg font-medium ' + (pct >= 0 ? 'gain' : 'loss');
-            document.getElementById('kline-volume').textContent = formatVolume(r.latest.volume);
-        }
-        
-        // 转换数据格式
-        const candleData = r.data.map(d => ({
-            time: Math.floor(d.time / 1000),
-            open: d.open,
-            high: d.high,
-            low: d.low,
-            close: d.close,
-        }));
-        
-        const volumeData = r.data.map(d => ({
-            time: Math.floor(d.time / 1000),
-            value: d.volume,
-            color: d.close >= d.open ? 'rgba(34, 197, 94, 0.5)' : 'rgba(239, 68, 68, 0.5)',
-        }));
-        
-        // 设置数据
-        if(klineCandleSeries) klineCandleSeries.setData(candleData);
-        if(klineVolumeSeries) klineVolumeSeries.setData(volumeData);
-        
-        // 自适应时间范围
-        if(klineChart) klineChart.timeScale().fitContent();
-        
-    } catch(e){
-        console.error('K线数据加载失败:', e);
-    }
-}
-
-function formatVolume(v){
-    if(!v) return '--';
-    if(v >= 100000000) return (v / 100000000).toFixed(2) + '亿';
-    if(v >= 10000) return (v / 10000).toFixed(0) + '万';
-    return v.toString();
-}
-
-async function loadQuickMarket(tab='stock'){
-    try {
-        let symbols = [];
-        if(tab === 'stock'){
-            const r = await api('/market/indices');
-            if(!r?.indices) return;
-            symbols = r.indices.slice(0,8).map(i=>({symbol:i.symbol,name:i.name,price:i.price,change_pct:i.change_pct}));
-        } else if(tab === 'crypto'){
-            const r = await api('/market/crypto');
-            if(!r?.crypto) return;
-            symbols = r.crypto.slice(0,8).map(c=>({symbol:c.symbol,name:c.name,price:c.price,change_pct:c.change_pct}));
-        } else if(tab === 'forex'){
-            const r = await api('/market/forex');
-            if(!r?.forex) return;
-            symbols = r.forex.slice(0,8).map(f=>({symbol:f.symbol,name:f.name,price:f.price,change_pct:f.change_pct}));
-        }
-
-        symbols.forEach(item => {
-            const el = document.getElementById(`quick-price-${item.symbol}`);
-            if(el){
-                el.textContent = item.price?.toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:item.price<1?6:2}) || '--';
-                el.className = 'text-sm font-medium ' + (item.change_pct >= 0 ? 'gain' : 'loss');
-            }
-        });
-
-        // 更新按钮状态
-        ['stock','crypto','forex'].forEach(t => {
-            const btn = document.getElementById(`quick-btn-${t}`);
-            if(btn) btn.className = `text-xs px-2 py-1 rounded ${t===tab?'bg-sky-500/20 text-sky-400':'bg-white/5 text-gray-400 hover:text-white'}`;
-        });
-    } catch(e){}
-}
-
-function switchSymbol(symbol){
-    klineSymbol = symbol;
-    document.getElementById('kline-symbol').value = symbol;
-    loadKlineData();
-}
-
-function changeKlineSymbol(symbol){
-    klineSymbol = symbol;
-    loadKlineData();
-}
-
-function changeKlinePeriod(period){
-    klinePeriod = period;
-    loadKlineData();
-}
-
-function refreshKline(){
-    loadKlineData();
-    loadQuickMarket();
-}
-
-function startKlineUpdate(){
-    // 清除旧定时器
-    if(klineUpdateInterval) clearInterval(klineUpdateInterval);
-    
-    // 每30秒更新一次实时数据
-    klineUpdateInterval = setInterval(async () => {
-        if(S.page !== 'kline'){
-            clearInterval(klineUpdateInterval);
-            return;
-        }
-        try {
-            const r = await api(`/market/realtime/${klineSymbol}`);
-            if(r){
-                const change = r.change || 0;
-                const pct = r.change_pct || 0;
-                document.getElementById('kline-price').textContent = r.price?.toLocaleString() || '--';
-                const changeEl = document.getElementById('kline-change');
-                const pctEl = document.getElementById('kline-change-pct');
-                changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(2);
-                changeEl.className = 'text-lg font-medium ' + (change >= 0 ? 'gain' : 'loss');
-                pctEl.textContent = (pct >= 0 ? '+' : '') + pct.toFixed(2) + '%';
-                pctEl.className = 'text-lg font-medium ' + (pct >= 0 ? 'gain' : 'loss');
-                document.getElementById('kline-volume').textContent = formatVolume(r.volume);
-            }
-        } catch(e){}
-    }, 30000);
+// ===== PROFILE PAGE =====
+function renderProfile(){
+const content=document.getElementById('main-content');
+content.innerHTML=`
+<div style="padding:24px">
+<div style="display:flex;align-items:center;gap:20px;margin-bottom:32px">
+<div class="avatar avatar-lg" style="width:80px;height:80px;font-size:32px">${S.user?.username?.[0]?.toUpperCase()||'?'}</div>
+<div>
+<h2 style="font-size:24px;font-weight:700;color:#fff">${S.user?.username||'用户'}</h2>
+<p style="color:#b9bbbe">${S.user?.email||''}</p>
+</div>
+<button onclick="nav('portfolio')" class="btn btn-primary" style="margin-left:auto">查看成绩单</button>
+</div>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+<button class="quote-card" onclick="nav('friends')" style="cursor:pointer;text-align:center">
+<div style="font-size:24px;margin-bottom:8px">👥</div>
+<div style="font-weight:600;color:#fff">好友</div>
+</button>
+<button class="quote-card" onclick="nav('messages')" style="cursor:pointer;text-align:center">
+<div style="font-size:24px;margin-bottom:8px">💬</div>
+<div style="font-weight:600;color:#fff">私信</div>
+</button>
+<button class="quote-card" onclick="nav('groups')" style="cursor:pointer;text-align:center">
+<div style="font-size:24px;margin-bottom:8px">👥</div>
+<div style="font-weight:600;color:#fff">群聊</div>
+</button>
+</div>
+</div>`;
 }
 
 // ===== INIT =====
+function renderAll(){
+renderUserPanel();
+renderGuilds();
+showHome();
+}
+function renderUserPanel(){
+const avatar=document.getElementById('user-avatar');
+const name=document.getElementById('user-name');
+if(S.user){
+avatar.textContent=S.user.username[0].toUpperCase();
+name.textContent=S.user.username;
+}else{
+avatar.textContent='?';
+name.textContent='未登录';
+}
+}
+
+// Init
 renderAll();
-// Check token on load
+
+// Check auth
 if(S.token){
-    api('/auth/me').catch(()=>doLogout());
-    // 加载聊天设置
-    initChatSettings().catch(()=>{});
+api('/auth/me').then(r=>{if(!r||!r.id)doLogout();else{S.user=r;localStorage.setItem('qt_user',JSON.stringify(r));renderUserPanel();}}).catch(()=>{});
 }
 </script>
-<script src="/video-call.js"></script>
+
+<!-- 第三阶段：交易社区功能 -->
+<script src="/trading_community.js"></script>
 </body>
 </html>

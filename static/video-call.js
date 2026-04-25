@@ -146,7 +146,7 @@ function isSecureContext() {
 function getMediaErrorMessage(err) {
     const name = err.name || '';
     const message = err.message || '';
-    
+
     // NotAllowedError - 用户拒绝或权限未授予
     if (name === 'NotAllowedError' || message.includes('Permission denied') || message.includes('Permission denied')) {
         if (!isSecureContext()) {
@@ -154,36 +154,49 @@ function getMediaErrorMessage(err) {
         }
         return '摄像头/麦克风权限被拒绝，请在浏览器设置中允许访问';
     }
-    
+
     // NotFoundError - 没有找到设备
     if (name === 'NotFoundError' || message.includes('DevicesNotFoundError')) {
         return '未检测到摄像头或麦克风设备';
     }
-    
+
     // NotReadableError - 设备被占用
     if (name === 'NotReadableError' || message.includes('NotReadableError')) {
         return '摄像头/麦克风被其他应用占用';
     }
-    
+
     // OverconstrainedError - 设备不支持请求的参数
     if (name === 'OverconstrainedError') {
         return '摄像头不支持请求的画质设置';
     }
-    
+
     // HTTP 环境
     if (!isSecureContext()) {
         return 'HTTP 页面无法访问摄像头，请使用 HTTPS 访问';
     }
-    
+
     return '无法访问摄像头/麦克风: ' + (message || '未知错误');
 }
 
-// 开始视频通话
+// 检查可用设备
+async function checkAvailableDevices() {
+    try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        VC.hasVideoDevice = devices.some(d => d.kind === 'videoinput');
+        VC.hasAudioDevice = devices.some(d => d.kind === 'audioinput');
+        console.log('[设备检测] 视频设备:', VC.hasVideoDevice, '音频设备:', VC.hasAudioDevice);
+        return { hasVideo: VC.hasVideoDevice, hasAudio: VC.hasAudioDevice };
+    } catch (e) {
+        console.error('[设备检测] 失败:', e);
+        return { hasVideo: true, hasAudio: true }; // 默认假设有设备
+    }
+}
+
+// 开始视频通话 - 修复版
 VC.start = async function() {
     // 检查是否为安全上下文
     if (!isSecureContext()) {
         toast('请使用 HTTPS 访问此页面以使用视频通话功能', 'error');
-        // 显示 HTTPS 提示
         document.getElementById('modal-body').innerHTML = `
             <div class="text-center py-8">
                 <div class="text-5xl mb-4">🔒</div>
@@ -202,7 +215,7 @@ VC.start = async function() {
         `;
         return;
     }
-    
+
     const roomIdInput = document.getElementById('vc-room-id');
     const roomId = roomIdInput.value.trim() || 'room_' + Date.now();
 
@@ -211,25 +224,66 @@ VC.start = async function() {
     document.getElementById('vc-start').classList.add('hidden');
     document.getElementById('vc-active').classList.remove('hidden');
 
-    // 获取本地媒体
+    // 先检查可用设备
+    const devices = await checkAvailableDevices();
+
+    // 获取本地媒体 - 根据设备情况调整请求
     try {
-        VC.localStream = await navigator.mediaDevices.getUserMedia({
-            video: true,
-            audio: true
-        });
-        document.getElementById('vc-local-video').srcObject = VC.localStream;
+        const mediaConstraints = {};
+
+        // 只有检测到视频设备才请求视频
+        if (devices.hasVideo) {
+            mediaConstraints.video = {
+                facingMode: 'user', // 前置摄像头优先
+                width: { ideal: 1280 },
+                height: { ideal: 720 }
+            };
+        }
+
+        // 只有检测到音频设备才请求音频
+        if (devices.hasAudio) {
+            mediaConstraints.audio = {
+                echoCancellation: true,
+                noiseSuppression: true
+            };
+        }
+
+        // 如果都没有设备，尝试获取任意设备
+        if (!devices.hasVideo && !devices.hasAudio) {
+            mediaConstraints.audio = true;
+        }
+
+        console.log('[媒体请求] 约束条件:', mediaConstraints);
+        VC.localStream = await navigator.mediaDevices.getUserMedia(mediaConstraints);
+
+        // 更新UI
+        const localVideo = document.getElementById('vc-local-video');
+        if (devices.hasVideo && VC.localStream.getVideoTracks().length > 0) {
+            localVideo.srcObject = VC.localStream;
+            localVideo.style.display = 'block';
+        } else {
+            localVideo.style.display = 'none';
+            // 显示音频通话提示
+            toast('已加入语音通话（无摄像头）', 'info');
+        }
+
     } catch (err) {
-        console.error('Failed to get media:', err);
-        toast(getMediaErrorMessage(err), 'error');
-        // 显示错误提示界面
-        document.getElementById('vc-video-grid').innerHTML = `
-            <div class="col-span-2 text-center py-8">
-                <div class="text-4xl mb-3">📷</div>
-                <p class="text-gray-400 text-sm">${getMediaErrorMessage(err)}</p>
-                <button onclick="VC.end()" class="btn btn-ghost mt-4">返回</button>
-            </div>
-        `;
-        return;
+        console.error('[媒体获取] 失败:', err);
+
+        // 如果音视频都失败，尝试仅音频
+        if (err.name !== 'NotFoundError' || devices.hasAudio) {
+            try {
+                VC.localStream = await navigator.mediaDevices.getUserMedia({
+                    audio: true,
+                    video: false
+                });
+                toast('已加入语音通话（无摄像头）', 'info');
+            } catch (err2) {
+                // 如果连音频都没有，提示但仍可加入纯文字通话
+                console.error('[媒体获取] 音频也失败:', err2);
+                toast('未检测到麦克风，将以纯文字模式加入', 'warning');
+            }
+        }
     }
 
     // 连接信令服务器
