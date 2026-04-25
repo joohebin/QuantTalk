@@ -51,15 +51,15 @@ async def update_profile(
     if avatar and avatar.filename:
         import os
         import uuid
-        # 保存头像到 static/avatars/
+        # 保存头像到 uploads/avatars/
         ext = os.path.splitext(avatar.filename)[1] or '.jpg'
-        filename = f"{uuid.uuid4()}{ext}"
-        avatar_path = f"static/avatars/{filename}"
-        os.makedirs("static/avatars", exist_ok=True)
+        filename = f"avatar_{current_user.id}_{uuid.uuid4().hex}{ext}"
+        avatar_path = f"uploads/avatars/{filename}"
+        os.makedirs("uploads/avatars", exist_ok=True)
         with open(avatar_path, "wb") as f:
             content = await avatar.read()
             f.write(content)
-        current_user.avatar = f"/{avatar_path}"
+        current_user.avatar = f"/uploads/avatars/{filename}"
     if bio is not None:
         current_user.bio = bio
     if old_password and new_password:

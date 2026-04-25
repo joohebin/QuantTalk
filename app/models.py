@@ -587,3 +587,17 @@ SUPPORTED_EXCHANGES = {
         "docs_url": "https://docs.btcmarkets.net/"
     },
 }
+
+
+class VideoRoom(Base):
+    """视频通话房间"""
+    __tablename__ = "video_rooms"
+    id = Column(Integer, primary_key=True, index=True)
+    room_id = Column(String(50), unique=True, nullable=False, index=True)
+    host_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    host_username = Column(String(50), nullable=False)
+    room_type = Column(String(20), default="video")  # video / audio / live
+    max_participants = Column(Integer, default=10)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, server_default=func.now())
+    ended_at = Column(DateTime, nullable=True)

@@ -5,7 +5,7 @@ FastAPI Application Entry Point
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
-from app.api import auth, posts, users, market, notifications, communities, ws, messages, quantai, trademux, exchanges, upload
+from app.api import auth, posts, users, market, notifications, communities, ws, messages, quantai, trademux, exchanges, upload, room_signaling
 from app.database import engine, Base
 import uvicorn
 
@@ -33,6 +33,7 @@ app.include_router(trademux.router, tags=["TradeMux MT5"])
 app.include_router(exchanges.router, tags=["交易所配置"])
 app.include_router(ws.router, tags=["WebSocket"])
 app.include_router(upload.router, tags=["上传"])
+app.include_router(room_signaling.router, tags=["视频通话"])
 
 # 上传文件目录 - 必须在 static 之前挂载
 import os

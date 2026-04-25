@@ -137,8 +137,72 @@ function showVideoCallModal() {
     modal.style.display = 'flex';
 }
 
+// 检测是否为 HTTPS
+function isSecureContext() {
+    return location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+}
+
+// 获取用户友好的错误信息
+function getMediaErrorMessage(err) {
+    const name = err.name || '';
+    const message = err.message || '';
+    
+    // NotAllowedError - 用户拒绝或权限未授予
+    if (name === 'NotAllowedError' || message.includes('Permission denied') || message.includes('Permission denied')) {
+        if (!isSecureContext()) {
+            return '当前页面不安全（HTTP），请使用 HTTPS 访问才能使用摄像头/麦克风';
+        }
+        return '摄像头/麦克风权限被拒绝，请在浏览器设置中允许访问';
+    }
+    
+    // NotFoundError - 没有找到设备
+    if (name === 'NotFoundError' || message.includes('DevicesNotFoundError')) {
+        return '未检测到摄像头或麦克风设备';
+    }
+    
+    // NotReadableError - 设备被占用
+    if (name === 'NotReadableError' || message.includes('NotReadableError')) {
+        return '摄像头/麦克风被其他应用占用';
+    }
+    
+    // OverconstrainedError - 设备不支持请求的参数
+    if (name === 'OverconstrainedError') {
+        return '摄像头不支持请求的画质设置';
+    }
+    
+    // HTTP 环境
+    if (!isSecureContext()) {
+        return 'HTTP 页面无法访问摄像头，请使用 HTTPS 访问';
+    }
+    
+    return '无法访问摄像头/麦克风: ' + (message || '未知错误');
+}
+
 // 开始视频通话
 VC.start = async function() {
+    // 检查是否为安全上下文
+    if (!isSecureContext()) {
+        toast('请使用 HTTPS 访问此页面以使用视频通话功能', 'error');
+        // 显示 HTTPS 提示
+        document.getElementById('modal-body').innerHTML = `
+            <div class="text-center py-8">
+                <div class="text-5xl mb-4">🔒</div>
+                <h3 class="text-lg font-semibold mb-3">需要 HTTPS</h3>
+                <p class="text-gray-400 text-sm mb-4">
+                    视频通话需要安全连接（HTTPS）才能访问摄像头和麦克风。
+                </p>
+                <p class="text-xs text-gray-500 mb-4">
+                    当前地址: ${location.href}
+                </p>
+                <p class="text-xs text-yellow-400">
+                    请使用 <span class="font-mono">https://</span> 开头访问
+                </p>
+                <button onclick="closeModal()" class="btn btn-ghost mt-4">关闭</button>
+            </div>
+        `;
+        return;
+    }
+    
     const roomIdInput = document.getElementById('vc-room-id');
     const roomId = roomIdInput.value.trim() || 'room_' + Date.now();
 
@@ -156,7 +220,15 @@ VC.start = async function() {
         document.getElementById('vc-local-video').srcObject = VC.localStream;
     } catch (err) {
         console.error('Failed to get media:', err);
-        toast('无法访问摄像头/麦克风: ' + err.message, 'error');
+        toast(getMediaErrorMessage(err), 'error');
+        // 显示错误提示界面
+        document.getElementById('vc-video-grid').innerHTML = `
+            <div class="col-span-2 text-center py-8">
+                <div class="text-4xl mb-3">📷</div>
+                <p class="text-gray-400 text-sm">${getMediaErrorMessage(err)}</p>
+                <button onclick="VC.end()" class="btn btn-ghost mt-4">返回</button>
+            </div>
+        `;
         return;
     }
 
@@ -196,6 +268,7 @@ VC.handleMessage = async function(msg) {
     switch (msg.type) {
         case 'room_joined':
             // 加入房间成功
+            console.log('[WebRTC] 加入房间成功，收到已有参与者:', msg.participants);
             VC.participants = {};
             msg.participants.forEach(p => {
                 VC.participants[p.user_id] = p;
@@ -210,7 +283,8 @@ VC.handleMessage = async function(msg) {
             VC.participants[msg.user_id] = { username: msg.username, muted: false, video_on: true };
             VC.updateParticipantsUI();
             toast(`${msg.username} 加入了通话`, 'info');
-            // 新用户会被信令服务器通知其他人向它发起连接
+            // 向新加入的用户发起连接
+            VC.createPeerConnection(msg.user_id, true);
             break;
 
         case 'user_left':
@@ -266,11 +340,14 @@ VC.handleMessage = async function(msg) {
 
 // 创建 peer connection
 VC.createPeerConnection = async function(peerId, isInitiator) {
+    console.log('[WebRTC] 创建 PeerConnection:', { peerId, isInitiator });
+    
     const pc = new RTCPeerConnection({
         iceServers: [STUN_CONFIG, TURN_CONFIG]
     });
 
     VC.peerConnections[peerId] = pc;
+    console.log('[WebRTC] PeerConnection 已创建');
 
     // 添加本地轨道
     VC.localStream.getTracks().forEach(track => {
@@ -279,6 +356,7 @@ VC.createPeerConnection = async function(peerId, isInitiator) {
 
     // 处理 ICE candidate
     pc.onicecandidate = function(event) {
+        console.log('[WebRTC] ICE candidate:', event.candidate);
         if (event.candidate) {
             VC.ws.send(JSON.stringify({
                 type: 'ice_candidate',
@@ -290,13 +368,19 @@ VC.createPeerConnection = async function(peerId, isInitiator) {
 
     // 处理远程轨道
     pc.ontrack = function(event) {
+        console.log('[WebRTC] 收到远程轨道:', peerId, event.streams);
         VC.remoteStreams[peerId] = event.streams[0];
         VC.addRemoteVideo(peerId, event.streams[0]);
     };
 
     // 连接状态变化
     pc.onconnectionstatechange = function() {
-        console.log(`Peer ${peerId} connection state:`, pc.connectionState);
+        console.log(`[WebRTC] Peer ${peerId} connection state:`, pc.connectionState);
+    };
+
+    // ICE 连接状态
+    pc.oniceconnectionstatechange = function() {
+        console.log(`[WebRTC] Peer ${peerId} ICE state:`, pc.iceConnectionState);
     };
 
     if (isInitiator) {
@@ -315,6 +399,7 @@ VC.createPeerConnection = async function(peerId, isInitiator) {
 
 // 处理 offer
 VC.handleOffer = async function(from, sdp) {
+    console.log('[WebRTC] 收到 Offer from:', from);
     // 如果还没有 peer connection，先创建
     if (!VC.peerConnections[from]) {
         await VC.createPeerConnection(from, false);
@@ -328,10 +413,12 @@ VC.handleOffer = async function(from, sdp) {
         to: from,
         sdp: pc.localDescription
     }));
+    console.log('[WebRTC] 已发送 Answer to:', from);
 };
 
 // 处理 answer
 VC.handleAnswer = async function(from, sdp) {
+    console.log('[WebRTC] 收到 Answer from:', from);
     const pc = VC.peerConnections[from];
     if (pc) {
         await pc.setRemoteDescription(new RTCSessionDescription(sdp));
@@ -340,12 +427,13 @@ VC.handleAnswer = async function(from, sdp) {
 
 // 处理 ICE candidate
 VC.handleIceCandidate = async function(from, candidate) {
+    console.log('[WebRTC] 收到 ICE candidate from:', from, candidate);
     const pc = VC.peerConnections[from];
     if (pc && candidate) {
         try {
             await pc.addIceCandidate(new RTCIceCandidate(candidate));
         } catch (err) {
-            console.error('Error adding ICE candidate:', err);
+            console.error('[WebRTC] Error adding ICE candidate:', err);
         }
     }
 };
@@ -412,6 +500,12 @@ VC.toggleVideo = function() {
 
 // 共享屏幕
 VC.shareScreen = async function() {
+    // 检查 HTTPS
+    if (!isSecureContext()) {
+        toast('屏幕共享需要 HTTPS 连接', 'error');
+        return;
+    }
+    
     try {
         const screenStream = await navigator.mediaDevices.getDisplayMedia({
             video: true,
@@ -428,15 +522,21 @@ VC.shareScreen = async function() {
 
         // 更新本地视频
         document.getElementById('vc-local-video').srcObject = screenStream;
+        toast('屏幕共享已开启', 'success');
 
         // 屏幕共享结束时
         videoTrack.onended = function() {
             VC.toggleVideo();
             VC.toggleVideo();
+            toast('屏幕共享已结束', 'info');
         };
     } catch (err) {
         console.error('Screen share failed:', err);
-        toast('屏幕共享失败', 'error');
+        if (err.name === 'NotAllowedError') {
+            toast('屏幕共享被拒绝或用户取消了操作', 'error');
+        } else {
+            toast('屏幕共享失败', 'error');
+        }
     }
 };
 
