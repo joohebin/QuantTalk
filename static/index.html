@@ -253,7 +253,7 @@ S._viewUserId=id;S.page='profile';renderNav();renderPage();
 }
 async function renderProfile(el){
 const uid=S._viewUserId;if(!uid)return;
-const r=await api('/users/profile/'+uid);if(!r){el.innerHTML='<p class="text-gray-500">用户不存在</p>';return}
+const r=await api('/users/'+uid);if(!r){el.innerHTML='<p class="text-gray-500">用户不存在</p>';return}
 const isSelf=S.user&&S.user.id===uid;
 S._profileTab=isSelf?'posts':'posts'; // 默认显示帖子
 el.innerHTML=`<div class="fade-in">
