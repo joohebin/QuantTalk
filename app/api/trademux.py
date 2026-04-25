@@ -14,7 +14,7 @@ import asyncio
 
 from app.config import TRADEMUX_BASE_URL, TRADEMUX_API_KEY
 
-router = APIRouter()
+router = APIRouter(prefix="/api/trademux", tags=["TradeMux MT5"])
 
 # Pydantic 模型
 class TradeRequest(BaseModel):
