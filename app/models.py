@@ -28,6 +28,13 @@ signal_likes = Table(
     Column("signal_id", Integer, ForeignKey("trading_signals.id"), primary_key=True),
 )
 
+friendships = Table(
+    "friendships", Base.metadata,
+    Column("user_id", Integer, ForeignKey("users.id"), primary_key=True),
+    Column("friend_id", Integer, ForeignKey("users.id"), primary_key=True),
+    Column("created_at", DateTime, server_default=func.now()),
+)
+
 
 class User(Base):
     __tablename__ = "users"
@@ -54,6 +61,10 @@ class User(Base):
     received_messages = relationship("PrivateMessage", foreign_keys="PrivateMessage.receiver_id", back_populates="receiver", cascade="all, delete-orphan")
     trading_signals = relationship("TradingSignal", back_populates="author", cascade="all, delete-orphan")
     portfolio_positions = relationship("PortfolioPosition", back_populates="user", cascade="all, delete-orphan")
+    friends = relationship("User", secondary=friendships, primaryjoin=id == friendships.c.user_id,
+                          secondaryjoin=id == friendships.c.friend_id, backref="friends_of")
+    sent_friend_requests = relationship("FriendRequest", foreign_keys="FriendRequest.from_user_id", cascade="all, delete-orphan")
+    received_friend_requests = relationship("FriendRequest", foreign_keys="FriendRequest.to_user_id", cascade="all, delete-orphan")
 
 
 class Post(Base):
@@ -97,6 +108,21 @@ class Notification(Base):
     created_at = Column(DateTime, server_default=func.now())
 
     user = relationship("User", foreign_keys=[user_id], back_populates="notifications")
+
+
+class FriendRequest(Base):
+    """好友申请表"""
+    __tablename__ = "friend_requests"
+    id = Column(Integer, primary_key=True, index=True)
+    from_user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    to_user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    message = Column(String(500), default="")  # 申请附言
+    status = Column(String(20), default="PENDING")  # PENDING / ACCEPTED / REJECTED
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+    from_user = relationship("User", foreign_keys=[from_user_id])
+    to_user = relationship("User", foreign_keys=[to_user_id])
 
 
 class Community(Base):

@@ -131,3 +131,40 @@ class ChannelMessageResponse(BaseModel):
     author_avatar: Optional[str] = None
     class Config:
         from_attributes = True
+
+
+# === Friend Request ===
+class FriendRequestCreate(BaseModel):
+    to_user_id: int
+    message: Optional[str] = ""
+
+class FriendRequestResponse(BaseModel):
+    id: int
+    from_user_id: int
+    to_user_id: int
+    message: str = ""
+    status: str = "PENDING"
+    created_at: datetime
+    from_username: Optional[str] = None
+    from_avatar: Optional[str] = None
+    to_username: Optional[str] = None
+    to_avatar: Optional[str] = None
+    class Config:
+        from_attributes = True
+
+class FriendResponse(BaseModel):
+    id: int
+    username: str
+    avatar: str = ""
+    bio: str = ""
+    is_online: bool = False
+    friends_count: int = 0
+    created_at: datetime
+    class Config:
+        from_attributes = True
+
+class FriendStatusResponse(BaseModel):
+    is_friend: bool = False
+    has_pending_request_from_me: bool = False
+    has_pending_request_to_me: bool = False
+    request_id: Optional[int] = None
