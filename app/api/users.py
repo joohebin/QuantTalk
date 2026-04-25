@@ -1,5 +1,5 @@
-from typing import Any
-from fastapi import APIRouter, Depends, HTTPException
+from typing import Any, Optional, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, Form, UploadFile as FastAPIUploadFile
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import User, Notification
@@ -52,17 +52,34 @@ def get_user_profile(username: str, current_user: Any = None, db: Session = Depe
 
 
 @router.put("/profile")
-def update_profile(data: UserUpdate, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    if data.avatar is not None:
-        current_user.avatar = data.avatar
-    if data.bio is not None:
-        current_user.bio = data.bio
-    if data.old_password and data.new_password:
-        if not verify_password(data.old_password, current_user.hashed_password):
+async def update_profile(
+    bio: Optional[str] = Form(None),
+    avatar: Optional[FastAPIUploadFile] = File(None),
+    old_password: Optional[str] = Form(None),
+    new_password: Optional[str] = Form(None),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if avatar and avatar.filename:
+        import os
+        import uuid
+        # 保存头像到 static/avatars/
+        ext = os.path.splitext(avatar.filename)[1] or '.jpg'
+        filename = f"{uuid.uuid4()}{ext}"
+        avatar_path = f"static/avatars/{filename}"
+        os.makedirs("static/avatars", exist_ok=True)
+        with open(avatar_path, "wb") as f:
+            content = await avatar.read()
+            f.write(content)
+        current_user.avatar = f"/{avatar_path}"
+    if bio is not None:
+        current_user.bio = bio
+    if old_password and new_password:
+        if not verify_password(old_password, current_user.hashed_password):
             raise HTTPException(400, "wrong password")
-        current_user.hashed_password = hash_password(data.new_password)
+        current_user.hashed_password = hash_password(new_password)
     db.commit()
-    return {"message": "ok"}
+    return {"message": "ok", "avatar": current_user.avatar}
 
 
 @router.post("/follow/{user_id}")

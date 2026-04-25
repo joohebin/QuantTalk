@@ -373,8 +373,20 @@ async function doFollow(uid){
 if(!S.user)return showAuth('login');const r=await api('/users/follow/'+uid,{method:'POST'});if(r){toast(r.message,'success');renderPage()}
 }
 function showProfileEdit(){
-if(!S.user)return;openModal(`<h3 class="font-semibold mb-4">编辑资料</h3>
+if(!S.user)return;
+const avatarUrl=S.user.avatar||'';
+openModal(`<h3 class="font-semibold mb-4">编辑资料</h3>
 <form onsubmit="saveProfile(event)" class="space-y-3">
+<div class="flex items-center gap-4 mb-4">
+<div class="relative">
+<img id="avatar-preview" src="${avatarUrl||'https://api.dicebear.com/7.x/avataaars/svg?seed='+S.user.username}" class="w-20 h-20 rounded-full object-cover border-2 border-base-300">
+<label class="absolute bottom-0 right-0 bg-primary text-primary-content rounded-full p-1.5 cursor-pointer hover:bg-primary/80 transition-colors" title="更换头像">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+<input type="file" id="avatar-input" accept="image/*" class="hidden" onchange="previewAvatar(this)">
+</label>
+</div>
+<div class="text-sm text-gray-500">点击图标更换头像<br>支持 JPG/PNG/GIF/WebP</div>
+</div>
 <div><label class="text-xs text-gray-500 block mb-1">用户名</label><input class="input" value="${esc(S.user.username)}" disabled></div>
 <div><label class="text-xs text-gray-500 block mb-1">简介</label><textarea id="edit-bio" class="input" rows="2">${esc(S.user.bio||'')}</textarea></div>
 <div class="divider"></div><h4 class="text-sm font-medium">修改密码（可选）</h4>
@@ -382,11 +394,32 @@ if(!S.user)return;openModal(`<h3 class="font-semibold mb-4">编辑资料</h3>
 <div><label class="text-xs text-gray-500 block mb-1">新密码</label><input name="new_password" type="password" class="input"></div>
 <button type="submit" class="btn btn-primary w-full">保存</button></form>`);
 }
+function previewAvatar(input){
+if(input.files&&input.files[0]){
+const reader=new FileReader();
+reader.onload=function(e){document.getElementById('avatar-preview').src=e.target.result;}
+reader.readAsDataURL(input.files[0]);
+}
+}
 async function saveProfile(e){
-e.preventDefault();const fd=new FormData(e.target);const data={bio:document.getElementById('edit-bio').value};
-if(fd.get('old_password')){data.old_password=fd.get('old_password');data.new_password=fd.get('new_password')}
-const r=await api('/users/profile',{method:'PUT',body:JSON.stringify(data)});
-if(r?.message){const mr=await api('/auth/me');if(mr){S.user=mr;localStorage.setItem('qt_user',JSON.stringify(mr))}closeModal();toast('保存成功','success');renderAll()}else toast(r?.detail||'失败','error');
+e.preventDefault();
+const fd=new FormData();
+fd.append('bio',document.getElementById('edit-bio').value);
+const avatarInput=document.getElementById('avatar-input');
+if(avatarInput.files&&avatarInput.files[0]){
+fd.append('avatar',avatarInput.files[0]);
+}
+const pw=document.querySelector('[name="old_password"]').value;
+if(pw){
+fd.append('old_password',pw);
+fd.append('new_password',document.querySelector('[name="new_password"]').value);
+}
+const r=await api('/users/profile',{method:'PUT',body:fd,headers:{'Content-Type':undefined}});
+if(r?.message||r?.id){
+const mr=await api('/auth/me');
+if(mr){S.user=mr;localStorage.setItem('qt_user',JSON.stringify(mr));renderAll();renderNav();}
+closeModal();toast('保存成功','success');
+}else toast(r?.detail||'失败','error');
 }
 
 // ===== DISCOVER =====
