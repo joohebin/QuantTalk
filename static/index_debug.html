@@ -80,6 +80,58 @@ body{background:#1a1a1a;color:#dcddde;font-family:-apple-system,BlinkMacSystemFo
 /* Loading */
 .loading{text-align:center;padding:40px;color:#b9bbbe}
 .loading h2{color:#fff;margin-bottom:12px}
+
+/* Auth Modal - 统一登录注册弹窗 */
+.auth-modal{background:#36393f;border-radius:8px;width:100%;max-width:380px;padding:0;overflow:hidden}
+.auth-header{display:flex;border-bottom:1px solid #4f545c}
+.auth-tab{flex:1;padding:14px 0;text-align:center;font-size:15px;font-weight:500;color:#b9bbbe;cursor:pointer;border:none;background:none;transition:all .2s}
+.auth-tab:hover{color:#fff}
+.auth-tab.active{color:#fff;border-bottom:2px solid #5865f2}
+.auth-body{padding:24px}
+
+/* 子选项卡 */
+.auth-sub-tabs{display:flex;background:#2f3136;border-radius:6px;padding:4px;margin-bottom:20px}
+.auth-sub-tab{flex:1;padding:8px 12px;text-align:center;font-size:13px;color:#b9bbbe;cursor:pointer;border-radius:4px;transition:all .2s}
+.auth-sub-tab:hover{color:#fff}
+.auth-sub-tab.active{background:#5865f2;color:#fff}
+
+/* 输入框组 */
+.input-group{display:flex;gap:8px;margin-bottom:12px}
+.input-group .modal-input{flex:1}
+.modal-input{width:100%;background:#404045;border:1px solid #202225;border-radius:4px;padding:12px;color:#fff;font-size:14px;outline:none;transition:border .2s}
+.modal-input:focus{border-color:#5865f2}
+.modal-input::placeholder{color:#72767d}
+
+/* 验证码按钮 */
+.verify-btn{padding:12px 16px;background:#484b52;border:none;border-radius:4px;color:#fff;font-size:13px;cursor:pointer;white-space:nowrap;transition:background .2s}
+.verify-btn:hover{background:#5865f2}
+.verify-btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* 注册按钮 - 橙色 */
+.btn-register{width:100%;padding:14px;background:linear-gradient(135deg,#f7931a,#e68a00);border:none;border-radius:6px;color:#fff;font-size:15px;font-weight:600;cursor:pointer;margin-top:8px;transition:all .2s}
+.btn-register:hover{background:linear-gradient(135deg,#ffaa33,#f7931a);box-shadow:0 4px 15px rgba(247,147,26,.3)}
+
+/* 国家码下拉 */
+.country-select{padding:12px;background:#404045;border:1px solid #202225;border-radius:4px;color:#fff;font-size:14px;min-width:90px;cursor:pointer}
+.country-select:focus{border-color:#5865f2;outline:none}
+
+/* 底部链接 */
+.auth-footer{text-align:center;margin-top:20px;padding-top:16px;border-top:1px solid #4f545c}
+.auth-footer span{color:#b9bbbe;font-size:13px}
+.auth-footer a{color:#00aff4;text-decoration:none;cursor:pointer}
+.auth-footer a:hover{text-decoration:underline}
+
+/* 登录表单 */
+.login-form{display:none}
+.login-form.active{display:block}
+.reg-form{display:none}
+.reg-form.active{display:block}
+
+/* 验证码输入框 */
+.code-input{width:80px;text-align:center;letter-spacing:4px;font-size:16px}
+
+/* 倒计时 */
+.countdown{color:#72767d;font-size:12px}
 </style>
 </head>
 <body>
@@ -149,7 +201,7 @@ body{background:#1a1a1a;color:#dcddde;font-family:-apple-system,BlinkMacSystemFo
                 <h2>QuantTalk</h2>
                 <p>量化交易社交平台</p>
                 <p style="margin-top:20px">点击上方频道开始聊天</p>
-                <p style="margin-top:8px">或 <a href="#" onclick="showLoginModal()" style="color:#00aff4">登录</a> / <a href="#" onclick="showRegisterModal()" style="color:#00aff4">注册</a></p>
+                <p style="margin-top:8px">或 <a href="#" onclick="showAuthModal('login')" style="color:#00aff4">登录</a> / <a href="#" onclick="showAuthModal('register')" style="color:#00aff4">注册</a></p>
             </div>
         </div>
         <div class="main-footer">
@@ -167,26 +219,71 @@ body{background:#1a1a1a;color:#dcddde;font-family:-apple-system,BlinkMacSystemFo
     </div>
 </div>
 
-<!-- Login Modal -->
-<div id="login-modal" class="modal-bg" style="display:none">
-    <div class="modal">
-        <div class="modal-header">登录</div>
-        <input type="text" class="modal-input" id="login-username" placeholder="用户名">
-        <input type="password" class="modal-input" id="login-password" placeholder="密码">
-        <button class="modal-btn" onclick="doLogin()">登录</button>
-        <div class="modal-link">没有账号？<a href="#" onclick="switchToRegister()">注册</a></div>
-    </div>
-</div>
+<!-- 统一认证弹窗 -->
+<div id="auth-modal" class="modal-bg" style="display:none" onclick="closeAuthModal(event)">
+    <div class="auth-modal" onclick="event.stopPropagation()">
+        <!-- 顶部选项卡 -->
+        <div class="auth-header">
+            <button class="auth-tab" id="tab-login" onclick="switchAuthTab('login')">登录</button>
+            <button class="auth-tab active" id="tab-register" onclick="switchAuthTab('register')">注册</button>
+        </div>
 
-<!-- Register Modal -->
-<div id="register-modal" class="modal-bg" style="display:none">
-    <div class="modal">
-        <div class="modal-header">注册</div>
-        <input type="text" class="modal-input" id="reg-username" placeholder="用户名">
-        <input type="email" class="modal-input" id="reg-email" placeholder="邮箱">
-        <input type="password" class="modal-input" id="reg-password" placeholder="密码">
-        <button class="modal-btn" onclick="doRegister()">注册</button>
-        <div class="modal-link">已有账号？<a href="#" onclick="switchToLogin()">登录</a></div>
+        <!-- 登录表单 -->
+        <div class="auth-body login-form active" id="login-form">
+            <input type="text" class="modal-input" id="login-username" placeholder="用户名 / 手机号" style="margin-bottom:12px">
+            <input type="password" class="modal-input" id="login-password" placeholder="密码" style="margin-bottom:16px">
+            <button class="btn-register" onclick="doLogin()">登录</button>
+            <div class="auth-footer">
+                <span>没有账号？</span>
+                <a onclick="switchAuthTab('register')">去注册</a>
+            </div>
+        </div>
+
+        <!-- 注册表单 -->
+        <div class="auth-body reg-form" id="register-form">
+            <!-- 子选项卡 -->
+            <div class="auth-sub-tabs">
+                <div class="auth-sub-tab active" id="sub-tab-phone" onclick="switchRegType('phone')">手机号注册</div>
+                <div class="auth-sub-tab" id="sub-tab-email" onclick="switchRegType('email')">邮箱注册</div>
+            </div>
+
+            <!-- 手机号注册 -->
+            <div id="phone-reg" style="display:block">
+                <div class="input-group" style="margin-bottom:12px">
+                    <select class="country-select" id="country-code">
+                        <option value="+86">+86 中国</option>
+                        <option value="+1">+1 美国</option>
+                        <option value="+81">+81 日本</option>
+                        <option value="+82">+82 韩国</option>
+                        <option value="+44">+44 英国</option>
+                        <option value="+65">+65 新加坡</option>
+                        <option value="+852">+852 香港</option>
+                        <option value="+853">+853 澳门</option>
+                        <option value="+886">+886 台湾</option>
+                    </select>
+                    <input type="tel" class="modal-input" id="reg-phone" placeholder="请输入手机号">
+                </div>
+                <div class="input-group">
+                    <input type="text" class="modal-input code-input" id="reg-phone-code" placeholder="验证码" maxlength="6">
+                    <button class="verify-btn" id="btn-phone-code" onclick="sendPhoneCode()">获取验证码</button>
+                </div>
+            </div>
+
+            <!-- 邮箱注册 -->
+            <div id="email-reg" style="display:none">
+                <input type="email" class="modal-input" id="reg-email" placeholder="请输入邮箱" style="margin-bottom:12px">
+                <div class="input-group">
+                    <input type="text" class="modal-input code-input" id="reg-email-code" placeholder="验证码" maxlength="6">
+                    <button class="verify-btn" id="btn-email-code" onclick="sendEmailCode()">获取验证码</button>
+                </div>
+            </div>
+
+            <button class="btn-register" onclick="doRegister()">注册</button>
+            <div class="auth-footer">
+                <span>已有账号？</span>
+                <a onclick="switchAuthTab('login')">去登录</a>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -229,16 +326,81 @@ function toast(msg, type = 'info') {
     setTimeout(() => t.remove(), 3000);
 }
 
-// Auth
-function showLoginModal() { document.getElementById('login-modal').style.display = 'flex'; }
-function showRegisterModal() { document.getElementById('register-modal').style.display = 'flex'; }
-function closeModals() { document.getElementById('login-modal').style.display = 'none'; document.getElementById('register-modal').style.display = 'none'; }
-function switchToLogin() { closeModals(); showLoginModal(); }
-function switchToRegister() { closeModals(); showRegisterModal(); }
+// Auth Modal
+function showAuthModal(tab = 'login') {
+    document.getElementById('auth-modal').style.display = 'flex';
+    switchAuthTab(tab);
+}
+
+function closeAuthModal(e) {
+    if (e && e.target !== e.currentTarget) return;
+    document.getElementById('auth-modal').style.display = 'none';
+}
+
+function switchAuthTab(tab) {
+    // 更新顶部选项卡
+    document.getElementById('tab-login').classList.toggle('active', tab === 'login');
+    document.getElementById('tab-register').classList.toggle('active', tab === 'register');
+    // 切换表单
+    document.getElementById('login-form').classList.toggle('active', tab === 'login');
+    document.getElementById('register-form').classList.toggle('active', tab === 'register');
+}
+
+function switchRegType(type) {
+    document.getElementById('sub-tab-phone').classList.toggle('active', type === 'phone');
+    document.getElementById('sub-tab-email').classList.toggle('active', type === 'email');
+    document.getElementById('phone-reg').style.display = type === 'phone' ? 'block' : 'none';
+    document.getElementById('email-reg').style.display = type === 'email' ? 'block' : 'none';
+}
+
+// 发送手机验证码
+function sendPhoneCode() {
+    const phone = document.getElementById('reg-phone').value.trim();
+    if (!phone) { toast('请输入手机号', 'error'); return; }
+    const btn = document.getElementById('btn-phone-code');
+    btn.disabled = true;
+    let countdown = 60;
+    btn.textContent = `${countdown}秒后重试`;
+    const timer = setInterval(() => {
+        countdown--;
+        if (countdown <= 0) {
+            clearInterval(timer);
+            btn.disabled = false;
+            btn.textContent = '获取验证码';
+        } else {
+            btn.textContent = `${countdown}秒后重试`;
+        }
+    }, 1000);
+    // 模拟发送
+    toast('验证码已发送', 'success');
+}
+
+// 发送邮箱验证码
+function sendEmailCode() {
+    const email = document.getElementById('reg-email').value.trim();
+    if (!email || !email.includes('@')) { toast('请输入有效邮箱', 'error'); return; }
+    const btn = document.getElementById('btn-email-code');
+    btn.disabled = true;
+    let countdown = 60;
+    btn.textContent = `${countdown}秒后重试`;
+    const timer = setInterval(() => {
+        countdown--;
+        if (countdown <= 0) {
+            clearInterval(timer);
+            btn.disabled = false;
+            btn.textContent = '获取验证码';
+        } else {
+            btn.textContent = `${countdown}秒后重试`;
+        }
+    }, 1000);
+    // 模拟发送
+    toast('验证码已发送', 'success');
+}
 
 async function doLogin() {
-    const username = document.getElementById('login-username').value;
+    const username = document.getElementById('login-username').value.trim();
     const password = document.getElementById('login-password').value;
+    if (!username || !password) { toast('请填写用户名和密码', 'error'); return; }
     try {
         const r = await api('/api/auth/login', {
             method: 'POST',
@@ -248,27 +410,33 @@ async function doLogin() {
         S.user = r.user;
         localStorage.setItem('qt_token', S.token);
         localStorage.setItem('qt_user', JSON.stringify(S.user));
-        closeModals();
+        closeAuthModal();
         toast('登录成功！', 'success');
         renderUserPanel();
     } catch(e) {
-        toast('登录失败', 'error');
+        toast('登录失败，请检查用户名和密码', 'error');
     }
 }
 
 async function doRegister() {
-    const username = document.getElementById('reg-username').value;
-    const email = document.getElementById('reg-email').value;
-    const password = document.getElementById('reg-password').value;
-    try {
-        const r = await api('/api/auth/register', {
-            method: 'POST',
-            body: JSON.stringify({ username, email, password })
-        });
-        toast('注册成功，请登录', 'success');
-        switchToLogin();
-    } catch(e) {
-        toast('注册失败', 'error');
+    // 获取当前注册类型
+    const isPhone = document.getElementById('sub-tab-phone').classList.contains('active');
+    
+    if (isPhone) {
+        const phone = document.getElementById('reg-phone').value.trim();
+        const code = document.getElementById('reg-phone-code').value.trim();
+        if (!phone) { toast('请输入手机号', 'error'); return; }
+        if (!code || code.length !== 6) { toast('请输入6位验证码', 'error'); return; }
+        // 模拟手机号注册成功
+        toast('手机号注册功能开发中，请使用邮箱注册', 'info');
+        return;
+    } else {
+        const email = document.getElementById('reg-email').value.trim();
+        const code = document.getElementById('reg-email-code').value.trim();
+        if (!email || !email.includes('@')) { toast('请输入有效邮箱', 'error'); return; }
+        if (!code || code.length !== 6) { toast('请输入6位验证码', 'error'); return; }
+        // 模拟邮箱注册成功（实际调用API需要后端支持）
+        toast('邮箱注册功能开发中', 'info');
     }
 }
 
