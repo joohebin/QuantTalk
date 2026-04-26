@@ -152,7 +152,319 @@ body{background:#1a1a1a;color:#dcddde;font-family:'Inter',sans-serif;margin:0;he
 .modal h3{color:#fff;font-size:18px;font-weight:600}
 .modal input,.modal select,.modal textarea{background:#404045;border-color:#202225;color:#dcddde}
 .modal input:focus,.modal textarea:focus{border-color:#5865f2}
-</style>
+
+/* ========================================
+   钱包登录弹窗样式
+   ======================================== */
+
+/* 钱包弹窗遮罩 */
+.wallet-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.wallet-modal-overlay.active {
+    opacity: 1;
+}
+
+/* 钱包弹窗容器 */
+.wallet-modal {
+    width: 420px;
+    height: 580px;
+    background: #1e1f22;
+    border: 1px solid #36393f;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transform: scale(0.95);
+    transition: transform 0.3s ease;
+}
+
+.wallet-modal-overlay.active .wallet-modal {
+    transform: scale(1);
+}
+
+/* 弹窗头部 */
+.wallet-modal-header {
+    height: 60px;
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(54, 57, 63, 0.5);
+    flex-shrink: 0;
+}
+
+.wallet-modal-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.wallet-modal-title .logo-icon {
+    width: 24px;
+    height: 24px;
+    background: linear-gradient(135deg, #f9a825 0%, #ff9800 100%);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    color: #1e1f22;
+    font-weight: bold;
+}
+
+.wallet-modal-title .title-text {
+    color: #fff;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.wallet-modal-close {
+    background: none;
+    border: none;
+    color: #b9bbbe;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.2s;
+    line-height: 1;
+}
+
+.wallet-modal-close:hover {
+    color: #f9a825;
+    background: rgba(249, 168, 37, 0.1);
+}
+
+/* 弹窗提示区 */
+.wallet-modal-hint {
+    height: 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 20px;
+    flex-shrink: 0;
+}
+
+.wallet-modal-hint .hint-title {
+    color: #fff;
+    font-size: 16px;
+    text-align: center;
+}
+
+.wallet-modal-hint .hint-desc {
+    color: #b9bbbe;
+    font-size: 12px;
+    text-align: center;
+    margin-top: 8px;
+}
+
+/* 钱包选择区 */
+.wallet-modal-list {
+    flex: 1;
+    padding: 10px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    overflow-y: auto;
+}
+
+/* 钱包按钮 */
+.wallet-btn {
+    width: 340px;
+    height: 60px;
+    background: #2f3136;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.wallet-btn:hover {
+    background: #36393f;
+    border-color: #f9a825;
+}
+
+.wallet-btn .wallet-icon {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+}
+
+.wallet-btn .wallet-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.wallet-btn .wallet-name {
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    margin-left: 16px;
+    flex: 1;
+    text-align: left;
+}
+
+.wallet-btn .wallet-arrow {
+    color: #b9bbbe;
+    font-size: 18px;
+}
+
+.wallet-btn:hover .wallet-arrow {
+    color: #f9a825;
+}
+
+/* 连接中状态 */
+.wallet-btn.connecting {
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.wallet-btn.connecting .wallet-name {
+    color: #b9bbbe;
+}
+
+.wallet-btn.connecting .wallet-arrow {
+    display: none;
+}
+
+.wallet-btn .loading-spinner {
+    display: none;
+}
+
+.wallet-btn.connecting .loading-spinner {
+    display: block;
+    width: 18px;
+    height: 18px;
+    border: 2px solid #b9bbbe;
+    border-top-color: #f9a825;
+    border-radius: 50%;
+    animation: wallet-spin 0.8s linear infinite;
+    margin-left: auto;
+}
+
+@keyframes wallet-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* 弹窗底部 */
+.wallet-modal-footer {
+    height: 80px;
+    padding: 10px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-top: 1px solid rgba(54, 57, 63, 0.5);
+    flex-shrink: 0;
+}
+
+.wallet-modal-footer .footer-text {
+    color: #72767d;
+    font-size: 11px;
+    text-align: center;
+}
+
+.wallet-modal-footer .footer-text .link {
+    color: #f9a825;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.wallet-modal-footer .footer-text .link:hover {
+    text-decoration: underline;
+}
+
+.wallet-modal-footer .footer-text.margin-top {
+    margin-top: 6px;
+}
+
+/* 错误提示弹窗 */
+.wallet-error-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 10000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+
+.wallet-error-modal.active {
+    display: flex;
+}
+
+.wallet-error-content {
+    width: 320px;
+    background: #1e1f22;
+    border: 1px solid #36393f;
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+}
+
+.wallet-error-content .error-icon {
+    width: 48px;
+    height: 48px;
+    background: rgba(240, 71, 71, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    font-size: 24px;
+}
+
+.wallet-error-content .error-title {
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.wallet-error-content .error-desc {
+    color: #b9bbbe;
+    font-size: 13px;
+    margin-bottom: 20px;
+}
+
+.wallet-error-content .error-btn {
+    width: 100%;
+    padding: 12px;
+    background: #f9a825;
+    border: none;
+    border-radius: 6px;
+    color: #1e1f22;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.wallet-error-content .error-btn:hover {
+    background: #ff9800;
+}
 </head>
 <body>
 
@@ -2724,5 +3036,354 @@ api('/auth/me').then(r=>{if(!r||!r.id)doLogout();else{S.user=r;localStorage.setI
 <script src="/trading_embed.js"></script>
 
 <script src="/wallet.js"></script>
+
+<!-- ============================================
+     钱包登录弹窗
+     ============================================ -->
+
+<!-- 钱包登录弹窗HTML -->
+<div id="wallet-login-modal" class="wallet-modal-overlay" onclick="closeWalletLoginModal(event)">
+    <div class="wallet-modal" onclick="event.stopPropagation()">
+        <!-- 头部 -->
+        <div class="wallet-modal-header">
+            <div class="wallet-modal-title">
+                <div class="logo-icon">⚡</div>
+                <span class="title-text">钱包登录</span>
+            </div>
+            <button class="wallet-modal-close" onclick="closeWalletLoginModal()">×</button>
+        </div>
+        
+        <!-- 提示区 -->
+        <div class="wallet-modal-hint">
+            <div class="hint-title">选择你要连接的钱包</div>
+            <div class="hint-desc">连接后可同步交易数据、参与社区互动</div>
+        </div>
+        
+        <!-- 钱包选择列表 -->
+        <div class="wallet-modal-list">
+            <!-- MetaMask -->
+            <button class="wallet-btn" data-wallet="metamask" onclick="connectWallet('metamask')">
+                <div class="wallet-icon">
+                    <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M29.2 3L17.7 10.5L19.8 6.6L29.2 3Z" fill="#E17726"/>
+                        <path d="M2.8 3L14.3 10.5L12.2 6.6L2.8 3Z" fill="#E27625"/>
+                        <path d="M25.1 22.3L21.3 27.2L28.5 29.7L30.6 22.4L25.1 22.3Z" fill="#E27625"/>
+                        <path d="M1.4 22.4L3.5 29.7L10.7 27.2L6.9 22.3L1.4 22.4Z" fill="#E27625"/>
+                        <path d="M10.2 14.4L8.6 17.3L15.7 17.6L15.5 9.9L10.2 14.4Z" fill="#E27625"/>
+                        <path d="M21.8 14.4L16.5 9.9L16.4 17.6L23.5 17.3L21.8 14.4Z" fill="#E27625"/>
+                        <path d="M10.7 27.2L15.6 25.1L11.6 22.6L10.7 27.2Z" fill="#E27625"/>
+                        <path d="M16.4 25.1L21.3 27.2L20.4 22.6L16.4 25.1Z" fill="#E27625"/>
+                        <path d="M29.5 12.4L25.8 10.3L23 13.1L25.1 16.1L29.5 12.4Z" fill="#E27625"/>
+                        <path d="M2.5 12.4L6.9 16.1L9 13.1L6.2 10.3L2.5 12.4Z" fill="#E27625"/>
+                        <path d="M10.7 20.8L8.3 19.7L11 18.2L11.2 19L10.7 20.8Z" fill="#E27625"/>
+                        <path d="M21.3 20.8L20.8 19L20.9 18.2L23.7 19.7L21.3 20.8Z" fill="#E27625"/>
+                        <path d="M27.1 17.9L24.1 17.3L23 14.8L23.5 17.7L27.1 17.9Z" fill="#E27625"/>
+                        <path d="M9 17.7L9.5 14.8L8.4 17.3L5.4 17.9L9 17.7Z" fill="#E27625"/>
+                    </svg>
+                </div>
+                <span class="wallet-name">MetaMask</span>
+                <span class="wallet-arrow">→</span>
+                <div class="loading-spinner"></div>
+            </button>
+            
+            <!-- Trust Wallet -->
+            <button class="wallet-btn" data-wallet="trustwallet" onclick="connectWallet('trustwallet')">
+                <div class="wallet-icon">
+                    <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M16 32C24.837 32 32 24.837 32 16C32 7.163 24.837 0 16 0C7.163 0 0 7.163 0 16C0 24.837 7.163 32 16 32Z" fill="#3375BB"/>
+                        <path d="M16 6.5L9.5 10L16 13.5L22.5 10L16 6.5Z" fill="#fff"/>
+                        <path d="M16 13.5L9.5 17L16 20.5L22.5 17L16 13.5Z" fill="#fff"/>
+                        <path d="M16 20.5L9.5 24L16 27.5L22.5 24L16 20.5Z" fill="#fff"/>
+                        <path d="M16 6.5L9.5 10V17L16 13.5V6.5Z" fill="#fff" fill-opacity="0.7"/>
+                        <path d="M22.5 10V17L16 13.5V20.5L22.5 17V10Z" fill="#fff" fill-opacity="0.7"/>
+                    </svg>
+                </div>
+                <span class="wallet-name">Trust Wallet</span>
+                <span class="wallet-arrow">→</span>
+                <div class="loading-spinner"></div>
+            </button>
+            
+            <!-- TokenPocket -->
+            <button class="wallet-btn" data-wallet="tokenpocket" onclick="connectWallet('tokenpocket')">
+                <div class="wallet-icon">
+                    <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="32" height="32" rx="6" fill="#3375BB"/>
+                        <path d="M10 12L16 8L22 12L16 16L10 12Z" fill="#fff"/>
+                        <path d="M10 16L16 20L22 16L16 12L10 16Z" fill="#fff"/>
+                        <path d="M10 20L16 24L22 20L16 16L10 20Z" fill="#fff"/>
+                    </svg>
+                </div>
+                <span class="wallet-name">TokenPocket (TP钱包)</span>
+                <span class="wallet-arrow">→</span>
+                <div class="loading-spinner"></div>
+            </button>
+            
+            <!-- Coinbase Wallet -->
+            <button class="wallet-btn" data-wallet="coinbase" onclick="connectWallet('coinbase')">
+                <div class="wallet-icon">
+                    <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="32" height="32" rx="16" fill="#0052FF"/>
+                        <circle cx="16" cy="16" r="8" fill="#fff"/>
+                        <circle cx="16" cy="16" r="4" fill="#0052FF"/>
+                    </svg>
+                </div>
+                <span class="wallet-name">Coinbase Wallet</span>
+                <span class="wallet-arrow">→</span>
+                <div class="loading-spinner"></div>
+            </button>
+        </div>
+        
+        <!-- 底部说明 -->
+        <div class="wallet-modal-footer">
+            <div class="footer-text">
+                连接即表示你同意 <span class="link" onclick="window.open('/terms', '_blank')">用户协议</span> 和 <span class="link" onclick="window.open('/privacy', '_blank')">隐私政策</span>
+            </div>
+            <div class="footer-text margin-top">
+                对接 MetaApi，安全加密，不存储你的钱包私钥
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 错误提示弹窗 -->
+<div id="wallet-error-modal" class="wallet-error-modal">
+    <div class="wallet-error-content">
+        <div class="error-icon">⚠️</div>
+        <div class="error-title" id="wallet-error-title">未检测到钱包</div>
+        <div class="error-desc" id="wallet-error-desc">请先安装对应钱包插件</div>
+        <button class="error-btn" onclick="closeWalletErrorModal()">确定</button>
+    </div>
+</div>
+
+<!-- 钱包登录弹窗逻辑 -->
+<script>
+// 显示钱包登录弹窗
+function showWalletModal(e) {
+    if (e) e.stopPropagation();
+    const modal = document.getElementById('wallet-login-modal');
+    if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+// 关闭钱包登录弹窗
+function closeWalletLoginModal(e) {
+    if (e && e.target !== e.currentTarget) return;
+    const modal = document.getElementById('wallet-login-modal');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+}
+
+// 显示错误弹窗
+function showWalletError(walletName) {
+    const errorModal = document.getElementById('wallet-error-modal');
+    const errorTitle = document.getElementById('wallet-error-title');
+    const errorDesc = document.getElementById('wallet-error-desc');
+    
+    const walletNames = {
+        'metamask': 'MetaMask',
+        'trustwallet': 'Trust Wallet',
+        'tokenpocket': 'TokenPocket (TP钱包)',
+        'coinbase': 'Coinbase Wallet'
+    };
+    
+    if (errorTitle) errorTitle.textContent = `未检测到 ${walletNames[walletName] || walletName}`;
+    if (errorDesc) errorDesc.textContent = `请先安装 ${walletNames[walletName] || walletName} 插件，然后刷新页面重试`;
+    if (errorModal) errorModal.classList.add('active');
+}
+
+// 关闭错误弹窗
+function closeWalletErrorModal() {
+    const errorModal = document.getElementById('wallet-error-modal');
+    if (errorModal) errorModal.classList.remove('active');
+}
+
+// 设置按钮连接状态
+function setWalletConnecting(walletType, connecting) {
+    const btn = document.querySelector(`.wallet-btn[data-wallet="${walletType}"]`);
+    if (btn) {
+        btn.classList.toggle('connecting', connecting);
+    }
+}
+
+// 连接钱包
+async function connectWallet(walletType) {
+    // 设置连接中状态
+    setWalletConnecting(walletType, true);
+    
+    try {
+        let address = null;
+        
+        switch (walletType) {
+            case 'metamask':
+                address = await connectMetaMask();
+                break;
+            case 'trustwallet':
+                address = await connectTrustWallet();
+                break;
+            case 'tokenpocket':
+                address = await connectTokenPocket();
+                break;
+            case 'coinbase':
+                address = await connectCoinbaseWallet();
+                break;
+            default:
+                throw new Error('不支持的钱包类型');
+        }
+        
+        if (address) {
+            // 连接成功
+            toast(`钱包连接成功: ${address.substring(0, 8)}...${address.substring(address.length - 4)}`, 'success');
+            closeWalletLoginModal();
+            
+            // 调用后端API保存钱包信息
+            try {
+                await api('/wallet/wallets', {
+                    method: 'POST',
+                    body: {
+                        address: address,
+                        currency: 'ETH',
+                        label: walletType,
+                        is_primary: true
+                    }
+                });
+            } catch (e) {
+                console.log('保存钱包信息失败，可后续处理');
+            }
+            
+            // 更新用户界面
+            if (typeof S !== 'undefined') {
+                S.user = S.user || {};
+                S.user.wallet_address = address;
+                S.user.wallet_type = walletType;
+                renderUserPanel();
+            }
+        }
+    } catch (error) {
+        console.error('钱包连接失败:', error);
+        if (error.message.includes('not installed') || error.message.includes('未检测')) {
+            showWalletError(walletType);
+        } else {
+            toast(error.message || '连接失败，请重试', 'error');
+        }
+    } finally {
+        setWalletConnecting(walletType, false);
+    }
+}
+
+// MetaMask 连接
+async function connectMetaMask() {
+    if (typeof window.ethereum === 'undefined') {
+        throw new Error('not installed');
+    }
+    
+    try {
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        if (accounts && accounts.length > 0) {
+            return accounts[0];
+        }
+        throw new Error('未获取到钱包地址');
+    } catch (error) {
+        if (error.code === 4001) {
+            throw new Error('用户拒绝了连接请求');
+        }
+        throw error;
+    }
+}
+
+// Trust Wallet 连接
+async function connectTrustWallet() {
+    // Trust Wallet 通过 window.trustwallet 或 window.ethereum 检测
+    const trustWallet = window.trustwallet || (window.ethereum && window.ethereum.isTrust);
+    
+    if (!trustWallet && typeof window.ethereum === 'undefined') {
+        throw new Error('not installed');
+    }
+    
+    try {
+        // 使用标准 eth_requestAccounts 方法
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        if (accounts && accounts.length > 0) {
+            return accounts[0];
+        }
+        throw new Error('未获取到钱包地址');
+    } catch (error) {
+        if (error.code === 4001) {
+            throw new Error('用户拒绝了连接请求');
+        }
+        throw error;
+    }
+}
+
+// TokenPocket 连接
+async function connectTokenPocket() {
+    // TokenPocket 检测
+    const tokenPocket = window.tokenpocket || (window.ethereum && window.ethereum.isTokenPocket);
+    
+    if (!tokenPocket && typeof window.ethereum === 'undefined') {
+        throw new Error('not installed');
+    }
+    
+    try {
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        if (accounts && accounts.length > 0) {
+            return accounts[0];
+        }
+        throw new Error('未获取到钱包地址');
+    } catch (error) {
+        if (error.code === 4001) {
+            throw new Error('用户拒绝了连接请求');
+        }
+        throw error;
+    }
+}
+
+// Coinbase Wallet 连接
+async function connectCoinbaseWallet() {
+    // Coinbase Wallet 检测
+    const coinbaseWallet = window.coinbaseWalletExtension || window.ethereum?.isCoinbaseBrowser;
+    
+    if (!coinbaseWallet && typeof window.ethereum === 'undefined') {
+        throw new Error('not installed');
+    }
+    
+    try {
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        if (accounts && accounts.length > 0) {
+            return accounts[0];
+        }
+        throw new Error('未获取到钱包地址');
+    } catch (error) {
+        if (error.code === 4001) {
+            throw new Error('用户拒绝了连接请求');
+        }
+        throw error;
+    }
+}
+
+// 监听MetaMask账号变化
+if (typeof window.ethereum !== 'undefined') {
+    window.ethereum.on('accountsChanged', (accounts) => {
+        if (accounts.length === 0) {
+            // 用户断开连接
+            toast('钱包已断开连接', 'info');
+            if (typeof S !== 'undefined') {
+                S.user.wallet_address = null;
+                renderUserPanel();
+            }
+        } else {
+            // 账号切换
+            toast(`账号已切换: ${accounts[0].substring(0, 8)}...`, 'info');
+            if (typeof S !== 'undefined') {
+                S.user.wallet_address = accounts[0];
+                renderUserPanel();
+            }
+        }
+    });
+}
+</script>
 </body>
 </html>
