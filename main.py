@@ -68,8 +68,11 @@ async def upload_static_file(filename: str, request: Request):
         f.write(content)
     return {"status": "ok", "file": filename, "size": len(content)}
 
-# Static files must be mounted LAST to avoid catching API routes
-app.mount("/", StaticFiles(directory="static", html=True), name="static")
+# Static files - 明确挂载 /static 路径，用于 JS/CSS 文件
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+# Static files for SPA - 挂载根路径用于 index.html 和其他静态资源
+app.mount("/", StaticFiles(directory="static", html=True), name="root_static")
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8080)
