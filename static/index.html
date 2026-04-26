@@ -618,7 +618,7 @@ return null;
 }
 return r.json();
 }
-function toast(msg,type='info'){const c={info:'#5865f2',success:'#23a559',error:'#ed4245'};const d=document.createElement('div');d.className='toast';d.style.background=c[type]||c.info;d.textContent=msg;document.getElementById('toasts').appendChild(d);setTimeout(()=>d.remove(),3000)}
+function toast(msg,type='info'){const c={info:'#5865f2',success:'#23a559',error:'#ed4245'};const d=document.createElement('div');d.className='toast';d.style.background=c[type]||c.info;d.textContent=msg;const t=document.getElementById('toasts');if(t)t.appendChild(d);else console.warn('Toast container not found');setTimeout(()=>d.remove(),3000)}
 function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML}
 
 // ===== NAV =====
@@ -631,23 +631,24 @@ renderPage();
 function renderPage(){
 const content=document.getElementById('main-content');
 const title=document.getElementById('main-header-title');
-document.getElementById('right-panel').style.display='none';
+const rightPanel = document.getElementById('right-panel');
+if(rightPanel) rightPanel.style.display='none';
 
 switch(S.page){
-case 'home':title.textContent='🏠 首页';renderHome();break;
-case 'trading':title.textContent='📊 交易大厅';renderTradingFloor();break;
-case 'market':title.textContent='📈 行情';renderMarket();break;
-case 'crypto':title.textContent='🪙 加密货币';renderCrypto();break;
-case 'forex':title.textContent='💱 外汇贵金属';renderForex();break;
-case 'kline':title.textContent='📊 K线分析';renderKline();break;
-case 'chat':title.textContent='💬 聊天室';renderChat();break;
-case 'friends':title.textContent='👥 好友';renderFriends();break;
-case 'messages':title.textContent='💬 私信';renderMessages();break;
-case 'groups':title.textContent='👥 群聊';renderGroups();break;
-case 'portfolio':title.textContent='📜 成绩单';renderPortfolio();break;
-case 'profile':title.textContent='👤 个人主页';renderProfile();break;
-case 'wallet':title.textContent='💰 我的钱包';renderWallet();break;
-default:title.textContent='🏠 首页';renderHome();
+case 'home':if(title)title.textContent='🏠 首页';renderHome();break;
+case 'trading':if(title)title.textContent='📊 交易大厅';renderTradingFloor();break;
+case 'market':if(title)title.textContent='📈 行情';renderMarket();break;
+case 'crypto':if(title)title.textContent='🪙 加密货币';renderCrypto();break;
+case 'forex':if(title)title.textContent='💱 外汇贵金属';renderForex();break;
+case 'kline':if(title)title.textContent='📊 K线分析';renderKline();break;
+case 'chat':if(title)title.textContent='💬 聊天室';renderChat();break;
+case 'friends':if(title)title.textContent='👥 好友';renderFriends();break;
+case 'messages':if(title)title.textContent='💬 私信';renderMessages();break;
+case 'groups':if(title)title.textContent='👥 群聊';renderGroups();break;
+case 'portfolio':if(title)title.textContent='📜 成绩单';renderPortfolio();break;
+case 'profile':if(title)title.textContent='👤 个人主页';renderProfile();break;
+case 'wallet':if(title)title.textContent='💰 我的钱包';renderWallet();break;
+default:if(title)title.textContent='🏠 首页';renderHome();
 }
 }
 
@@ -1321,19 +1322,20 @@ async function renderGuilds(){
 const el=document.getElementById('guilds-list');
 try{
 const guilds=await api('/guilds/')||[];
-el.innerHTML=guilds.map(g=>`<div class="guild-icon ${S.guildId===g.id?'active':''}" onclick="selectGuild(${g.id})" title="${g.name}">${g.icon||g.name[0].toUpperCase()}</div>`).join('');
-}catch(e){el.innerHTML='';}
+if(el) el.innerHTML=guilds.map(g=>`<div class="guild-icon ${S.guildId===g.id?'active':''}" onclick="selectGuild(${g.id})" title="${g.name}">${g.icon||g.name[0].toUpperCase()}</div>`).join('');
+}catch(e){if(el) el.innerHTML='';}
 }
 
 function selectGuild(id){
 S.guildId=id;
 document.querySelectorAll('.guild-icon').forEach(g=>g.classList.remove('active'));
-event.target.classList.add('active');
+if(event && event.target) event.target.classList.add('active');
 renderChannels(id);
 }
 
 async function renderChannels(guildId){
 const el=document.getElementById('channels-list');
+if(!el) return;
 el.innerHTML=`
 <!-- ========== 顶部品牌区 ========== -->
 <div class="sidebar-brand" onclick="showHome()">
@@ -1933,12 +1935,18 @@ else{toast('删除失败','error');}
 
 function showHome(){
 S.page='home';
-document.querySelectorAll('.guild-icon').forEach(g=>g.classList.remove('active'));
-document.querySelector('.guild-icon.home').classList.add('active');
-document.getElementById('current-server-name').textContent='QuantTalk';
+try {
+    document.querySelectorAll('.guild-icon').forEach(g=>g.classList.remove('active'));
+    const homeIcon = document.querySelector('.guild-icon.home');
+    if (homeIcon) homeIcon.classList.add('active');
+} catch(e) { console.warn('showHome guild-icon error:', e); }
+try {
+    const serverName = document.getElementById('current-server-name');
+    if (serverName) serverName.textContent='QuantTalk';
+} catch(e) { console.warn('showHome server-name error:', e); }
 // 调用 renderChannels 显示完整的频道分组
-renderChannels();
-renderPage();
+try { renderChannels(); } catch(e) { console.warn('showHome renderChannels error:', e); }
+try { renderPage(); } catch(e) { console.warn('showHome renderPage error:', e); }
 }
 
 function toggleUserMenu(){
@@ -1955,8 +1963,8 @@ openModal(`<h3>账户设置</h3>
 }
 
 // ===== UTILS =====
-function openModal(html){document.getElementById('modal-body').innerHTML=html;document.getElementById('modal').style.display='flex'}
-function closeModal(){document.getElementById('modal').style.display='none'}
+function openModal(html){const m=document.getElementById('modal-body');const b=document.getElementById('modal');if(m)m.innerHTML=html;if(b)b.style.display='flex'}
+function closeModal(){const b=document.getElementById('modal');if(b)b.style.display='none'}
 function timeAgo(d){const s=Math.floor((Date.now()-new Date(d))/(1000));if(s<60)return'刚刚';if(s<3600)return Math.floor(s/60)+'分钟前';if(s<86400)return Math.floor(s/3600)+'小时前';return Math.floor(s/86400)+'天前';}
 
 // ===== FRIENDS PAGE =====
@@ -3068,20 +3076,17 @@ const walletBtn=document.getElementById('user-wallet-btn');
 const walletBtnText=document.getElementById('wallet-btn-text');
 
 if(S.user){
-    avatar.textContent=S.user.username[0].toUpperCase();
-    name.textContent=S.user.username;
-    status.textContent='在线';
-    status.style.color='#23a559';
-    
+    if(avatar) avatar.textContent=S.user.username[0].toUpperCase();
+    if(name) name.textContent=S.user.username;
+    if(status){ status.textContent='在线'; status.style.color='#23a559'; }
+
     // 检查钱包连接状态
     if(S.user.wallet_address){
-        walletStatus.style.display='flex';
-        walletStatus.innerHTML=`${formatAddress(S.user.wallet_address)} <span class="metaapi-badge">MetaApi</span>`;
-        walletStatus.classList.remove('disconnected');
+        if(walletStatus){ walletStatus.style.display='flex'; walletStatus.innerHTML=`${formatAddress(S.user.wallet_address)} <span class="metaapi-badge">MetaApi</span>`; walletStatus.classList.remove('disconnected'); }
         if(walletBtn) walletBtn.classList.add('connected');
         if(walletBtnText) walletBtnText.textContent=formatAddress(S.user.wallet_address);
     }else{
-        walletStatus.style.display='none';
+        if(walletStatus){ walletStatus.style.display='none'; }
         if(walletBtn) walletBtn.classList.remove('connected');
         if(walletBtnText) walletBtnText.textContent='连接钱包';
     }
@@ -3106,8 +3111,20 @@ if(address.length<=12) return address;
 return address.substring(0,6)+'...'+address.substring(address.length-4);
 }
 
-// Init
-renderAll();
+// Init - with error handling to prevent blank page
+try {
+    renderAll();
+} catch(e) {
+    console.error('renderAll error:', e);
+    // Fallback: show home content directly
+    try {
+        document.getElementById('main-content').innerHTML = '<div style="padding:20px;color:#b9bbbe"><h2 style="color:#fff">QuantTalk 加载中...</h2><p>如果页面未正常显示，请刷新页面</p></div>';
+        document.getElementById('main-header-title').textContent = '🏠 首页';
+        document.getElementById('current-server-name').textContent = 'QuantTalk';
+    } catch(e2) {
+        console.error('Fallback render error:', e2);
+    }
+}
 
 // Check auth
 if(S.token){
@@ -3119,7 +3136,7 @@ api('/auth/me').then(r=>{if(!r||!r.id)doLogout();else{S.user=r;localStorage.setI
 <script src="/trading_community.js"></script>
 <script src="/trading_embed.js"></script>
 
-<script src="/wallet.js"></script>
+<script src="/static/wallet.js"></script>
 
 <!-- ============================================
      钱包登录弹窗
