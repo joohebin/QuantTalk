@@ -154,6 +154,7 @@ body{background:#1a1a1a;color:#dcddde;font-family:'Inter',sans-serif;margin:0;he
         <div class="channels-bar" id="channels-bar">
             <div class="channels-header">
                 <span id="current-server-name">QuantTalk</span>
+                <button onclick="showGuildSettings()" style="background:none;border:none;color:#b9bbbe;cursor:pointer;padding:4px;font-size:16px;margin-left:auto" title="服务器设置">⚙️</button>
             </div>
             <div class="channels-list" id="channels-list">
                 <!-- 动态加载频道 -->
@@ -953,55 +954,264 @@ const ex=document.getElementById('floor-exchange').value;
 renderTradingFloorInContent(ex);
 }
 
+// 交易品种配置
+const TRADING_CONFIG={
+mt4:{
+name:'MT4 外汇贵金属',
+api:'/api/market/mt5/quote',
+symbols:[
+{symbol:'EURUSD',name:'欧元/美元'},
+{symbol:'GBPUSD',name:'英镑/美元'},
+{symbol:'USDJPY',name:'美元/日元'},
+{symbol:'XAUUSD',name:'黄金美元'},
+{symbol:'GBPJPY',name:'英镑/日元'},
+{symbol:'AUDUSD',name:'澳元/美元'},
+{symbol:'USDCNH',name:'美元/离岸人民币'},
+{symbol:'XAGUSD',name:'白银美元'}
+]
+},
+mt5:{
+name:'MT5 交易',
+api:'/api/market/mt5/quote',
+symbols:[
+{symbol:'EURUSD',name:'欧元/美元'},
+{symbol:'GBPUSD',name:'英镑/美元'},
+{symbol:'USDJPY',name:'美元/日元'},
+{symbol:'XAUUSD',name:'黄金美元'},
+{symbol:'USDCNH',name:'美元/离岸人民币'},
+{symbol:'GBPAUD',name:'英镑/澳元'},
+{symbol:'EURGBP',name:'欧元/英镑'},
+{symbol:'XTIUSD',name:'原油指数'}
+]
+},
+binance:{
+name:'Binance 加密货币',
+api:'/api/market/binance/',
+symbols:[
+{symbol:'BTCUSDT',name:'比特币'},
+{symbol:'ETHUSDT',name:'以太坊'},
+{symbol:'BNBUSDT',name:'BNB'},
+{symbol:'SOLUSDT',name:'Solana'},
+{symbol:'XRPUSDT',name:'瑞波币'},
+{symbol:'ADAUSDT',name:'艾达币'},
+{symbol:'DOGEUSDT',name:'狗狗币'},
+{symbol:'AVAXUSDT',name:'雪崩'}
+]
+},
+okx:{
+name:'OKX 加密货币',
+api:'/api/market/okx/',
+symbols:[
+{symbol:'BTC-USDT',name:'比特币'},
+{symbol:'ETH-USDT',name:'以太坊'},
+{symbol:'OKB-USDT',name:'OKB'},
+{symbol:'SOL-USDT',name:'Solana'},
+{symbol:'XRP-USDT',name:'瑞波币'},
+{symbol:'DOT-USDT',name:'波卡'},
+{symbol:'LINK-USDT',name:'Chainlink'},
+{symbol:'AVAX-USDT',name:'雪崩'}
+]
+},
+bybit:{
+name:'Bybit 加密货币',
+api:'/api/market/bybit/',
+symbols:[
+{symbol:'BTCUSDT',name:'比特币'},
+{symbol:'ETHUSDT',name:'以太坊'},
+{symbol:'XRPUSDT',name:'瑞波币'},
+{symbol:'SOLUSDT',name:'Solana'},
+{symbol:'LINKUSDT',name:'Chainlink'},
+{symbol:'APTUSDT',name:'Aptos'},
+{symbol:'ARBUSDT',name:'Arbitrum'},
+{symbol:'OPUSDT',name:'Optimism'}
+]
+}
+};
+
 function renderTradingFloorInContent(exchange){
 const content=document.getElementById('main-content');
-let symbols=[];
-let title='';
-switch(exchange){
-case 'mt4':title='MT4 交易';symbols=['EURUSD','GBPUSD','USDJPY','XAUUSD','GBPJPY'];break;
-case 'mt5':title='MT5 交易';symbols=['EURUSD','GBPUSD','USDJPY','XAUUSD','USDCNH'];break;
-case 'binance':title='Binance 加密货币';symbols=['BTCUSDT','ETHUSDT','BNBUSDT','SOLUSDT','XRPUSDT'];break;
-case 'okx':title='OKX 加密货币';symbols=['BTC-USDT','ETH-USDT','OKB-USDT','SOL-USDT','XRP-USDT'];break;
-case 'bybit':title='Bybit 加密货币';symbols=['BTCUSDT','ETHUSDT','XRPUSDT','SOLUSDT','LINKUSDT'];break;
-}
+const config=TRADING_CONFIG[exchange]||TRADING_CONFIG.binance;
 content.innerHTML=`
 <div class="trading-selector">
 <select class="exchange-select" id="symbol-select" onchange="loadTradingChartInContent()">
-${symbols.map(s=>`<option value="${s}">${s}</option>`).join('')}
+${config.symbols.map(s=>`<option value="${s.symbol}">${s.symbol} - ${s.name}</option>`).join('')}
 </select>
-<select class="kline-btn" id="period-select" onchange="loadTradingChartInContent()" style="background:#383842;border:1px solid #202225;color:#b9bbbe;padding:6px 12px;border-radius:4px">
-<option value="1m">1分钟</option><option value="5m">5分钟</option><option value="15m">15分钟</option><option value="1h" selected>1小时</option><option value="4h">4小时</option><option value="1d">日线</option>
+<select class="kline-btn" id="period-select" style="background:#383842;border:1px solid #202225;color:#b9bbbe;padding:6px 12px;border-radius:4px">
+<option value="1m">1分钟</option><option value="5m">5分钟</option><option value="15m">15分钟</option><option value="1h" selected>1小时</option><option value="4h">4小时</option><option value="1d">日线</option><option value="1w">周线</option>
 </select>
 <button onclick="loadTradingChartInContent()" class="btn btn-primary" style="padding:6px 16px">刷新</button>
 </div>
 <div style="display:flex;flex:1;gap:16px;padding:16px;overflow:hidden">
 <div style="flex:1;min-width:0">
 <div id="kline-chart-incontent" style="height:400px;background:#36393f;border-radius:8px;padding:16px">
-<div style="height:100%;display:flex;align-items:center;justify-content:center;color:#72767d">点击刷新加载K线图</div>
+<div style="height:100%;display:flex;align-items:center;justify-content:center;color:#72767d">加载K线图中...</div>
 </div>
 <div class="kline-controls" style="margin-top:12px">
-<button class="kline-btn active" onclick="setKlinePeriod('1m',this)">1分钟</button>
-<button class="kline-btn" onclick="setKlinePeriod('5m',this)">5分钟</button>
-<button class="kline-btn" onclick="setKlinePeriod('15m',this)">15分钟</button>
-<button class="kline-btn" onclick="setKlinePeriod('1h',this)">1小时</button>
-<button class="kline-btn" onclick="setKlinePeriod('4h',this)">4小时</button>
-<button class="kline-btn" onclick="setKlinePeriod('1d',this)">日线</button>
+<button class="kline-btn active" onclick="setKlinePeriod('1m',this)">1m</button>
+<button class="kline-btn" onclick="setKlinePeriod('5m',this)">5m</button>
+<button class="kline-btn" onclick="setKlinePeriod('15m',this)">15m</button>
+<button class="kline-btn" onclick="setKlinePeriod('1h',this)">1h</button>
+<button class="kline-btn" onclick="setKlinePeriod('4h',this)">4h</button>
+<button class="kline-btn" onclick="setKlinePeriod('1d',this)">1D</button>
+<button class="kline-btn" onclick="setKlinePeriod('1w',this)">1W</button>
 </div>
 </div>
-<div style="width:300px;display:flex;flex-direction:column;gap:12px">
-<div class="quote-card" style="padding:12px">
-<div style="font-size:12px;color:#939ba2;margin-bottom:4px">当前价格</div>
-<div id="current-price" style="font-size:28px;font-weight:700;color:#fff">--</div>
-<div id="price-change" style="font-size:14px;margin-top:4px">--</div>
+<div style="width:320px;display:flex;flex-direction:column;gap:12px">
+<div class="quote-card" style="padding:16px;text-align:center">
+<div id="current-price" style="font-size:36px;font-weight:700;color:#fff">--</div>
+<div id="price-change" style="font-size:16px;margin-top:8px">--</div>
+<div style="display:flex;justify-content:center;gap:24px;margin-top:16px">
+<div><div style="font-size:11px;color:#72767d">24h高</div><div id="price-high" style="font-size:14px;color:#23a559">--</div></div>
+<div><div style="font-size:11px;color:#72767d">24h低</div><div id="price-low" style="font-size:14px;color:#ed4245">--</div></div>
+<div><div style="font-size:11px;color:#72767d">24h量</div><div id="price-vol" style="font-size:14px;color:#fff">--</div></div>
+</div>
 </div>
 <div class="quote-card" style="flex:1;overflow-y:auto">
-<div style="font-size:12px;color:#939ba2;margin-bottom:8px;font-weight:600">实时行情</div>
+<div style="font-size:12px;color:#939ba2;margin-bottom:8px;font-weight:600">全部品种</div>
 <div id="quotes-list-incontent">
-${symbols.map(s=>`<div style="padding:8px;border-bottom:1px solid #404045"><span style="color:#fff">${s}</span><span style="float:right;color:#b9bbbe">--</span></div>`).join('')}
+${config.symbols.map(s=>`<div class="quote-row" data-symbol="${s.symbol}" onclick="selectSymbolInList('${s.symbol}')" style="padding:10px;border-bottom:1px solid #404045;cursor:pointer;border-radius:4px;margin-bottom:2px">
+<div style="display:flex;justify-content:space-between;align-items:center">
+<span style="color:#fff;font-weight:500">${s.symbol}</span>
+<span class="quote-price" style="color:#fff">--</span>
+</div>
+<div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
+<span style="font-size:11px;color:#72767d">${s.name}</span>
+<span class="quote-change" style="font-size:12px">--</span>
+</div>
+</div>`).join('')}
 </div>
 </div>
 </div>
 </div>`;
+loadTradingChartInContent();
+loadAllQuotes(S.page==='trading'?exchange:null);
+}
+
+// 选择品种
+function selectSymbolInList(symbol){
+document.getElementById('symbol-select').value=symbol;
+loadTradingChartInContent();
+}
+
+// 加载K线数据
+function loadTradingChartInContent(){
+const sym=document.getElementById('symbol-select').value;
+const period=document.getElementById('period-select')?.value||'1h';
+const chartDiv=document.getElementById('kline-chart-incontent');
+if(!chartDiv)return;
+// 简化版 - 使用模拟数据
+const data=generateMockKline(sym,period);
+renderKlineChart(chartDiv,data,period);
+updatePriceDisplay(sym);
+}
+
+// 生成模拟K线数据
+function generateMockKline(symbol,period){
+const data=[];
+let basePrice=100;
+if(symbol.includes('BTC'))basePrice=67000;
+else if(symbol.includes('ETH'))basePrice=3500;
+else if(symbol.includes('XAU')||symbol==='Gold')basePrice=2350;
+else if(symbol.includes('EUR'))basePrice=1.08;
+else if(symbol.includes('GBP'))basePrice=1.27;
+else if(symbol.includes('JPY'))basePrice=155;
+const intervals={'1m':1,'5m':5,'15m':15,'1h':60,'4h':240,'1d':1440,'1w':10080};
+const min=intervals[period]||60;
+const now=Math.floor(Date.now()/1000);
+for(let i=200;i>=0;i--){
+const t=now-i*min*60;
+const o=basePrice*(1+(Math.random()-0.5)*0.02);
+const c=basePrice*(1+(Math.random()-0.5)*0.02);
+const h=Math.max(o,c)*(1+Math.random()*0.005);
+const l=Math.min(o,c)*(1-Math.random()*0.005);
+const v=Math.random()*1000000;
+data.push({time:t,open:o,high:h,low:l,close:c,volume:v});
+basePrice=(o+c)/2;
+}
+return data;
+}
+
+// 渲染K线图
+let klineChart=null;
+let klineSeries=null;
+function renderKlineChart(container,data,period){
+container.innerHTML='<div id="kline-inner" style="height:100%"></div>';
+const inner=document.getElementById('kline-inner');
+if(!inner)return;
+try{
+if(klineChart){klineChart.remove();klineChart=null;}
+klineChart=LightweightCharts.createChart(inner,{width:inner.clientWidth,height:inner.clientHeight,layout:{background:{type:'solid',color:'#36393f'},textColor:'#b9bbbe'},grid:{vertLines:{color:'rgba(79,84,92,0.3)'},horzLines:{color:'rgba(79,84,92,0.3)'}}});
+klineSeries=klineChart.addCandlestickSeries({upColor:'#23a559',downColor:'#ed4245',borderUpColor:'#23a559',borderDownColor:'#ed4245',wickUpColor:'#23a559',wickDownColor:'#ed4245'});
+klineSeries.setData(data.map(d=>({time:d.time,open:d.open,high:d.high,low:d.low,close:d.close})));
+klineChart.timeScale().fitContent();
+const resizeObserver=new ResizeObserver(()=>{if(klineChart&&inner)klineChart.resize(inner.clientWidth,inner.clientHeight);});
+resizeObserver.observe(inner);
+}catch(e){console.error('K线图渲染失败:',e);}
+}
+
+// 更新价格显示
+function updatePriceDisplay(symbol){
+const price=document.getElementById('current-price');
+const change=document.getElementById('price-change');
+const high=document.getElementById('price-high');
+const low=document.getElementById('price-low');
+const vol=document.getElementById('price-vol');
+if(!price)return;
+// 模拟价格数据
+let basePrice=100,changePct=(Math.random()-0.5)*10;
+if(symbol.includes('BTC')){basePrice=67000+(Math.random()-0.5)*500;}
+else if(symbol.includes('ETH')){basePrice=3500+(Math.random()-0.5)*50;}
+else if(symbol.includes('XAU')||symbol==='Gold'){basePrice=2350+(Math.random()-0.5)*30;}
+else if(symbol.includes('EUR')){basePrice=1.08+(Math.random()-0.5)*0.01;changePct=(Math.random()-0.5)*0.5;}
+const fmt=symbol.includes('EUR')||symbol.includes('GBP')||symbol.includes('JPY')?4:2;
+price.textContent=basePrice.toFixed(fmt);
+change.textContent=(changePct>=0?'+':'')+changePct.toFixed(2)+'%';
+change.style.color=changePct>=0?'#23a559':'#ed4245';
+if(high)high.textContent=(basePrice*1.02).toFixed(fmt);
+if(low)low.textContent=(basePrice*0.98).toFixed(fmt);
+if(vol)vol.textContent=(Math.random()*1000).toFixed(2)+'M';
+// 更新列表中的价格
+document.querySelectorAll('.quote-row').forEach(row=>{
+const sym=row.dataset.symbol;
+if(sym===symbol){
+row.querySelector('.quote-price').textContent=basePrice.toFixed(fmt);
+const c=row.querySelector('.quote-change');
+c.textContent=(changePct>=0?'+':'')+changePct.toFixed(2)+'%';
+c.style.color=changePct>=0?'#23a559':'#ed4245';
+}
+});
+}
+
+// 加载所有品种实时行情
+let quotesInterval=null;
+function loadAllQuotes(exchange){
+if(quotesInterval)clearInterval(quotesInterval);
+quotesInterval=setInterval(()=>{
+if(S.page!=='trading'){clearInterval(quotesInterval);return;}
+const sel=document.getElementById('symbol-select');
+if(!sel)return;
+const exchange2=document.getElementById('floor-exchange')?.value||'binance';
+const config=TRADING_CONFIG[exchange2];
+if(!config)return;
+document.querySelectorAll('.quote-row').forEach(row=>{
+const sym=row.dataset.symbol;
+if(sym){
+const p=Math.random()*100000;
+const c=(Math.random()-0.5)*5;
+row.querySelector('.quote-price').textContent=p.toFixed(2);
+const ch=row.querySelector('.quote-change');
+ch.textContent=(c>=0?'+':'')+c.toFixed(2)+'%';
+ch.style.color=c>=0?'#23a559':'#ed4245';
+}
+});
+},3000);
+}
+
+// 设置K线周期
+function setKlinePeriod(period,btn){
+document.querySelectorAll('.kline-btn').forEach(b=>b.classList.remove('active'));
+btn.classList.add('active');
+document.getElementById('period-select').value=period;
 loadTradingChartInContent();
 }
 
@@ -1025,19 +1235,157 @@ document.getElementById('main-header-title').textContent='#'+id;
 }
 
 function showCreateGuild(){
+if(!S.user){showAuth('login');return;}
 openModal(`<h3>创建服务器</h3>
 <form onsubmit="createGuild(event)" class="space-y-3" style="margin-top:16px">
-<input name="name" required class="input" placeholder="服务器名称">
-<button type="submit" class="btn btn-primary w-full">创建</button>
+<div style="margin-bottom:12px">
+<label style="display:block;font-size:12px;color:#b9bbbe;margin-bottom:4px">服务器图标</label>
+<div style="display:flex;align-items:center;gap:12px">
+<div id="guild-icon-preview" style="width:48px;height:48px;border-radius:24px;background:#5865f2;display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff">Q</div>
+<div style="flex:1">
+<input name="icon" id="guild-icon-input" class="input" placeholder="输入图标文字（1-2个字符）" maxlength="2" value="Q" oninput="updateGuildIconPreview()">
+</div>
+</div>
+</div>
+<input name="name" id="guild-name-input" required class="input" placeholder="服务器名称" style="margin-bottom:12px">
+<div style="margin-top:16px">
+<button type="submit" class="btn btn-primary w-full">创建服务器</button>
+</div>
 </form>`);
+}
+function updateGuildIconPreview(){
+const icon=document.getElementById('guild-icon-input').value||'Q';
+document.getElementById('guild-icon-preview').textContent=icon.slice(0,2);
 }
 async function createGuild(e){
 e.preventDefault();
 const fd=new FormData(e.target);
-const data=Object.fromEntries(fd);
+const data={name:fd.get('name'),icon:fd.get('icon')||fd.get('name')[0].toUpperCase()};
 const r=await api('/guilds',{method:'POST',body:JSON.stringify(data)});
-if(r?.id){closeModal();toast('服务器创建成功！','success');renderGuilds();}
+if(r?.id){closeModal();toast('服务器创建成功！','success');renderGuilds();selectGuild(r.id);}
 else{toast(r?.detail||'创建失败','error');}
+}
+
+// 服务器设置
+function showGuildSettings(){
+if(!S.guildId){toast('请先选择一个服务器','info');return;}
+openModal(`<h3>服务器设置</h3>
+<div style="margin-top:16px">
+<div style="padding:12px;background:#404045;border-radius:8px;margin-bottom:12px">
+<div style="font-size:13px;color:#b9bbbe">邀请链接</div>
+<div style="display:flex;gap:8px;margin-top:8px">
+<input id="invite-link" class="input" readonly value="加载中..." style="flex:1">
+<button onclick="copyInviteLink()" class="btn btn-primary" style="padding:6px 12px">复制</button>
+</div>
+<button onclick="generateInviteLink()" class="btn btn-ghost w-full" style="margin-top:8px">生成新链接</button>
+</div>
+<div style="display:flex;gap:8px">
+<button onclick="showAddChannelModal()" class="btn btn-primary" style="flex:1">添加频道</button>
+<button onclick="closeModal();showChannelManagement()" class="btn btn-ghost" style="flex:1">管理频道</button>
+</div>
+</div>`);
+loadInviteLink();
+}
+
+// 加载邀请链接
+async function loadInviteLink(){
+const r=await api('/guilds/'+S.guildId+'/invite');
+if(r?.code){document.getElementById('invite-link').value='https://quantsignalkitokito.duckdns.org/invite/'+r.code;}
+else{document.getElementById('invite-link').value='点击生成邀请链接';}
+}
+
+// 生成邀请链接
+async function generateInviteLink(){
+const r=await api('/guilds/'+S.guildId+'/invite',{method:'POST'});
+if(r?.code){document.getElementById('invite-link').value='https://quantsignalkitokito.duckdns.org/invite/'+r.code;toast('邀请链接已生成','success');}
+else{toast(r?.detail||'生成失败','error');}
+}
+
+// 复制邀请链接
+function copyInviteLink(){
+const link=document.getElementById('invite-link').value;
+navigator.clipboard.writeText(link).then(()=>toast('已复制到剪贴板','success'));
+}
+
+// 频道管理
+function showChannelManagement(){
+if(!S.guildId){return;}
+openModal(`<h3>频道管理</h3>
+<div id="channel-management-list" style="margin-top:16px;max-height:400px;overflow-y:auto">
+加载中...
+</div>
+<div style="margin-top:16px">
+<button onclick="showAddChannelModal()" class="btn btn-primary w-full">+ 添加新频道</button>
+</div>`);
+loadChannelManagement();
+}
+
+async function loadChannelManagement(){
+const r=await api('/guilds/'+S.guildId+'/channels');
+const list=document.getElementById('channel-management-list');
+if(r&&r.length){
+list.innerHTML=r.map(c=>`<div style="display:flex;align-items:center;padding:8px;border-bottom:1px solid #404045;gap:8px">
+<span style="font-size:16px">${c.type==='text'?'#':'🔊'}</span>
+<span style="flex:1;color:#fff">${c.name}</span>
+<button onclick="showRenameChannel(${c.id},'${c.name}')" class="btn btn-ghost" style="padding:4px 8px;font-size:12px">重命名</button>
+<button onclick="deleteChannel(${c.id})" class="btn btn-danger" style="padding:4px 8px;font-size:12px">删除</button>
+</div>`).join('');
+}else{list.innerHTML='<p style="color:#72767d;text-align:center;padding:20px">暂无频道</p>';}
+}
+
+function showAddChannelModal(){
+openModal(`<h3>添加频道</h3>
+<form onsubmit="addChannel(event)" style="margin-top:16px">
+<div style="margin-bottom:12px">
+<label style="display:block;font-size:12px;color:#b9bbbe;margin-bottom:4px">频道名称</label>
+<input name="name" required class="input" placeholder="输入频道名称">
+</div>
+<div style="margin-bottom:12px">
+<label style="display:block;font-size:12px;color:#b9bbbe;margin-bottom:4px">频道类型</label>
+<select name="type" class="input">
+<option value="text">文字频道</option>
+<option value="voice">语音频道</option>
+</select>
+</div>
+<div style="display:flex;gap:8px">
+<button type="submit" class="btn btn-primary" style="flex:1">创建</button>
+<button type="button" onclick="closeModal()" class="btn btn-ghost" style="flex:1">取消</button>
+</div>
+</form>`);
+}
+
+async function addChannel(e){
+e.preventDefault();
+const fd=new FormData(e.target);
+const r=await api('/guilds/'+S.guildId+'/channels',{method:'POST',body:JSON.stringify({name:fd.get('name'),type:fd.get('type')})});
+if(r?.id){closeModal();toast('频道创建成功','success');loadChannelManagement();renderChannels(S.guildId);}
+else{toast(r?.detail||'创建失败','error');}
+}
+
+function showRenameChannel(id,name){
+openModal(`<h3>重命名频道</h3>
+<form onsubmit="renameChannel(event,${id})" style="margin-top:16px">
+<input name="name" required class="input" placeholder="新名称" value="${name}">
+<div style="display:flex;gap:8px;margin-top:16px">
+<button type="submit" class="btn btn-primary" style="flex:1">保存</button>
+<button type="button" onclick="closeModal()" class="btn btn-ghost" style="flex:1">取消</button>
+</div>
+</form>`);
+}
+
+async function renameChannel(e,id){
+e.preventDefault();
+const fd=new FormData(e.target);
+const r=await api('/guilds/'+S.guildId+'/channels/'+id,{method:'PUT',body:JSON.stringify({name:fd.get('name')})});
+if(r?.id||r?.name){closeModal();toast('已重命名','success');loadChannelManagement();renderChannels(S.guildId);}
+else{toast(r?.detail||'重命名失败','error');}
+}
+
+async function deleteChannel(id){
+if(!confirm('确定要删除这个频道吗？'))return;
+const r=await api('/guilds/'+S.guildId+'/channels/'+id,{method:'DELETE'});
+if(r!==false){toast('频道已删除','success');loadChannelManagement();renderChannels(S.guildId);}
+else{toast('删除失败','error');}
 }
 
 function showHome(){
