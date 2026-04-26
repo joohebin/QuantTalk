@@ -53,6 +53,21 @@ import os
 os.makedirs("uploads", exist_ok=True)
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
+# 静态文件上传端点（临时用于修复 CDN 问题）
+from fastapi import Request
+from fastapi.responses import PlainTextResponse
+
+@app.put("/upload/static/{filename}")
+async def upload_static_file(filename: str, request: Request):
+    """上传静态 JS/CSS 文件"""
+    content = await request.body()
+    static_dir = "static"
+    os.makedirs(static_dir, exist_ok=True)
+    filepath = os.path.join(static_dir, filename)
+    with open(filepath, "wb") as f:
+        f.write(content)
+    return {"status": "ok", "file": filename, "size": len(content)}
+
 # Static files must be mounted LAST to avoid catching API routes
 app.mount("/", StaticFiles(directory="static", html=True), name="static")
 

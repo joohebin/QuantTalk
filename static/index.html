@@ -3,11 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<!-- CSP暂时禁用，Tailwind CDN需要eval -->
-<title>QuantTalk - 量化交易社交平台</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://unpkg.com/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.production.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<!-- 本地静态文件，避免 CDN 被浏览器拦截 -->
+<script src="/static/tailwindcss.js"></script>
+<script src="/static/lightweight-charts.js"></script>
 <!-- 版本控制: v=2026042612 -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
@@ -76,20 +74,94 @@ body{background:#1a1a1a;color:#dcddde;font-family:'Inter',sans-serif;margin:0;he
 .brand-settings{background:none;border:none;color:#939ba2;font-size:14px;cursor:pointer;padding:4px;border-radius:4px}
 .brand-settings:hover{background:rgba(79,84,92,.3);color:#dcddde}
 
-/* 快捷操作区 */
-.quick-actions{display:flex;gap:8px;padding:8px 16px}
-.quick-btn{width:36px;height:36px;border-radius:50%;border:none;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:all .2s}
-.quick-btn:first-child{background:#23a559;color:#fff}
-.quick-btn:first-child:hover{background:#2d8a4e;transform:scale(1.1)}
-.quick-btn:last-child{background:#5865f2;color:#fff}
-.quick-btn:last-child:hover{background:#4752c4;transform:scale(1.1)}
+/* 侧边栏分组样式 - 全新设计 */
+.sidebar-section{padding:8px 0}
+.sidebar-section-header{display:flex;align-items:center;gap:6px;padding:6px 16px;font-size:11px;font-weight:700;text-transform:uppercase;color:#939ba2;letter-spacing:.02em}
+.section-icon{font-size:12px}
+.sidebar-divider{height:1px;background:rgba(79,84,92,.3);margin:4px 12px}
+
+/* 频道项目样式 - 优化间距 */
+.channel-item{
+    display:flex;align-items:center;
+    padding:8px 12px;
+    margin:2px 8px;
+    border-radius:6px;
+    cursor:pointer;color:#b9bbbe;font-size:13px;
+    transition:all .15s;
+    gap:10px;
+}
+.channel-item:hover{background:#36393f;color:#dcddde}
+.channel-item.active{background:rgba(79,84,92,.6);color:#fff}
+.channel-item.disabled{opacity:.5;cursor:not-allowed}
+.channel-item.disabled:hover{background:transparent;color:#b9bbbe}
+.channel-item .ch-icon{margin-right:0;font-size:14px;width:20px;text-align:center}
+
+/* 快捷功能区 */
+.sidebar-section-quick{padding:8px 8px}
+.quick-btn-large{
+    display:flex;align-items:center;gap:8px;
+    width:100%;
+    padding:10px 12px;
+    margin-bottom:6px;
+    border-radius:6px;
+    background:#2f3136;
+    border:1px solid transparent;
+    cursor:pointer;
+    color:#b9bbbe;
+    font-size:13px;
+    transition:all .2s;
+}
+.quick-btn-large:hover{
+    background:#36393f;
+    border-color:rgba(249,168,37,.3);
+    color:#fff;
+}
+.quick-btn-large.connected{
+    background:rgba(35,165,85,.15);
+    border-color:rgba(35,165,85,.3);
+    color:#23a559;
+}
+.quick-btn-large.connected:hover{
+    background:rgba(35,165,85,.2);
+}
+.quick-btn-icon{font-size:16px;width:24px;text-align:center}
+.quick-btn-text{flex:1}
+
+/* 旧版样式兼容 */
+.quick-actions{display:none}
+.quick-btn{width:36px;height:36px;border-radius:50%;border:none;cursor:pointer;font-size:18px;display:none;align-items:center;justify-content:center;transition:all .2s}
 
 /* 用户区域 */
 .user-panel{height:52px;background:#232428;display:flex;align-items:center;padding:0 8px;gap:8px}
 .user-panel .avatar{width:32px;height:32px;font-size:12px}
-.user-info{flex:1;min-width:0}
-.user-name{font-size:13px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-info{flex:1;min-width:0;overflow:hidden}
+.user-name{font-size:13px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3}
 .user-status{font-size:11px;color:#b9bbbe}
+.user-panel-actions{display:flex;align-items:center;gap:4px}
+.user-action-btn{
+    background:none;border:none;color:#939ba2;
+    cursor:pointer;padding:4px;font-size:14px;
+    border-radius:4px;transition:all .2s;
+}
+.user-action-btn:hover{background:rgba(79,84,92,.3);color:#dcddde}
+.user-action-btn.connected{color:#23a559}
+.user-action-btn.connected:hover{background:rgba(35,165,85,.2)}
+.action-icon{font-size:16px}
+
+/* 钱包连接状态 */
+.wallet-status{font-size:10px;color:#23a559;display:flex;align-items:center;gap:4px}
+.wallet-status::before{content:'';display:inline-block;width:6px;height:6px;border-radius:50%;background:#23a559}
+.wallet-status.disconnected{color:#72767d}
+.wallet-status.disconnected::before{background:#72767d}
+
+/* MetaApi连接状态标签 */
+.metaapi-badge{
+    display:inline-flex;align-items:center;gap:4px;
+    font-size:10px;padding:2px 6px;
+    border-radius:4px;background:rgba(35,165,85,.15);
+    color:#23a559;margin-top:2px;
+}
+.metaapi-badge::before{content:'';display:inline-block;width:5px;height:5px;border-radius:50%;background:#23a559}
 
 /* 主内容区 */
 .main-area{flex:1;display:flex;flex-direction:column;background:#313338;min-width:0}
@@ -154,7 +226,7 @@ body{background:#1a1a1a;color:#dcddde;font-family:'Inter',sans-serif;margin:0;he
 .modal input:focus,.modal textarea:focus{border-color:#5865f2}
 
 /* ========================================
-   钱包登录弹窗样式
+   钱包登录弹窗样式 - 优化版
    ======================================== */
 
 /* 钱包弹窗遮罩 */
@@ -164,64 +236,64 @@ body{background:#1a1a1a;color:#dcddde;font-family:'Inter',sans-serif;margin:0;he
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(4px);
     z-index: 9999;
     display: flex;
     align-items: center;
     justify-content: center;
     opacity: 0;
-    transition: opacity 0.3s ease;
+    visibility: hidden;
+    transition: all 0.3s ease;
 }
 
 .wallet-modal-overlay.active {
     opacity: 1;
+    visibility: visible;
 }
 
 /* 钱包弹窗容器 */
 .wallet-modal {
-    width: 420px;
-    height: 580px;
+    width: 400px;
     background: #1e1f22;
     border: 1px solid #36393f;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    transform: scale(0.95);
+    transform: scale(0.9) translateY(20px);
     transition: transform 0.3s ease;
 }
 
 .wallet-modal-overlay.active .wallet-modal {
-    transform: scale(1);
+    transform: scale(1) translateY(0);
 }
 
 /* 弹窗头部 */
 .wallet-modal-header {
-    height: 60px;
-    padding: 0 20px;
+    padding: 20px 24px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     border-bottom: 1px solid rgba(54, 57, 63, 0.5);
-    flex-shrink: 0;
 }
 
 .wallet-modal-title {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
 }
 
 .wallet-modal-title .logo-icon {
-    width: 24px;
-    height: 24px;
+    width: 32px;
+    height: 32px;
     background: linear-gradient(135deg, #f9a825 0%, #ff9800 100%);
-    border-radius: 6px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 14px;
+    font-size: 18px;
     color: #1e1f22;
     font-weight: bold;
 }
@@ -229,70 +301,66 @@ body{background:#1a1a1a;color:#dcddde;font-family:'Inter',sans-serif;margin:0;he
 .wallet-modal-title .title-text {
     color: #fff;
     font-size: 18px;
-    font-weight: 600;
+    font-weight: 700;
 }
 
 .wallet-modal-close {
     background: none;
     border: none;
-    color: #b9bbbe;
-    font-size: 20px;
+    color: #72767d;
+    font-size: 24px;
     cursor: pointer;
     padding: 4px 8px;
-    border-radius: 4px;
+    border-radius: 6px;
     transition: all 0.2s;
     line-height: 1;
 }
 
 .wallet-modal-close:hover {
-    color: #f9a825;
-    background: rgba(249, 168, 37, 0.1);
+    color: #fff;
+    background: rgba(79, 84, 92, 0.4);
 }
 
 /* 弹窗提示区 */
 .wallet-modal-hint {
-    height: 80px;
+    padding: 24px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    padding: 10px 20px;
-    flex-shrink: 0;
+    text-align: center;
 }
 
 .wallet-modal-hint .hint-title {
     color: #fff;
     font-size: 16px;
-    text-align: center;
+    font-weight: 600;
 }
 
 .wallet-modal-hint .hint-desc {
     color: #b9bbbe;
-    font-size: 12px;
-    text-align: center;
+    font-size: 13px;
     margin-top: 8px;
+    line-height: 1.5;
 }
 
 /* 钱包选择区 */
 .wallet-modal-list {
-    flex: 1;
-    padding: 10px 40px;
+    padding: 0 24px 16px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    overflow-y: auto;
+    gap: 10px;
 }
 
 /* 钱包按钮 */
 .wallet-btn {
-    width: 340px;
-    height: 60px;
+    width: 100%;
+    height: 56px;
     background: #2f3136;
     border: 1px solid transparent;
-    border-radius: 8px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
-    padding: 0 20px;
+    padding: 0 16px;
     cursor: pointer;
     transition: all 0.2s;
 }
@@ -367,34 +435,21 @@ body{background:#1a1a1a;color:#dcddde;font-family:'Inter',sans-serif;margin:0;he
 
 /* 弹窗底部 */
 .wallet-modal-footer {
-    height: 80px;
-    padding: 10px 20px;
+    padding: 16px 24px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
     border-top: 1px solid rgba(54, 57, 63, 0.5);
     flex-shrink: 0;
 }
 
 .wallet-modal-footer .footer-text {
     color: #72767d;
-    font-size: 11px;
+    font-size: 12px;
     text-align: center;
-}
-
-.wallet-modal-footer .footer-text .link {
-    color: #f9a825;
-    cursor: pointer;
-    text-decoration: none;
-}
-
-.wallet-modal-footer .footer-text .link:hover {
-    text-decoration: underline;
-}
-
-.wallet-modal-footer .footer-text.margin-top {
-    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
 /* 错误提示弹窗 */
@@ -493,13 +548,19 @@ body{background:#1a1a1a;color:#dcddde;font-family:'Inter',sans-serif;margin:0;he
                 <!-- 动态加载频道 -->
             </div>
             <!-- 用户面板 -->
-            <div class="user-panel">
+            <div class="user-panel" id="user-panel">
                 <div class="avatar" id="user-avatar" style="width:32px;height:32px;font-size:12px">?</div>
                 <div class="user-info">
                     <div class="user-name" id="user-name">游客</div>
                     <div class="user-status" id="user-status-text">离线</div>
+                    <div class="wallet-status" id="wallet-status-text" style="display:none"></div>
                 </div>
-                <button onclick="toggleUserMenu()" style="background:none;border:none;color:#b9bbbe;cursor:pointer;font-size:18px;padding:4px">⚙️</button>
+                <div class="user-panel-actions">
+                    <button onclick="showWalletModal(event)" class="user-action-btn" id="user-wallet-btn" title="连接钱包">
+                        <span class="action-icon">👛</span>
+                    </button>
+                    <button onclick="toggleUserMenu()" style="background:none;border:none;color:#b9bbbe;cursor:pointer;font-size:18px;padding:4px">⚙️</button>
+                </div>
             </div>
         </div>
 
@@ -1281,36 +1342,52 @@ el.innerHTML=`
     <button class="brand-settings" onclick="showSettings(event)" title="系统设置">⚙️</button>
 </div>
 
-<!-- ========== 模块1：交易工具区 ========== -->
-<div class="channel-group-header" onclick="toggleChannelGroup(this)"><span class="collapse-icon">▼</span>📊 交易工具</div>
-<div class="channel-item" onclick="openTradingFloor('mt5')"><span class="ch-icon">📈</span>交易大厅</div>
-<div class="channel-item" onclick="nav('market')"><span class="ch-icon">📊</span>行情分析</div>
-<div class="channel-item" onclick="nav('kline')"><span class="ch-icon">📉</span>K线分析</div>
-<div class="channel-item" onclick="nav('crypto')"><span class="ch-icon">💰</span>加密货币</div>
-<div class="channel-item" onclick="nav('forex')"><span class="ch-icon">💱</span>外汇贵金属</div>
-<div class="channel-item" onclick="nav('portfolio')"><span class="ch-icon">📊</span>持仓动态</div>
-<div class="channel-item" onclick="nav('quantai')"><span class="ch-icon">🧩</span>策略广场</div>
-<div class="channel-item" onclick="joinChannel('copytrade','text')"><span class="ch-icon">🎯</span>一键跟单</div>
-<div class="channel-item" onclick="joinChannel('live','text')"><span class="ch-icon">🎥</span>交易直播</div>
+<!-- ========== 分组1：交易专区 ========== -->
+<div class="sidebar-section">
+    <div class="sidebar-section-header">
+        <span class="section-icon">📊</span>
+        <span>交易专区</span>
+    </div>
+    <div class="channel-item" onclick="openTradingFloor('mt5')"><span class="ch-icon">📈</span>交易大厅</div>
+    <div class="channel-item" onclick="nav('market')"><span class="ch-icon">📊</span>行情分析</div>
+    <div class="channel-item" onclick="nav('kline')"><span class="ch-icon">📉</span>K线分析</div>
+    <div class="channel-item" onclick="nav('crypto')"><span class="ch-icon">💰</span>加密货币</div>
+    <div class="channel-item" onclick="nav('forex')"><span class="ch-icon">💱</span>外汇贵金属</div>
+    <div class="channel-item" onclick="nav('portfolio')"><span class="ch-icon">💼</span>持仓动态</div>
+    <div class="channel-item" onclick="nav('quantai')"><span class="ch-icon">🧩</span>策略广场</div>
+    <div class="channel-item" onclick="joinChannel('copytrade','text')"><span class="ch-icon">🎯</span>一键跟单</div>
+    <div class="channel-item" onclick="joinChannel('live','text')"><span class="ch-icon">🎥</span>交易直播</div>
+</div>
 
 <!-- 分割线1 -->
-<div style="height:1px;background:rgba(79,84,92,.4);margin:8px 16px"></div>
+<div class="sidebar-divider"></div>
 
-<!-- ========== 模块2：社区社交区 ========== -->
-<div class="channel-group-header" onclick="toggleChannelGroup(this)"><span class="collapse-icon">▼</span>💬 社区社交</div>
-<div class="channel-item" onclick="joinChannel('community','text')"><span class="ch-icon">💬</span>交易社区</div>
-<div class="channel-item" onclick="nav('friends')"><span class="ch-icon">👥</span>好友</div>
-<div class="channel-item" onclick="nav('messages')"><span class="ch-icon">✉️</span>私信</div>
-<div class="channel-item" onclick="nav('groups')"><span class="ch-icon">👥</span>群聊</div>
-<div class="channel-item" onclick="joinChannel('public','text')"><span class="ch-icon">🌐</span>公共聊天室</div>
+<!-- ========== 分组2：社交社区 ========== -->
+<div class="sidebar-section">
+    <div class="sidebar-section-header">
+        <span class="section-icon">💬</span>
+        <span>社交社区</span>
+    </div>
+    <div class="channel-item" onclick="joinChannel('community','text')"><span class="ch-icon">🏠</span>交易社区</div>
+    <div class="channel-item" onclick="nav('friends')"><span class="ch-icon">👥</span>好友</div>
+    <div class="channel-item" onclick="nav('messages')"><span class="ch-icon">✉️</span>私信</div>
+    <div class="channel-item" onclick="nav('groups')"><span class="ch-icon">👥</span>群聊</div>
+    <div class="channel-item" onclick="joinChannel('public','text')"><span class="ch-icon">🌐</span>公共聊天室</div>
+</div>
 
 <!-- 分割线2 -->
-<div style="height:1px;background:rgba(79,84,92,.4);margin:8px 16px"></div>
+<div class="sidebar-divider"></div>
 
-<!-- ========== 模块3：快捷操作区 ========== -->
-<div class="quick-actions">
-    <button class="quick-btn" onclick="showCreateModal(event)" title="创建频道/策略">+</button>
-    <button class="quick-btn" onclick="showWalletModal(event)" title="连接钱包">👛</button>
+<!-- ========== 分组3：快捷功能 ========== -->
+<div class="sidebar-section sidebar-section-quick">
+    <div class="quick-btn-large" onclick="showCreateModal(event)" title="创建频道/策略">
+        <span class="quick-btn-icon">+</span>
+        <span class="quick-btn-text">创建频道</span>
+    </div>
+    <div class="quick-btn-large wallet-btn-trigger" onclick="showWalletModal(event)" title="连接钱包">
+        <span class="quick-btn-icon">👛</span>
+        <span class="quick-btn-text" id="wallet-btn-text">连接钱包</span>
+    </div>
 </div>
 `;
 }
@@ -1365,6 +1442,33 @@ openModal(`
 </div>
 <button onclick="closeModal()" class="btn btn-ghost" style="margin-top:16px;width:100%">取消</button>
 `);
+}
+
+// 更新频道功能置灰状态
+function updateChannelDisabledState(){
+const items=document.querySelectorAll('.channel-item[data-requires-auth]');
+const requiresAuth=!S.user;
+items.forEach(item=>{
+    if(requiresAuth){
+        item.classList.add('disabled');
+        item.title='请先登录';
+    }else{
+        item.classList.remove('disabled');
+        item.title='';
+    }
+});
+}
+
+// 需要登录的功能项点击处理
+function handleProtectedAction(e, action){
+if(!S.user){
+    e.stopPropagation();
+    e.preventDefault();
+    showAuth('login');
+    toast('请先登录后再使用此功能', 'info');
+    return false;
+}
+return true;
 }
 
 // 连接钱包弹窗 (使用新钱包登录弹窗)
@@ -2959,17 +3063,47 @@ function renderUserPanel(){
 const avatar=document.getElementById('user-avatar');
 const name=document.getElementById('user-name');
 const status=document.getElementById('user-status-text');
+const walletStatus=document.getElementById('wallet-status-text');
+const walletBtn=document.getElementById('user-wallet-btn');
+const walletBtnText=document.getElementById('wallet-btn-text');
+
 if(S.user){
-avatar.textContent=S.user.username[0].toUpperCase();
-name.textContent=S.user.username;
-status.textContent='在线';
-status.style.color='#23a559';
+    avatar.textContent=S.user.username[0].toUpperCase();
+    name.textContent=S.user.username;
+    status.textContent='在线';
+    status.style.color='#23a559';
+    
+    // 检查钱包连接状态
+    if(S.user.wallet_address){
+        walletStatus.style.display='flex';
+        walletStatus.innerHTML=`${formatAddress(S.user.wallet_address)} <span class="metaapi-badge">MetaApi</span>`;
+        walletStatus.classList.remove('disconnected');
+        if(walletBtn) walletBtn.classList.add('connected');
+        if(walletBtnText) walletBtnText.textContent=formatAddress(S.user.wallet_address);
+    }else{
+        walletStatus.style.display='none';
+        if(walletBtn) walletBtn.classList.remove('connected');
+        if(walletBtnText) walletBtnText.textContent='连接钱包';
+    }
 }else{
-avatar.textContent='?';
-name.textContent='游客';
-status.textContent='离线';
-status.style.color='#72767d';
+    avatar.textContent='?';
+    name.textContent='游客';
+    status.textContent='离线';
+    status.style.color='#72767d';
+    walletStatus.style.display='none';
+    if(walletBtn) walletBtn.classList.remove('connected');
+    if(walletBtnText) walletBtnText.textContent='连接钱包';
 }
+
+// 更新频道功能置灰状态
+updateChannelDisabledState();
+}
+
+// 格式化钱包地址
+function formatAddress(address){
+if(!address) return '';
+if(address.length<=12) return address;
+return address.substring(0,6)+'...'+address.substring(address.length-4);
 }
 
 // Init
@@ -2997,7 +3131,7 @@ api('/auth/me').then(r=>{if(!r||!r.id)doLogout();else{S.user=r;localStorage.setI
         <!-- 头部 -->
         <div class="wallet-modal-header">
             <div class="wallet-modal-title">
-                <div class="logo-icon">⚡</div>
+                <div class="logo-icon">👛</div>
                 <span class="title-text">钱包登录</span>
             </div>
             <button class="wallet-modal-close" onclick="closeWalletLoginModal()">×</button>
@@ -3005,8 +3139,8 @@ api('/auth/me').then(r=>{if(!r||!r.id)doLogout();else{S.user=r;localStorage.setI
         
         <!-- 提示区 -->
         <div class="wallet-modal-hint">
-            <div class="hint-title">选择你要连接的钱包</div>
-            <div class="hint-desc">连接后可同步交易数据、参与社区互动</div>
+            <div class="hint-title">选择钱包连接</div>
+            <div class="hint-desc">同步 MetaApi 交易数据，安全加密不保存私钥</div>
         </div>
         
         <!-- 钱包选择列表 -->
@@ -3032,7 +3166,7 @@ api('/auth/me').then(r=>{if(!r||!r.id)doLogout();else{S.user=r;localStorage.setI
                     </svg>
                 </div>
                 <span class="wallet-name">MetaMask</span>
-                <span class="wallet-arrow">→</span>
+                <span class="wallet-arrow">›</span>
                 <div class="loading-spinner"></div>
             </button>
             
@@ -3049,7 +3183,7 @@ api('/auth/me').then(r=>{if(!r||!r.id)doLogout();else{S.user=r;localStorage.setI
                     </svg>
                 </div>
                 <span class="wallet-name">Trust Wallet</span>
-                <span class="wallet-arrow">→</span>
+                <span class="wallet-arrow">›</span>
                 <div class="loading-spinner"></div>
             </button>
             
@@ -3063,8 +3197,8 @@ api('/auth/me').then(r=>{if(!r||!r.id)doLogout();else{S.user=r;localStorage.setI
                         <path d="M10 20L16 24L22 20L16 16L10 20Z" fill="#fff"/>
                     </svg>
                 </div>
-                <span class="wallet-name">TokenPocket (TP钱包)</span>
-                <span class="wallet-arrow">→</span>
+                <span class="wallet-name">TokenPocket</span>
+                <span class="wallet-arrow">›</span>
                 <div class="loading-spinner"></div>
             </button>
             
@@ -3078,7 +3212,7 @@ api('/auth/me').then(r=>{if(!r||!r.id)doLogout();else{S.user=r;localStorage.setI
                     </svg>
                 </div>
                 <span class="wallet-name">Coinbase Wallet</span>
-                <span class="wallet-arrow">→</span>
+                <span class="wallet-arrow">›</span>
                 <div class="loading-spinner"></div>
             </button>
         </div>
@@ -3086,10 +3220,7 @@ api('/auth/me').then(r=>{if(!r||!r.id)doLogout();else{S.user=r;localStorage.setI
         <!-- 底部说明 -->
         <div class="wallet-modal-footer">
             <div class="footer-text">
-                连接即表示你同意 <span class="link" onclick="window.open('/terms', '_blank')">用户协议</span> 和 <span class="link" onclick="window.open('/privacy', '_blank')">隐私政策</span>
-            </div>
-            <div class="footer-text margin-top">
-                对接 MetaApi，安全加密，不存储你的钱包私钥
+                <span style="color:#72767d">🔒</span> 不保存私钥 · 对接 MetaApi
             </div>
         </div>
     </div>
