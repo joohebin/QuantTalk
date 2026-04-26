@@ -1,6 +1,7 @@
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends, HTTPException
 from app.database import SessionLocal
 from app.models import ChannelMessage, User
+from app.auth import get_current_user
 from sqlalchemy import desc
 import json
 from datetime import datetime
