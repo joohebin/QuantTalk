@@ -946,36 +946,26 @@ renderChannels(id);
 async function renderChannels(guildId){
 const el=document.getElementById('channels-list');
 el.innerHTML=`
-<!-- ========== 高频功能 ========== -->
-<div class="channel-group-header" onclick="toggleChannelGroup(this)"><span class="collapse-icon">▼</span>⚡ 高频</div>
+<!-- ========== 交易模块 ========== -->
+<div class="channel-group-header" onclick="toggleChannelGroup(this)"><span class="collapse-icon">▼</span>📊 交易</div>
 <div class="channel-item" onclick="openTradingFloor('mt5')"><span class="ch-icon">📈</span>交易大厅</div>
 <div class="channel-item" onclick="nav('kline')"><span class="ch-icon">📊</span>K线分析</div>
-<div class="channel-item" onclick="openTradingFloor('binance')"><span class="ch-icon">🪙</span>Binance行情</div>
-
-<!-- ========== 行情模块 ========== -->
-<div class="channel-group-header" onclick="toggleChannelGroup(this)"><span class="collapse-icon">▼</span>📈 行情</div>
 <div class="channel-item" onclick="nav('crypto')"><span class="ch-icon">🪙</span>加密货币</div>
 <div class="channel-item" onclick="nav('forex')"><span class="ch-icon">💱</span>外汇贵金属</div>
-<div class="channel-item" onclick="joinChannel('analysis','text')"><span class="ch-icon">📝</span>技术分析</div>
+<div class="channel-item" onclick="joinChannel('portfolio','text')"><span class="ch-icon">📊</span>持仓动态</div>
+<div class="channel-item" onclick="joinChannel('strategy','text')"><span class="ch-icon">📝</span>策略广场</div>
+<div class="channel-item" onclick="joinChannel('copytrade','text')"><span class="ch-icon">👥</span>一键跟单</div>
+<div class="channel-item" onclick="joinChannel('live','text')"><span class="ch-icon">🔴</span>交易直播</div>
 
-<!-- ========== 社区模块 ========== -->
-<div class="channel-group-header" onclick="toggleChannelGroup(this)"><span class="collapse-icon">▼</span>👥 社区</div>
-<div class="channel-item" onclick="nav('quantai')"><span class="ch-icon">🤖</span>QuantAI广场</div>
-<div class="channel-item" onclick="joinChannel('signals','text')"><span class="ch-icon">📢</span>交易信号</div>
-<div class="channel-item" onclick="joinChannel('general','text')"><span class="ch-icon">#</span>综合讨论</div>
+<!-- 分割线 -->
+<div style="height:1px;background:rgba(79,84,92,.4);margin:8px 16px"></div>
 
 <!-- ========== 社交模块 ========== -->
 <div class="channel-group-header" onclick="toggleChannelGroup(this)"><span class="collapse-icon">▼</span>💬 社交</div>
-<div class="channel-item" onclick="nav('messages')"><span class="ch-icon">📨</span>私信</div>
 <div class="channel-item" onclick="nav('friends')"><span class="ch-icon">👥</span>好友</div>
+<div class="channel-item" onclick="nav('messages')"><span class="ch-icon">📨</span>私信</div>
 <div class="channel-item" onclick="nav('groups')"><span class="ch-icon">👥</span>群聊</div>
-<div class="channel-item" onclick="joinChannel('voice1','voice')"><span class="ch-icon">🔊</span>语音频道</div>
-
-<!-- ========== 个人中心 ========== -->
-<div class="channel-group-header" onclick="toggleChannelGroup(this)"><span class="collapse-icon">▼</span>👤 个人</div>
-<div class="channel-item" onclick="nav('portfolio')"><span class="ch-icon">📜</span>成绩单</div>
-<div class="channel-item" onclick="nav('wallet')"><span class="ch-icon">💰</span>我的钱包</div>
-<div class="channel-item" onclick="nav('profile')"><span class="ch-icon">👤</span>个人主页</div>
+<div class="channel-item" onclick="joinChannel('general','text')"><span class="ch-icon">#</span>公共聊天室</div>
 `;
 }
 
