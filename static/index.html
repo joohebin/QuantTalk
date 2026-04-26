@@ -492,42 +492,206 @@ content.innerHTML=`
 </div>`;
 }
 
-// ===== CRYPTO PAGE =====
+// ===== CRYPTO PAGE (交易所配置) =====
+let ExchangeModule = {
+    regions: [],
+    configs: [],
+    selectedRegion: null,
+    
+    async init() {
+        await this.loadRegions();
+        await this.loadConfigs();
+    },
+    
+    async loadRegions() {
+        const res = await api('/api/exchanges/regions');
+        if (res) this.regions = res;
+    },
+    
+    async loadConfigs() {
+        const res = await api('/api/exchanges/');
+        if (res) this.configs = res;
+        this.render();
+    },
+    
+    render() {
+        const el = document.getElementById('crypto-list');
+        if (!el) return;
+        
+        const configured = new Set(this.configs.map(c => c.exchange));
+        
+        el.innerHTML = `
+        <div style="margin-bottom:24px">
+            <h3 style="color:#fff;font-size:16px;margin-bottom:12px">已绑定的交易所</h3>
+            <div id="exchange-list">
+                ${this.configs.length === 0 ? '<p style="color:#b9bbbe">尚未绑定任何交易所</p>' : ''}
+                ${this.configs.map(c => this.renderConfigCard(c)).join('')}
+            </div>
+        </div>
+        
+        <div style="margin-bottom:24px">
+            <h3 style="color:#fff;font-size:16px;margin-bottom:12px">添加交易所</h3>
+            
+            <div style="margin-bottom:16px">
+                <label style="display:block;color:#b9bbbe;font-size:13px;margin-bottom:8px">选择地区</label>
+                <div style="display:flex;flex-wrap:wrap;gap:8px" id="region-buttons">
+                    ${this.regions.map(r => `
+                        <button onclick="ExchangeModule.selectRegion('${r.region}')" 
+                            class="tag ${this.selectedRegion === r.region ? 'tag-active' : ''}" 
+                            id="region-${r.region}">
+                            ${r.region_name}
+                        </button>
+                    `).join('')}
+                </div>
+            </div>
+            
+            ${this.selectedRegion ? this.renderExchangeSelector() : '<p style="color:#b9bbbe;margin:16px 0">请先选择地区</p>'}
+        </div>
+        `;
+    },
+    
+    renderConfigCard(config) {
+        const region = this.regions.find(r => r.exchanges?.some(e => e.id === config.exchange));
+        const exchange = region?.exchanges?.find(e => e.id === config.exchange);
+        const name = exchange?.name || config.exchange;
+        const icon = exchange?.icon || '💰';
+        const verified = config.is_verified;
+        
+        return `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:#2d2d32;border-radius:8px;margin-bottom:8px">
+            <div style="display:flex;align-items:center;gap:12px">
+                <span style="font-size:28px">${icon}</span>
+                <div>
+                    <div style="font-weight:600;color:#fff">${name}</div>
+                    <div style="font-size:12px;color:#b9bbbe">${config.api_key_masked}</div>
+                </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+                ${verified ? '<span style="color:#23a559;font-size:12px">✓ 已验证</span>' : '<span style="color:#f87171;font-size:12px">未验证</span>'}
+                <button onclick="ExchangeModule.deleteExchange(${config.id})" class="btn btn-danger" style="padding:4px 8px;font-size:12px">删除</button>
+            </div>
+        </div>`;
+    },
+    
+    selectRegion(region) {
+        this.selectedRegion = region;
+        this.render();
+    },
+    
+    renderExchangeSelector() {
+        const region = this.regions.find(r => r.region === this.selectedRegion);
+        if (!region) return '';
+        
+        const configured = new Set(this.configs.map(c => c.exchange));
+        const available = region.exchanges.filter(e => !configured.has(e.id));
+        
+        if (available.length === 0) {
+            return '<p style="color:#b9bbbe;margin:16px 0">该地区交易所已全部绑定</p>';
+        }
+        
+        return `
+        <div style="background:#2d2d32;border-radius:8px;padding:16px">
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:16px">
+                ${available.map(e => `
+                    <div onclick="ExchangeModule.showAddForm('${e.id}')" 
+                         style="padding:12px;background:#383842;border-radius:6px;cursor:pointer;border:1px solid transparent;transition:all 0.2s"
+                         onmouseover="this.style.borderColor='#7289da'"
+                         onmouseout="this.style.borderColor='transparent'">
+                        <div style="display:flex;align-items:center;gap:8px">
+                            <span style="font-size:24px">${e.icon}</span>
+                            <span style="font-weight:600;color:#fff">${e.name}</span>
+                        </div>
+                        ${e.need_passphrase ? '<div style="font-size:11px;color:#b9bbbe;margin-top:4px">需要Passphrase</div>' : ''}
+                    </div>
+                `).join('')}
+            </div>
+            
+            <div id="add-form-container"></div>
+        </div>`;
+    },
+    
+    showAddForm(exchangeId) {
+        const region = this.regions.find(r => r.region === this.selectedRegion);
+        const exchange = region?.exchanges?.find(e => e.id === exchangeId);
+        if (!exchange) return;
+        
+        const container = document.getElementById('add-form-container');
+        container.innerHTML = `
+        <form onsubmit="ExchangeModule.addExchange(event, '${exchangeId}')">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+                <span style="font-size:20px">${exchange.icon}</span>
+                <span style="font-weight:600;color:#fff">${exchange.name}</span>
+            </div>
+            <input id="api-key-input" class="input" placeholder="API Key" required style="margin-bottom:8px">
+            <input id="api-secret-input" class="input" type="password" placeholder="API Secret" required style="margin-bottom:8px">
+            ${exchange.need_passphrase ? '<input id="passphrase-input" class="input" placeholder="Passphrase" style="margin-bottom:8px">' : ''}
+            <div style="display:flex;gap:8px;margin-top:8px">
+                <button type="submit" class="btn btn-primary" style="flex:1">绑定</button>
+                <button type="button" onclick="document.getElementById('add-form-container').innerHTML=''" class="btn btn-ghost">取消</button>
+            </div>
+            <p style="font-size:11px;color:#b9bbbe;margin-top:8px">
+                <a href="${exchange.docs_url}" target="_blank" style="color:#7289da">如何获取API Key?</a>
+            </p>
+        </form>`;
+    },
+    
+    async addExchange(e, exchangeId) {
+        e.preventDefault();
+        const form = e.target;
+        const apiKey = form.querySelector('#api-key-input').value;
+        const apiSecret = form.querySelector('#api-secret-input').value;
+        const passphrase = form.querySelector('#passphrase-input')?.value;
+        
+        const btn = form.querySelector('button[type="submit"]');
+        btn.textContent = '绑定中...';
+        btn.disabled = true;
+        
+        try {
+            const res = await api('/api/exchanges/', {
+                method: 'POST',
+                body: JSON.stringify({
+                    exchange: exchangeId,
+                    api_key: apiKey,
+                    api_secret: apiSecret,
+                    passphrase: passphrase || null
+                })
+            });
+            
+            if (res?.id) {
+                toast(`${res.exchange} 绑定成功！`, 'success');
+                await this.loadConfigs();
+            } else {
+                toast(res?.detail || '绑定失败', 'error');
+            }
+        } catch (err) {
+            toast('绑定失败: ' + err.message, 'error');
+        }
+        
+        btn.textContent = '绑定';
+        btn.disabled = false;
+    },
+    
+    async deleteExchange(id) {
+        if (!confirm('确定要删除这个交易所绑定吗？')) return;
+        
+        try {
+            const res = await api(`/api/exchanges/${id}`, { method: 'DELETE' });
+            toast('已删除', 'success');
+            await this.loadConfigs();
+        } catch (err) {
+            toast('删除失败', 'error');
+        }
+    }
+};
+
 function renderCrypto(){
 const content=document.getElementById('main-content');
 content.innerHTML=`
 <div style="padding:24px">
-<h2 style="font-size:20px;font-weight:600;color:#fff;margin-bottom:20px">🪙 加密货币</h2>
+<h2 style="font-size:20px;font-weight:600;color:#fff;margin-bottom:20px">🪙 加密货币交易所</h2>
 <div id="crypto-list" style="color:#b9bbbe">加载中...</div>
 </div>`;
-loadCryptoData();
-}
-
-async function loadCryptoData(){
-try{
-const res=await api('/market/crypto');
-const el=document.getElementById('crypto-list');
-if(res&&res.length){
-el.innerHTML=`<div class="quote-grid">${res.map(c=>`
-<div class="quote-card">
-<div style="display:flex;align-items:center;gap:8px">
-<span style="font-size:24px">${c.icon||'🪙'}</span>
-<span class="quote-symbol">${c.symbol}</span>
-</div>
-<div class="quote-price">${c.price}</div>
-<div class="quote-change ${parseFloat(c.change)>=0?'gain':'loss'}">${parseFloat(c.change)>=0?'+':''}${c.change}%</div>
-</div>`).join('')}</div>`;
-}else{
-el.innerHTML=`<div class="quote-grid">
-<div class="quote-card"><div style="display:flex;align-items:center;gap:8px"><span style="font-size:24px">₿</span><span class="quote-symbol">BTC</span></div><div class="quote-price">$45,234.56</div><div class="quote-change gain">+2.34%</div></div>
-<div class="quote-card"><div style="display:flex;align-items:center;gap:8px"><span style="font-size:24px">Ξ</span><span class="quote-symbol">ETH</span></div><div class="quote-price">$2,456.78</div><div class="quote-change gain">+1.87%</div></div>
-<div class="quote-card"><div style="display:flex;align-items:center;gap:8px"><span style="font-size:24px">💎</span><span class="quote-symbol">SOL</span></div><div class="quote-price">$98.45</div><div class="quote-change gain">+5.23%</div></div>
-<div class="quote-card"><div style="display:flex;align-items:center;gap:8px"><span style="font-size:24px">🔷</span><span class="quote-symbol">XRP</span></div><div class="quote-price">$0.5234</div><div class="quote-change loss">-1.23%</div></div>
-</div>`;
-}
-}catch(e){
-document.getElementById('crypto-list').innerHTML='<p>加载失败</p>';
-}
+ExchangeModule.init();
 }
 
 // ===== FOREX PAGE =====
