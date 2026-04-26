@@ -880,7 +880,7 @@ S.token='';S.user=null;localStorage.removeItem('qt_token');localStorage.removeIt
 async function renderGuilds(){
 const el=document.getElementById('guilds-list');
 try{
-const guilds=await api('/guilds')||[];
+const guilds=await api('/guilds/')||[];
 el.innerHTML=guilds.map(g=>`<div class="guild-icon ${S.guildId===g.id?'active':''}" onclick="selectGuild(${g.id})" title="${g.name}">${g.icon||g.name[0].toUpperCase()}</div>`).join('');
 }catch(e){el.innerHTML='';}
 }
