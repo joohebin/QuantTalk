@@ -103,6 +103,18 @@ class User(Base):
     deposit_addresses = relationship("DepositAddress", back_populates="user", cascade="all, delete-orphan")
 
 
+class VerificationCode(Base):
+    """邮箱验证码"""
+    __tablename__ = "verification_codes"
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String(120), index=True, nullable=False)
+    code = Column(String(6), nullable=False)  # 6位验证码
+    purpose = Column(String(20), nullable=False)  # register/login/reset_password
+    expires_at = Column(DateTime, nullable=False)  # 过期时间
+    used = Column(Boolean, default=False)  # 是否已使用
+    created_at = Column(DateTime, server_default=func.now())
+
+
 class Post(Base):
     __tablename__ = "posts"
     id = Column(Integer, primary_key=True, index=True)

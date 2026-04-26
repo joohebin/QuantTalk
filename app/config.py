@@ -35,6 +35,22 @@ METAAPI_BASE_URL = "https://api.metaapi.cloud"
 METAAPI_CACHE_TTL = 5  # 实时行情缓存秒数
 
 # ============================================
+# SendGrid 邮件服务配置（验证码/通知）
+# 文档: https://docs.sendgrid.com/
+# 免费额度: 100封/天
+# ============================================
+SENDGRID_API_KEY = ""  # 你的 SendGrid API Key
+SENDGRID_FROM_EMAIL = "noreply@quantsignalkitokito.duckdns.org"  # 发件人邮箱（需在 SendGrid 验证）
+SENDGRID_FROM_NAME = "QuantTalk"
+
+# 如果没有 SendGrid，可以用以下备选方案
+# SMTP 配置（使用任意邮箱服务）
+SMTP_HOST = "smtp.gmail.com"
+SMTP_PORT = 587
+SMTP_USER = ""  # 你的邮箱
+SMTP_PASSWORD = ""  # 邮箱密码或应用专用密码
+
+# ============================================
 # TradeMux MT5 配置（第三方）
 # 文档: https://docs.trademux.io/
 # Base URL: https://mux.skybluefin.tech
