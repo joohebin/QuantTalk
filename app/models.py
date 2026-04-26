@@ -58,8 +58,11 @@ class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String(50), unique=True, index=True, nullable=False)
+    phone = Column(String(20), nullable=True)  # 国际手机号
     email = Column(String(120), unique=True, index=True, nullable=False)
     hashed_password = Column(String(255), nullable=False)
+    wallet_address = Column(String(100), nullable=True)  # 钱包地址
+    wallet_type = Column(String(20), nullable=True)  # 钱包类型 (MetaMask/Trust/TP/Coinbase)
     avatar = Column(String(500), default="")
     bio = Column(String(500), default="")
     is_online = Column(Boolean, default=False)
@@ -67,6 +70,8 @@ class User(Base):
     is_verified = Column(Boolean, default=False)
     follower_count = Column(Integer, default=0)  # 粉丝数
     following_count = Column(Integer, default=0)  # 关注数
+    metaapi_token = Column(String(255), nullable=True)  # MetaApi授权Token
+    status = Column(Integer, default=0)  # 在线状态 (0-离线，1-在线，2-忙碌)
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
     
@@ -290,6 +295,72 @@ class PortfolioPosition(Base):
     created_at = Column(DateTime, server_default=func.now())
 
     user = relationship("User", back_populates="portfolio_positions")
+
+
+class Strategy(Base):
+    """策略表 - 按文档新增"""
+    __tablename__ = "strategies"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(100), nullable=False)  # 策略名称
+    creator_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    description = Column(Text)  # 策略描述
+    variety = Column(String(50), nullable=False)  # 适用品种
+    profit_rate = Column(Float)  # 收益率%
+    max_drawdown = Column(Float)  # 最大回撤%
+    win_rate = Column(Float)  # 胜率%
+    backtest_time = Column(String(50))  # 回测时间范围
+    is_public = Column(Boolean, default=True)  # 是否公开
+    subscribe_num = Column(Integer, default=0)  # 订阅人数
+    created_at = Column(DateTime, server_default=func.now())
+
+    creator = relationship("User")
+
+
+class StrategySubscription(Base):
+    """策略订阅表 - 按文档新增"""
+    __tablename__ = "strategy_subscriptions"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    strategy_id = Column(Integer, ForeignKey("strategies.id"), nullable=False)
+    subscribe_time = Column(DateTime, server_default=func.now())
+    status = Column(Boolean, default=True)  # 订阅状态
+
+    user = relationship("User")
+    strategy = relationship("Strategy")
+
+
+class FollowTrade(Base):
+    """跟单表 - 按文档新增"""
+    __tablename__ = "follow_trades"
+    id = Column(Integer, primary_key=True, index=True)
+    follower_id = Column(Integer, ForeignKey("users.id"), nullable=False)  # 跟单用户
+    trader_id = Column(Integer, ForeignKey("users.id"), nullable=False)  # 被跟单交易员
+    variety = Column(String(50), nullable=False)  # 跟单品种
+    follow_amount = Column(Float, nullable=False)  # 跟单金额
+    stop_profit = Column(Float)  # 止盈价格
+    stop_loss = Column(Float)  # 止损价格
+    status = Column(Integer, default=1)  # 跟单状态 (1-跟单中，0-已停止，2-已平仓)
+    profit = Column(Float, default=0)  # 跟单收益
+    create_time = Column(DateTime, server_default=func.now())
+    end_time = Column(DateTime)  # 跟单结束时间
+
+    follower = relationship("User", foreign_keys=[follower_id])
+    trader = relationship("User", foreign_keys=[trader_id])
+
+
+class MetaApiConfig(Base):
+    """MetaApi关联表 - 按文档新增"""
+    __tablename__ = "metaapi_configs"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    metaapi_token = Column(String(255), nullable=False)
+    account_id = Column(String(100), nullable=False)
+    platform = Column(String(20), nullable=False)  # MT4/MT5
+    status = Column(Boolean, default=True)  # 对接状态
+    last_sync_time = Column(DateTime)  # 最后同步时间
+    create_time = Column(DateTime, server_default=func.now())
+
+    user = relationship("User")
 
 
 class ExchangeConfig(Base):
