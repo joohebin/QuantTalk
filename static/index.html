@@ -1367,64 +1367,14 @@ openModal(`
 `);
 }
 
-// 连接钱包弹窗
+// 连接钱包弹窗 (使用新钱包登录弹窗)
 function showWalletModal(e){
-e.stopPropagation();
-openModal(`
-<h3>👛 连接钱包</h3>
-<div style="display:flex;flex-direction:column;gap:16px;margin-top:16px">
-<button onclick="connectMetaMask()" class="btn btn-primary" style="padding:16px;display:flex;align-items:center;gap:12px">
-<div style="font-size:24px">🦊</div>
-<div>
-<div style="font-weight:600">MetaMask</div>
-<div style="font-size:12px;opacity:.8">一键连接以太坊钱包</div>
-</div>
-</button>
-<button onclick="showMetaApiBind()" class="btn btn-ghost" style="padding:16px;display:flex;align-items:center;gap:12px">
-<div style="font-size:24px">📊</div>
-<div>
-<div style="font-weight:600">MetaApi</div>
-<div style="font-size:12px;opacity:.8">绑定MT4/MT5账户</div>
-</div>
-</button>
-<div style="text-align:center;color:#72767d;font-size:12px;margin-top:8px">
-连接钱包后可使用交易、跟单等功能
-</div>
-</div>
-<button onclick="closeModal()" class="btn btn-ghost" style="margin-top:16px;width:100%">取消</button>
-`);
+e?.stopPropagation();
+const modal = document.getElementById('wallet-login-modal');
+if (modal) {
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
 }
-
-// MetaMask连接（模拟）
-function connectMetaMask(){
-toast('MetaMask连接功能开发中...','info');
-closeModal();
-}
-
-// MetaApi绑定弹窗
-function showMetaApiBind(){
-openModal(`
-<h3>📊 MetaApi 账户绑定</h3>
-<form onsubmit="bindMetaApi(event)" style="display:flex;flex-direction:column;gap:12px;margin-top:16px">
-<div>
-<label style="display:block;margin-bottom:4px;font-size:13px;color:#b9bbbe">Account ID</label>
-<input name="account_id" class="input" placeholder="ff982e56-23b0-..." required>
-</div>
-<div>
-<label style="display:block;margin-bottom:4px;font-size:13px;color:#b9bbbe">API Key</label>
-<input name="api_key" class="input" placeholder="a915ec00-8a72-..." required>
-</div>
-<button type="submit" class="btn btn-primary" style="padding:10px">绑定账户</button>
-</form>
-<button onclick="closeModal()" class="btn btn-ghost" style="margin-top:8px;width:100%">取消</button>
-`);
-}
-
-async function bindMetaApi(e){
-e.preventDefault();
-const fd=new FormData(e.target);
-toast('MetaApi绑定功能开发中...','info');
-closeModal();
 }
 
 // 打开交易大厅（频道内嵌入）
