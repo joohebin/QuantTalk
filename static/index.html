@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https: wss:">
 <title>QuantTalk - 量化交易社交平台</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.production.js"></script>
@@ -52,18 +53,20 @@ body{background:#1a1a1a;color:#dcddde;font-family:'Inter',sans-serif;margin:0;he
 /* 频道栏 */
 .channels-bar{width:240px;background:#2b2d31;display:flex;flex-direction:column;height:100vh;overflow:hidden}
 .channels-header{height:48px;padding:0 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #202225;font-weight:600;font-size:15px;background:#2b2d31;box-shadow:0 1px 0 rgba(0,0,0,.2)}
-.channels-list{flex:1;overflow-y:auto;padding:8px 8px;display:flex;flex-direction:column;gap:6px}
-.channel-group{margin-bottom:16px}
-.channel-group-header{display:flex;align-items:center;padding:4px 8px;font-size:11px;font-weight:700;text-transform:uppercase;color:#939ba2;cursor:pointer;user-select:none}
+.channels-list{flex:1;overflow-y:auto;padding:12px 0;display:flex;flex-direction:column;gap:6px}
+.channels-list::-webkit-scrollbar{width:4px}
+.channels-list::-webkit-scrollbar-thumb{background:#36393f;border-radius:4px}
+.channel-group{margin-bottom:8px}
+.channel-group-header{display:flex;align-items:center;padding:8px 16px;font-size:11px;font-weight:700;text-transform:uppercase;color:#939ba2;cursor:pointer;user-select:none;transition:color .2s}
 .channel-group-header:hover{color:#dcddde}
-.channel-group-header .collapse-icon{margin-right:4px;font-size:10px;transition:transform .2s}
+.channel-group-header .collapse-icon{margin-right:6px;font-size:10px;transition:transform .2s}
 .channel-group-header.collapsed .collapse-icon{transform:rotate(-90deg)}
 .channel-group-header.collapsed+*{display:none}
-.channel-group{margin-bottom:4px}
-.channel-item{display:flex;align-items:center;padding:6px 8px;border-radius:4px;cursor:pointer;color:#b9bbbe;font-size:14px;transition:all .1s}
-.channel-item:hover{background:rgba(79,84,92,.4);color:#dcddde}
+.channel-item{display:flex;align-items:center;padding:8px 16px;border-radius:4px;cursor:pointer;color:#b9bbbe;font-size:14px;transition:all .15s}
+.channel-item:hover{background:#2f3136;color:#dcddde}
 .channel-item.active{background:rgba(79,84,92,.6);color:#fff}
 .channel-item .ch-icon{margin-right:8px;font-size:16px}
+.channel-item.sub-item{padding-left:32px;font-size:13px}
 
 /* 用户区域 */
 .user-panel{height:52px;background:#232428;display:flex;align-items:center;padding:0 8px;gap:8px}
@@ -121,8 +124,10 @@ body{background:#1a1a1a;color:#dcddde;font-family:'Inter',sans-serif;margin:0;he
 
 /* 行情面板 */
 .quote-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;padding:16px}
-.quote-card{background:#36393f;border-radius:8px;padding:16px;transition:all .2s}
-.quote-card:hover{background:#404045;transform:translateY(-2px)}
+.quote-card{background:#36393f;border-radius:8px;padding:16px;transition:all .25s;cursor:pointer;border:1px solid transparent}
+.quote-card:hover{background:#404045;transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.3);border-color:rgba(88,101,242,.3)}
+.home-nav-card{background:#36393f;border-radius:8px;padding:20px;transition:all .25s;cursor:pointer;border:1px solid rgba(79,84,92,.2)}
+.home-nav-card:hover{background:#404045;transform:translateY(-4px);box-shadow:0 12px 32px rgba(0,0,0,.4);border-color:rgba(88,101,242,.4)}
 .quote-symbol{font-weight:600;font-size:16px;color:#fff}
 .quote-price{font-size:24px;font-weight:700;margin:4px 0}
 .quote-change{font-size:13px;font-weight:500}
@@ -163,8 +168,8 @@ body{background:#1a1a1a;color:#dcddde;font-family:'Inter',sans-serif;margin:0;he
             <div class="user-panel">
                 <div class="avatar" id="user-avatar" style="width:32px;height:32px;font-size:12px">?</div>
                 <div class="user-info">
-                    <div class="user-name" id="user-name">未登录</div>
-                    <div class="user-status">#在线</div>
+                    <div class="user-name" id="user-name">游客</div>
+                    <div class="user-status" id="user-status-text">离线</div>
                 </div>
                 <button onclick="toggleUserMenu()" style="background:none;border:none;color:#b9bbbe;cursor:pointer;font-size:18px;padding:4px">⚙️</button>
             </div>
@@ -185,7 +190,7 @@ body{background:#1a1a1a;color:#dcddde;font-family:'Inter',sans-serif;margin:0;he
 
     <!-- 右侧：成员列表 -->
     <div class="right-panel" id="right-panel" style="display:none">
-        <div class="right-panel-header">👥 在线 — <span id="online-count">0</span></div>
+        <div class="right-panel-header" id="right-panel-header">👥 在线 — <span id="online-count">0</span></div>
         <div class="members-list" id="members-list"></div>
     </div>
 </div>
@@ -941,27 +946,27 @@ renderChannels(id);
 async function renderChannels(guildId){
 const el=document.getElementById('channels-list');
 el.innerHTML=`
-<!-- ========== 交易模块 ========== -->
-<div class="channel-group-header" onclick="toggleChannelGroup(this)"><span class="collapse-icon">▼</span>📊 交易</div>
+<!-- ========== 高频功能 ========== -->
+<div class="channel-group-header" onclick="toggleChannelGroup(this)"><span class="collapse-icon">▼</span>⚡ 高频</div>
 <div class="channel-item" onclick="openTradingFloor('mt5')"><span class="ch-icon">📈</span>交易大厅</div>
 <div class="channel-item" onclick="nav('kline')"><span class="ch-icon">📊</span>K线分析</div>
-<div class="channel-item" onclick="joinChannel('signals','text')"><span class="ch-icon">📢</span>交易信号</div>
-
-<!-- 加密货币子菜单 -->
-<div class="channel-item" style="padding-left:24px" onclick="openTradingFloor('binance')"><span class="ch-icon">🪙</span>├ Binance</div>
-<div class="channel-item" style="padding-left:24px" onclick="openTradingFloor('okx')"><span class="ch-icon">🪙</span>├ OKX</div>
-<div class="channel-item" style="padding-left:24px" onclick="openTradingFloor('bybit')"><span class="ch-icon">🪙</span>└ Bybit</div>
+<div class="channel-item" onclick="openTradingFloor('binance')"><span class="ch-icon">🪙</span>Binance行情</div>
 
 <!-- ========== 行情模块 ========== -->
 <div class="channel-group-header" onclick="toggleChannelGroup(this)"><span class="collapse-icon">▼</span>📈 行情</div>
-<div class="channel-item" onclick="nav('crypto')"><span class="ch-icon">🪙</span>加密货币行情</div>
+<div class="channel-item" onclick="nav('crypto')"><span class="ch-icon">🪙</span>加密货币</div>
 <div class="channel-item" onclick="nav('forex')"><span class="ch-icon">💱</span>外汇贵金属</div>
 <div class="channel-item" onclick="joinChannel('analysis','text')"><span class="ch-icon">📝</span>技术分析</div>
 
-<!-- ========== 社交模块 ========== -->
-<div class="channel-group-header" onclick="toggleChannelGroup(this)"><span class="collapse-icon">▼</span>👥 社交</div>
+<!-- ========== 社区模块 ========== -->
+<div class="channel-group-header" onclick="toggleChannelGroup(this)"><span class="collapse-icon">▼</span>👥 社区</div>
+<div class="channel-item" onclick="nav('quantai')"><span class="ch-icon">🤖</span>QuantAI广场</div>
+<div class="channel-item" onclick="joinChannel('signals','text')"><span class="ch-icon">📢</span>交易信号</div>
 <div class="channel-item" onclick="joinChannel('general','text')"><span class="ch-icon">#</span>综合讨论</div>
-<div class="channel-item" onclick="nav('messages')"><span class="ch-icon">💬</span>私信</div>
+
+<!-- ========== 社交模块 ========== -->
+<div class="channel-group-header" onclick="toggleChannelGroup(this)"><span class="collapse-icon">▼</span>💬 社交</div>
+<div class="channel-item" onclick="nav('messages')"><span class="ch-icon">📨</span>私信</div>
 <div class="channel-item" onclick="nav('friends')"><span class="ch-icon">👥</span>好友</div>
 <div class="channel-item" onclick="nav('groups')"><span class="ch-icon">👥</span>群聊</div>
 <div class="channel-item" onclick="joinChannel('voice1','voice')"><span class="ch-icon">🔊</span>语音频道</div>
@@ -2560,7 +2565,7 @@ showHome();
 function renderUserPanel(){
 const avatar=document.getElementById('user-avatar');
 const name=document.getElementById('user-name');
-const status=document.querySelector('.user-status');
+const status=document.getElementById('user-status-text');
 if(S.user){
 avatar.textContent=S.user.username[0].toUpperCase();
 name.textContent=S.user.username;
