@@ -499,8 +499,19 @@ let ExchangeModule = {
     selectedRegion: null,
     
     async init() {
-        await this.loadRegions();
-        await this.loadConfigs();
+        try {
+            await this.loadRegions();
+        } catch (e) {
+            console.error('loadRegions error:', e);
+        }
+        try {
+            await this.loadConfigs();
+        } catch (e) {
+            console.error('loadConfigs error:', e);
+            // 如果未登录，configs 为空数组
+            this.configs = [];
+        }
+        this.render();
     },
     
     async loadRegions() {
@@ -509,9 +520,13 @@ let ExchangeModule = {
     },
     
     async loadConfigs() {
-        const res = await api('/exchanges/');
-        if (res) this.configs = res;
-        this.render();
+        try {
+            const res = await api('/exchanges/');
+            if (res) this.configs = res;
+        } catch (e) {
+            // 未登录或出错时configs为空
+            this.configs = [];
+        }
     },
     
     render() {
