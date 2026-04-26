@@ -16,12 +16,34 @@
 body{background:#1a1a1a;color:#dcddde;font-family:'Inter',sans-serif;margin:0;height:100vh;overflow:hidden}
 .glass{background:rgba(15,20,25,.9);backdrop-filter:blur(12px);border:1px solid rgba(100,116,139,.1)}
 .glass2{background:rgba(25,30,38,.7);border:1px solid rgba(100,116,139,.08)}
-.tag{background:rgba(14,165,233,.12);color:#38bdf8;border:1px solid rgba(14,165,233,.2);border-radius:9999px;padding:2px 10px;font-size:12px;cursor:pointer;white-space:nowrap}
+.tag{background:rgba(249,168,37,.12);color:#f9a825;border:1px solid rgba(249,168,37,.2);border-radius:9999px;padding:2px 10px;font-size:12px;cursor:pointer;white-space:nowrap}
 .btn{padding:6px 16px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;border:none;color:#fff}
-.btn-primary{background:linear-gradient(135deg,#0ea5e9,#0284c7)}.btn-primary:hover{box-shadow:0 4px 14px rgba(14,165,233,.4);transform:translateY(-1px)}
+.btn-primary{background:linear-gradient(135deg,#f9a825,#f57c00)}.btn-primary:hover{box-shadow:0 4px 14px rgba(249,168,37,.4);transform:translateY(-1px)}
 .btn-ghost{background:transparent;color:#b9bbbe;border:1px solid #72767d}.btn-ghost:hover{color:#fff;border-color:#b9bbbe;background:rgba(79,84,92,.4)}
 .btn-danger{background:rgba(239,68,68,.15);color:#f87171;border:1px solid rgba(239,68,68,.2)}.btn-danger:hover{background:rgba(239,68,68,.25)}
+.btn-orange{background:#f9a825;color:#1a1a1a;font-weight:600;border:none;cursor:pointer;border-radius:8px}.btn-orange:hover{background:#ffc107;box-shadow:0 4px 12px rgba(249,168,37,.4)}
 .gain{color:#23a559}.loss{color:#ed4245}
+
+/* Auth Modal - 按文档规范 */
+.auth-modal{background:#1e1f22;border-radius:12px;width:100%;max-width:420px;overflow:hidden;border:1px solid #36393f}
+.auth-header{display:flex;border-bottom:1px solid #36393f}
+.auth-tab{flex:1;padding:14px 0;text-align:center;font-size:15px;font-weight:600;color:#b9bbbe;cursor:pointer;border:none;background:none;transition:all .2s}
+.auth-tab:hover{color:#fff}
+.auth-tab.active{color:#fff;border-bottom:2px solid #f9a825}
+.auth-body{padding:24px}
+.auth-sub-tabs{display:flex;background:#2f3136;border-radius:8px;padding:4px;margin-bottom:20px}
+.auth-sub-tab{flex:1;padding:8px 12px;text-align:center;font-size:13px;color:#b9bbbe;cursor:pointer;border-radius:6px;transition:all .2s}
+.auth-sub-tab:hover{color:#fff}
+.auth-sub-tab.active{background:#5865f2;color:#fff}
+.modal-input{width:100%;background:#383842;border:1px solid #202225;border-radius:8px;padding:10px 12px;color:#dcddde;font-size:14px;outline:none;transition:border .2s}
+.modal-input:focus{border-color:#f9a825}
+.input-group{display:flex;gap:12px;margin-bottom:12px}
+.code-input{flex:1}
+.verify-btn{background:#f9a825;color:#1a1a1a;border:none;padding:10px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.verify-btn:hover{background:#ffc107}
+.verify-btn:disabled{background:#4a4a4a;color:#72767d;cursor:not-allowed}
+.wallet-btn{display:flex;flex-direction:column;align-items:center;gap:8px;padding:20px;background:#2f3136;border:1px solid #36393f;border-radius:8px;cursor:pointer;transition:all .2s;color:#b9bbbe;font-size:12px}
+.wallet-btn:hover{background:#36393f;border-color:#f9a825;color:#fff}
 .avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:#fff;flex-shrink:0;background:linear-gradient(135deg,#0ea5e9,#8b5cf6)}
 .avatar-sm{width:24px;height:24px;font-size:10px}
 .avatar-lg{width:56px;height:56px;font-size:22px}
@@ -268,8 +290,9 @@ body{background:#1a1a1a;color:#dcddde;font-family:'Inter',sans-serif;margin:0;he
 }
 .metaapi-badge::before{content:'';display:inline-block;width:5px;height:5px;border-radius:50%;background:#23a559}
 
-/* 主内容区 */
-.main-area{flex:1;display:flex;flex-direction:column;background:#313338;min-width:0}
+/* 主内容区 - 按文档规范 */
+.main-area{flex:1;display:flex;flex-direction:column;background:#1e1f22;min-width:0}
+.main-header-title{font-size:18px;font-weight:700;color:#fff}
 .chat-header{height:48px;padding:0 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #3f4147;font-weight:600}
 .chat-header .ch-hash{color:#6d6f78;font-size:24px}
 .chat-messages{flex:1;overflow-y:auto;padding:16px}
@@ -287,8 +310,32 @@ body{background:#1a1a1a;color:#dcddde;font-family:'Inter',sans-serif;margin:0;he
 .chat-input:focus{outline:none;border-color:#5865f2}
 .chat-input::placeholder{color:#72767d}
 
-/* 右侧面板 (成员列表) */
-.right-panel{width:260px;background:#2b2d31;border-left:1px solid #202225;display:flex;flex-direction:column;overflow:hidden}
+/* 右侧面板 (辅助面板) */
+.right-panel{width:280px;background:#2b2d31;border-left:1px solid #202225;display:flex;flex-direction:column;overflow:hidden}
+.right-panel-tabs{display:flex;flex-wrap:wrap;border-bottom:1px solid #36393f;padding:8px 8px 0}
+.right-tab{flex:1;padding:8px 4px;background:none;border:none;color:#b9bbbe;font-size:11px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;text-align:center}
+.right-tab:hover{color:#fff}
+.right-tab.active{color:#fff;border-bottom-color:#f9a825}
+.right-panel-content{flex:1;overflow-y:auto;padding:8px}
+
+/* 面板内容项 */
+.panel-item{display:flex;align-items:center;padding:8px;border-radius:6px;cursor:pointer;transition:background .15s;gap:10px;margin-bottom:4px}
+.panel-item:hover{background:#36393f}
+.panel-item .avatar{width:32px;height:32px;font-size:12px;flex-shrink:0}
+.panel-item-info{flex:1;min-width:0}
+.panel-item-name{font-size:13px;font-weight:500;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.panel-item-desc{font-size:11px;color:#b9bbbe;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.panel-item-stat{text-align:right;flex-shrink:0}
+.panel-item-rate{font-size:13px;font-weight:600}
+.panel-item-rate.positive{color:#23a559}
+.panel-item-rate.negative{color:#ed4245}
+.panel-item-label{font-size:10px;color:#72767d}
+
+/* 未登录提示 */
+.panel-not-logged{text-align:center;padding:40px 20px;color:#72767d;font-size:13px}
+.panel-not-logged a{color:#00aff4;text-decoration:none}
+
+/* 原有成员列表样式保留 */
 .right-panel-header{height:36px;padding:0 16px;display:flex;align-items:center;font-size:12px;font-weight:700;text-transform:uppercase;color:#939ba2}
 .members-list{flex:1;overflow-y:auto;padding:8px}
 .member-item{display:flex;align-items:center;padding:6px 8px;border-radius:4px;cursor:pointer;color:#b9bbbe;font-size:13px;gap:8px}
@@ -675,20 +722,26 @@ body{background:#1a1a1a;color:#dcddde;font-family:'Inter',sans-serif;margin:0;he
         <!-- 主内容区 -->
         <div class="main-area" id="main-area">
             <!-- 顶部导航 -->
-            <div class="channels-header" style="padding:0 16px">
-                <span id="main-header-title">🏠 首页</span>
+            <div class="main-header" style="padding:0 16px;height:48px;border-bottom:1px solid #3f4147;display:flex;align-items:center">
+                <span id="main-header-title" class="main-header-title">🏠 首页</span>
             </div>
             <!-- 内容区域 -->
-            <div id="main-content" style="flex:1;overflow-y:auto">
+            <div id="main-content" style="flex:1;overflow-y:auto;padding:16px">
                 <!-- 动态加载内容 -->
             </div>
         </div>
     </div>
 
-    <!-- 右侧：成员列表 -->
+    <!-- 右侧：辅助面板（交易员榜/热门策略/在线用户） -->
     <div class="right-panel" id="right-panel" style="display:none">
-        <div class="right-panel-header" id="right-panel-header">👥 在线 — <span id="online-count">0</span></div>
-        <div class="members-list" id="members-list"></div>
+        <div class="right-panel-tabs">
+            <button class="right-tab active" onclick="switchRightPanel('traders')" data-tab="traders">交易员榜</button>
+            <button class="right-tab" onclick="switchRightPanel('strategies')" data-tab="strategies">热门策略</button>
+            <button class="right-tab" onclick="switchRightPanel('online')" data-tab="online">在线用户</button>
+        </div>
+        <div class="right-panel-content" id="right-panel-content">
+            <!-- 动态加载内容 -->
+        </div>
     </div>
 </div>
 
@@ -924,6 +977,171 @@ document.addEventListener('DOMContentLoaded', () => {
 function nav(id){
 S.page=id;
 renderPage();
+}
+
+// ===== RIGHT PANEL (Auxiliary Panel) =====
+let currentRightPanel = 'traders';
+
+// 切换右侧面板标签
+function switchRightPanel(tab) {
+    currentRightPanel = tab;
+    
+    // 更新标签样式
+    document.querySelectorAll('.right-tab').forEach(t => {
+        t.classList.toggle('active', t.dataset.tab === tab);
+    });
+    
+    // 渲染内容
+    renderRightPanelContent();
+}
+
+// 渲染右侧面板内容
+function renderRightPanelContent() {
+    const content = document.getElementById('right-panel-content');
+    if (!content) return;
+    
+    switch(currentRightPanel) {
+        case 'traders':
+            content.innerHTML = renderTraderRankings();
+            break;
+        case 'strategies':
+            content.innerHTML = renderHotStrategies();
+            break;
+        case 'online':
+            content.innerHTML = renderOnlineUsers();
+            break;
+        default:
+            content.innerHTML = '';
+    }
+}
+
+// 渲染交易员排行榜
+function renderTraderRankings() {
+    // 未登录状态
+    if (!S.user) {
+        return `
+            <div class="panel-not-logged">
+                <p>登录后可查看交易员排行榜</p>
+                <a href="#" onclick="showAuth('login');return false">立即登录</a>
+            </div>
+        `;
+    }
+    
+    // TODO: 从API获取真实数据
+    const traders = [
+        {name: '交易达人A', avatar: 'A', rate: '+128.5%', followers: 1234},
+        {name: '量化高手B', avatar: 'B', rate: '+98.3%', followers: 892},
+        {name: '稳健策略C', avatar: 'C', rate: '+76.2%', followers: 567},
+        {name: '短线专家D', avatar: 'D', rate: '+65.8%', followers: 423},
+        {name: '趋势交易E', avatar: 'E', rate: '+52.1%', followers: 312},
+    ];
+    
+    return `
+        <div class="panel-section-title" style="font-size:11px;font-weight:700;color:#939ba2;text-transform:uppercase;padding:4px 8px;margin-bottom:8px">优质交易员</div>
+        ${traders.map(t => `
+            <div class="panel-item" onclick="viewTraderProfile('${t.name}')">
+                <div class="avatar" style="background:linear-gradient(135deg,#f9a825,#f57c00)">${t.avatar}</div>
+                <div class="panel-item-info">
+                    <div class="panel-item-name">${t.name}</div>
+                    <div class="panel-item-desc">${t.followers}人跟单</div>
+                </div>
+                <div class="panel-item-stat">
+                    <div class="panel-item-rate positive">${t.rate}</div>
+                    <div class="panel-item-label">收益率</div>
+                </div>
+            </div>
+        `).join('')}
+    `;
+}
+
+// 渲染热门策略
+function renderHotStrategies() {
+    if (!S.user) {
+        return `
+            <div class="panel-not-logged">
+                <p>登录后可查看热门策略</p>
+                <a href="#" onclick="showAuth('login');return false">立即登录</a>
+            </div>
+        `;
+    }
+    
+    const strategies = [
+        {name: 'BTC网格策略', author: '量化大师', rate: '+45.2%', score: 4.8},
+        {name: 'ETH趋势跟踪', author: '技术派', rate: '+32.8%', score: 4.5},
+        {name: '黄金套利策略', author: '黄金眼', rate: '+28.5%', score: 4.3},
+        {name: '外汇剥头皮', author: '短线王', rate: '+22.1%', score: 4.1},
+    ];
+    
+    return `
+        <div class="panel-section-title" style="font-size:11px;font-weight:700;color:#939ba2;text-transform:uppercase;padding:4px 8px;margin-bottom:8px">热门策略</div>
+        ${strategies.map(s => `
+            <div class="panel-item" onclick="viewStrategyDetail('${s.name}')">
+                <div class="avatar" style="background:linear-gradient(135deg,#5865f2,#4752c4)">${s.name[0]}</div>
+                <div class="panel-item-info">
+                    <div class="panel-item-name">${s.name}</div>
+                    <div class="panel-item-desc">${s.author} · 评分 ${s.score}</div>
+                </div>
+                <div class="panel-item-stat">
+                    <div class="panel-item-rate positive">${s.rate}</div>
+                    <div class="panel-item-label">收益率</div>
+                </div>
+            </div>
+        `).join('')}
+    `;
+}
+
+// 渲染在线用户
+function renderOnlineUsers() {
+    if (!S.user) {
+        return `
+            <div class="panel-not-logged">
+                <p>登录后可查看在线用户</p>
+                <a href="#" onclick="showAuth('login');return false">立即登录</a>
+            </div>
+        `;
+    }
+    
+    // TODO: 从WebSocket或API获取真实在线用户
+    const users = [
+        {name: '张三', avatar: 'Z', status: '交易大厅'},
+        {name: '李四', avatar: 'L', status: '策略广场'},
+        {name: '王五', avatar: 'W', status: 'K线分析'},
+        {name: '赵六', avatar: 'Z', status: '加密货币'},
+    ];
+    
+    return `
+        <div class="panel-section-title" style="font-size:11px;font-weight:700;color:#939ba2;text-transform:uppercase;padding:4px 8px;margin-bottom:8px">在线用户</div>
+        ${users.map(u => `
+            <div class="panel-item" onclick="openPrivateChat('${u.name}')">
+                <div style="position:relative">
+                    <div class="avatar">${u.avatar}</div>
+                    <div style="position:absolute;bottom:0;right:0;width:10px;height:10px;background:#23a559;border-radius:50%;border:2px solid #2b2d31"></div>
+                </div>
+                <div class="panel-item-info">
+                    <div class="panel-item-name">${u.name}</div>
+                    <div class="panel-item-desc">#${u.status}</div>
+                </div>
+            </div>
+        `).join('')}
+    `;
+}
+
+// 查看交易员主页
+function viewTraderProfile(name) {
+    toast(`查看 ${name} 的主页`, 'info');
+    // TODO: 跳转到交易员主页
+}
+
+// 查看策略详情
+function viewStrategyDetail(name) {
+    toast(`查看 ${name} 详情`, 'info');
+    // TODO: 跳转到策略详情页
+}
+
+// 打开私聊
+function openPrivateChat(username) {
+    nav('messages');
+    // TODO: 打开与该用户的私聊窗口
 }
 
 // ===== PAGE ROUTER =====
@@ -1582,15 +1800,283 @@ el.scrollTop=el.scrollHeight;
 }
 
 // ===== AUTH =====
-function showAuth(tab){
-openModal(`<h3 class="font-semibold mb-4">${tab==='login'?'登录':'注册'}</h3>
-<form onsubmit="handleAuth(event,'${tab}')" class="space-y-3">
-${tab==='register'?'<input name="email" type="email" required class="input" placeholder="邮箱">':''}
-<input name="username" required class="input" placeholder="用户名">
-<input name="password" type="password" required class="input" placeholder="密码">
-${tab==='login'?'<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:#b9bbbe;margin:8px 0"><input type="checkbox" id="remember-me" style="width:16px;height:16px">记住我（7天内免登录）</label>':''}
-<button type="submit" class="btn btn-primary w-full">${tab==='login'?'登录':'注册'}</button>
-</form>`);
+let currentAuthTab = 'login'; // login / register
+let currentAuthSubTab = 'email'; // phone / email
+
+function showAuth(tab, subTab='email') {
+    currentAuthTab = tab;
+    currentAuthSubTab = subTab;
+    
+    const modalContent = `
+        <div class="auth-modal">
+            <div class="auth-header">
+                <button class="auth-tab ${tab === 'login' ? 'active' : ''}" onclick="showAuth('login')">登录</button>
+                <button class="auth-tab ${tab === 'register' ? 'active' : ''}" onclick="showAuth('register')">注册</button>
+            </div>
+            <div class="auth-body">
+                ${tab === 'register' ? `
+                    <div class="auth-sub-tabs">
+                        <button class="auth-sub-tab ${currentAuthSubTab === 'phone' ? 'active' : ''}" onclick="switchAuthSubTab('phone')">手机号注册</button>
+                        <button class="auth-sub-tab ${currentAuthSubTab === 'email' ? 'active' : ''}" onclick="switchAuthSubTab('email')">邮箱注册</button>
+                    </div>
+                ` : ''}
+                
+                ${tab === 'login' ? `
+                    <div class="auth-sub-tabs">
+                        <button class="auth-sub-tab ${currentAuthSubTab === 'account' ? 'active' : ''}" onclick="switchAuthSubTab('account')">账号登录</button>
+                        <button class="auth-sub-tab ${currentAuthSubTab === 'wallet' ? 'active' : ''}" onclick="switchAuthSubTab('wallet')">钱包登录</button>
+                    </div>
+                ` : ''}
+                
+                ${renderAuthForm(tab, currentAuthSubTab)}
+            </div>
+        </div>
+    `;
+    
+    openModal(modalContent);
+}
+
+// 切换认证子选项卡
+function switchAuthSubTab(subTab) {
+    currentAuthSubTab = subTab;
+    showAuth(currentAuthTab, subTab);
+}
+
+// 渲染认证表单
+function renderAuthForm(tab, subTab) {
+    if (tab === 'register') {
+        if (subTab === 'phone') {
+            return `
+                <div class="input-group">
+                    <select class="modal-input" id="country-code" style="width:100px">
+                        <option value="+86">+86</option>
+                        <option value="+1">+1</option>
+                        <option value="+44">+44</option>
+                        <option value="+81">+81</option>
+                        <option value="+82">+82</option>
+                        <option value="+65">+65</option>
+                        <option value="+852">+852</option>
+                        <option value="+886">+886</option>
+                    </select>
+                    <input type="tel" class="modal-input" id="reg-phone" placeholder="请输入手机号" style="flex:1">
+                </div>
+                <div class="input-group">
+                    <input type="text" class="modal-input code-input" id="reg-phone-code" placeholder="验证码" maxlength="6" style="flex:1">
+                    <button class="verify-btn" id="btn-phone-code" onclick="sendPhoneCode()">获取验证码</button>
+                </div>
+                <button class="btn-orange" onclick="doPhoneRegister()" style="width:100%;padding:12px;margin-top:8px">注册</button>
+            `;
+        } else {
+            return `
+                <input type="text" class="modal-input" id="reg-username" placeholder="用户名" style="margin-bottom:12px">
+                <input type="email" class="modal-input" id="reg-email" placeholder="请输入邮箱" style="margin-bottom:12px">
+                <input type="password" class="modal-input" id="reg-password" placeholder="密码（至少6位）" style="margin-bottom:12px">
+                <div class="input-group">
+                    <input type="text" class="modal-input code-input" id="reg-email-code" placeholder="验证码" maxlength="6" style="flex:1">
+                    <button class="verify-btn" id="btn-email-code" onclick="sendEmailCode()">获取验证码</button>
+                </div>
+                <button class="btn-orange" onclick="doEmailRegister()" style="width:100%;padding:12px;margin-top:8px">注册</button>
+            `;
+        }
+    } else {
+        if (subTab === 'account') {
+            return `
+                <input type="text" class="modal-input" id="login-account" placeholder="手机号/邮箱" style="margin-bottom:12px">
+                <input type="password" class="modal-input" id="login-password" placeholder="密码" style="margin-bottom:12px">
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:#b9bbbe;margin-bottom:12px">
+                    <input type="checkbox" id="remember-me" style="width:16px;height:16px">记住我（7天内免登录）
+                </label>
+                <button class="btn-orange" onclick="doAccountLogin()" style="width:100%;padding:12px">登录</button>
+                <div style="text-align:center;margin-top:12px">
+                    <a href="#" onclick="showForgotPassword();return false" style="color:#00aff4;font-size:12px;text-decoration:none">忘记密码？</a>
+                </div>
+            `;
+        } else {
+            return `
+                <p style="text-align:center;color:#b9bbbe;margin-bottom:16px">连接钱包登录</p>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                    <button class="wallet-btn" onclick="connectWallet('metamask')">
+                        <span style="font-size:24px">🦊</span>
+                        <span>MetaMask</span>
+                    </button>
+                    <button class="wallet-btn" onclick="connectWallet('trust')">
+                        <span style="font-size:24px">💳</span>
+                        <span>Trust</span>
+                    </button>
+                    <button class="wallet-btn" onclick="connectWallet('tp')">
+                        <span style="font-size:24px">💰</span>
+                        <span>TokenPocket</span>
+                    </button>
+                    <button class="wallet-btn" onclick="connectWallet('coinbase')">
+                        <span style="font-size:24px">💵</span>
+                        <span>Coinbase</span>
+                    </button>
+                </div>
+            `;
+        }
+    }
+}
+
+// 账号登录
+async function doAccountLogin() {
+    const account = document.getElementById('login-account').value.trim();
+    const password = document.getElementById('login-password').value;
+    const remember = document.getElementById('remember-me')?.checked;
+    
+    if (!account || !password) {
+        toast('请填写账号和密码', 'error');
+        return;
+    }
+    
+    try {
+        const r = await api('/auth/login', {
+            method: 'POST',
+            body: JSON.stringify({ username: account, password })
+        });
+        
+        if (r?.access_token) {
+            S.token = r.access_token;
+            S.user = r.user;
+            if (remember) {
+                localStorage.setItem('qt_token', S.token);
+                localStorage.setItem('qt_user', JSON.stringify(S.user));
+            } else {
+                sessionStorage.setItem('qt_token', S.token);
+                sessionStorage.setItem('qt_user', JSON.stringify(S.user));
+            }
+            closeModal();
+            toast('登录成功！', 'success');
+            renderAll();
+        } else {
+            toast(r?.detail || '登录失败', 'error');
+        }
+    } catch(e) {
+        toast('登录失败，请稍后重试', 'error');
+    }
+}
+
+// 邮箱注册
+async function doEmailRegister() {
+    const username = document.getElementById('reg-username').value.trim();
+    const email = document.getElementById('reg-email').value.trim();
+    const password = document.getElementById('reg-password').value;
+    const code = document.getElementById('reg-email-code').value.trim();
+    
+    if (!username) { toast('请输入用户名', 'error'); return; }
+    if (!email || !email.includes('@')) { toast('请输入有效邮箱', 'error'); return; }
+    if (!password || password.length < 6) { toast('密码至少6位', 'error'); return; }
+    if (!code || code.length !== 6) { toast('请输入6位验证码', 'error'); return; }
+    
+    try {
+        const res = await fetch('/api/auth/register-with-code', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, email, password, code })
+        });
+        const data = await res.json();
+        
+        if (!res.ok) {
+            toast(data.detail || '注册失败', 'error');
+            return;
+        }
+        
+        S.token = data.access_token;
+        S.user = data.user;
+        localStorage.setItem('qt_token', S.token);
+        localStorage.setItem('qt_user', JSON.stringify(S.user));
+        closeModal();
+        toast('注册成功！', 'success');
+        renderAll();
+    } catch(e) {
+        toast('注册失败，请稍后重试', 'error');
+    }
+}
+
+// 手机号注册
+function doPhoneRegister() {
+    toast('手机号注册功能开发中，请使用邮箱注册', 'info');
+}
+
+// 发送邮箱验证码
+async function sendEmailCode() {
+    const email = document.getElementById('reg-email').value.trim();
+    if (!email || !email.includes('@')) { toast('请输入有效邮箱', 'error'); return; }
+    
+    const btn = document.getElementById('btn-email-code');
+    btn.disabled = true;
+    
+    try {
+        const res = await fetch('/api/auth/send-code', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, purpose: 'register' })
+        });
+        const data = await res.json();
+        
+        if (!res.ok) {
+            toast(data.detail || '发送失败', 'error');
+            btn.disabled = false;
+            return;
+        }
+        
+        if (data.code) {
+            toast(`开发模式：验证码 ${data.code}`, 'info');
+        } else {
+            toast('验证码已发送', 'success');
+        }
+        
+        // 倒计时
+        let countdown = 60;
+        btn.textContent = `${countdown}秒后重试`;
+        const timer = setInterval(() => {
+            countdown--;
+            if (countdown <= 0) {
+                clearInterval(timer);
+                btn.disabled = false;
+                btn.textContent = '获取验证码';
+            } else {
+                btn.textContent = `${countdown}秒后重试`;
+            }
+        }, 1000);
+    } catch(e) {
+        toast('发送失败，请稍后重试', 'error');
+        btn.disabled = false;
+    }
+}
+
+// 连接钱包
+function connectWallet(type) {
+    toast(`${type} 钱包连接功能开发中`, 'info');
+}
+
+// 忘记密码
+function showForgotPassword() {
+    toast('忘记密码功能开发中', 'info');
+}
+
+// 原有登录注册处理函数（保留兼容性）
+async function handleAuth(e, mode) {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    const data = Object.fromEntries(fd);
+    const r = await api('/auth/' + mode, { method: 'POST', body: JSON.stringify(data) });
+    if (r?.access_token) {
+        S.token = r.access_token;
+        S.user = r.user;
+        const remember = document.getElementById('remember-me')?.checked;
+        if (remember) {
+            localStorage.setItem('qt_token', S.token);
+            localStorage.setItem('qt_user', JSON.stringify(S.user));
+        } else {
+            sessionStorage.setItem('qt_token', S.token);
+            sessionStorage.setItem('qt_user', JSON.stringify(S.user));
+        }
+        closeModal();
+        toast(mode === 'login' ? '欢迎回来！' : '注册成功！', 'success');
+        renderAll();
+    } else {
+        toast(r?.detail || '失败', 'error');
+    }
 }
 async function handleAuth(e,mode){
 e.preventDefault();
@@ -2099,7 +2585,14 @@ function joinChannel(id,type){
 S.channelId=id;
 document.querySelectorAll('.channel-item').forEach(c=>c.classList.remove('active'));
 event.target.classList.add('active');
-document.getElementById('right-panel').style.display=type==='text'?'flex':'none';
+
+// 显示右侧辅助面板
+const rightPanel = document.getElementById('right-panel');
+if (rightPanel) {
+    rightPanel.style.display = 'flex';
+    renderRightPanelContent(); // 刷新右侧面板内容
+}
+
 if(type==='text'){
 nav('chat');
 document.getElementById('main-header-title').textContent='#'+id;
