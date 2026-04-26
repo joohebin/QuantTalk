@@ -194,6 +194,15 @@ body{background:#1a1a1a;color:#dcddde;font-family:-apple-system,BlinkMacSystemFo
 <div class="toast-wrap" id="toast-wrap"></div>
 
 <script>
+// Global error handler
+window.onerror = function(msg, url, line, col, error) {
+    console.error('Global Error:', msg, 'at line', line);
+    alert('JS Error: ' + msg + ' at line ' + line);
+    return false;
+};
+
+console.log('Script loaded, starting...');
+
 // State
 const S = {
     user: null,
@@ -324,10 +333,20 @@ function sendMessage() {
 
 // Init
 (async function init() {
-    console.log('QuantTalk init...');
+    console.log('=== QuantTalk Debug Start ===');
+    console.log('Token exists:', !!S.token);
+    
+    // 显示页面内容用于调试
+    const mainContent = document.getElementById('main-content');
+    const guildsBar = document.getElementById('guilds-bar');
+    console.log('main-content exists:', !!mainContent);
+    console.log('guilds-bar exists:', !!guildsBar);
+    
     if (S.token) {
         try {
+            console.log('Checking auth...');
             const r = await api('/api/auth/me');
+            console.log('Auth result:', r);
             if (r && r.id) {
                 S.user = r;
                 localStorage.setItem('qt_user', JSON.stringify(r));
@@ -338,7 +357,8 @@ function sendMessage() {
         }
     }
     renderUserPanel();
-    console.log('QuantTalk ready!');
+    console.log('=== QuantTalk Ready ===');
+    console.log('Page DOM:', document.body.innerHTML.substring(0, 500));
 })();
 </script>
 </body>
