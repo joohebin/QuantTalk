@@ -504,12 +504,12 @@ let ExchangeModule = {
     },
     
     async loadRegions() {
-        const res = await api('/api/exchanges/regions');
+        const res = await api('/exchanges/regions');
         if (res) this.regions = res;
     },
     
     async loadConfigs() {
-        const res = await api('/api/exchanges/');
+        const res = await api('/exchanges/');
         if (res) this.configs = res;
         this.render();
     },
@@ -647,7 +647,7 @@ let ExchangeModule = {
         btn.disabled = true;
         
         try {
-            const res = await api('/api/exchanges/', {
+            const res = await api('/exchanges/', {
                 method: 'POST',
                 body: JSON.stringify({
                     exchange: exchangeId,
@@ -675,7 +675,7 @@ let ExchangeModule = {
         if (!confirm('确定要删除这个交易所绑定吗？')) return;
         
         try {
-            const res = await api(`/api/exchanges/${id}`, { method: 'DELETE' });
+            const res = await api(`/exchanges/${id}`, { method: 'DELETE' });
             toast('已删除', 'success');
             await this.loadConfigs();
         } catch (err) {
