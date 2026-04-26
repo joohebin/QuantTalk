@@ -7,6 +7,10 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.production.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<!-- 版本控制: v=2026042610 -->
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <style>
 *{scrollbar-width:thin;scrollbar-color:#2d2d2d transparent}
 ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#2d2d2d;border-radius:4px}
@@ -1041,26 +1045,8 @@ S.page='home';
 document.querySelectorAll('.guild-icon').forEach(g=>g.classList.remove('active'));
 document.querySelector('.guild-icon.home').classList.add('active');
 document.getElementById('current-server-name').textContent='QuantTalk';
-document.getElementById('channels-list').innerHTML=`
-<div class="channel-group">
-<div class="channel-group-header">快速访问</div>
-<div class="channel-item" onclick="nav('trading')"><span class="ch-icon">📊</span>交易大厅</div>
-<div class="channel-item" onclick="nav('market')"><span class="ch-icon">📈</span>行情分析</div>
-<div class="channel-item" onclick="nav('crypto')"><span class="ch-icon">🪙</span>加密货币</div>
-<div class="channel-item" onclick="nav('forex')"><span class="ch-icon">💱</span>外汇贵金属</div>
-<div class="channel-item" onclick="nav('kline')"><span class="ch-icon">📊</span>K线分析</div>
-</div>
-<div class="channel-group">
-<div class="channel-group-header">💬 社交</div>
-<div class="channel-item" onclick="nav('friends')"><span class="ch-icon">👥</span>好友</div>
-<div class="channel-item" onclick="nav('messages')"><span class="ch-icon">✉️</span>私信</div>
-<div class="channel-item" onclick="nav('groups')"><span class="ch-icon">👥</span>群聊</div>
-<div class="channel-item" onclick="nav('chat')"><span class="ch-icon">🌐</span>公共聊天室</div>
-</div>
-<div class="channel-group">
-<div class="channel-group-header">📜 成绩单</div>
-<div class="channel-item" onclick="nav('portfolio')"><span class="ch-icon">📊</span>我的成绩单</div>
-</div>`;
+// 调用 renderChannels 显示完整的频道分组
+renderChannels();
 renderPage();
 }
 
