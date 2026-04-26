@@ -20,8 +20,8 @@ from app.models_phase5 import (
     ChannelEmbed, EmbedType,
     PriceMovement, PositionShare, PositionShareLike, PositionShareComment
 )
-from app.models import User, Channel, ChannelMessage
-from app.models_phase3 import Strategy, TradingSignal
+from app.models import User, Channel, ChannelMessage, TradingSignal
+from app.models_phase3 import Strategy
 from app.auth import get_current_user
 
 router = APIRouter(prefix="/api/trading-embed", tags=["第五阶段：交易内容嵌入"])
