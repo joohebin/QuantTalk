@@ -7,7 +7,7 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.production.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<!-- 版本控制: v=2026042611 -->
+<!-- 版本控制: v=2026042612 -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
@@ -198,7 +198,10 @@ body{background:#1a1a1a;color:#dcddde;font-family:'Inter',sans-serif;margin:0;he
 <div class="toast-wrap" id="toasts"></div>
 
 <script>
-const S={token:localStorage.getItem('qt_token')||'',user:JSON.parse(localStorage.getItem('qt_user')||'null'),page:'home',ws:null,channelId:null,guildId:null};
+// 优先从 localStorage 读取，其次从 sessionStorage 读取
+const savedToken = localStorage.getItem('qt_token') || sessionStorage.getItem('qt_token') || '';
+const savedUser = JSON.parse(localStorage.getItem('qt_user') || sessionStorage.getItem('qt_user') || 'null');
+const S={token:savedToken,user:savedUser,page:'home',ws:null,channelId:null,guildId:null};
 const A='/api';
 
 // ===== UTILS =====
@@ -261,51 +264,74 @@ if(!S.user){
 content.innerHTML=`
 <div style="display:flex;align-items:center;justify-content:center;height:100%;flex-direction:column;color:#b9bbbe">
 <div style="font-size:72px;margin-bottom:24px">⚡</div>
-<h1 style="font-size:32px;font-weight:700;color:#fff;margin-bottom:8px">QuantTalk</h1>
-<p style="font-size:16px;margin-bottom:32px">量化交易社交平台 — 连接全球交易者</p>
-<div style="display:flex;gap:12px">
-<button onclick="showAuth('login')" class="btn btn-primary">登录</button>
-<button onclick="showAuth('register')" class="btn btn-ghost">注册</button>
+<h1 style="font-size:40px;font-weight:700;color:#fff;margin-bottom:12px">QuantTalk</h1>
+<p style="font-size:18px;margin-bottom:8px;text-align:center;max-width:500px">看行情 · 聊策略 · 跟单交易</p>
+<p style="font-size:14px;color:#939ba2;margin-bottom:40px">一站式量化交易社区</p>
+<div style="display:flex;gap:16px">
+<button onclick="showAuth('login')" class="btn btn-primary" style="padding:12px 32px;font-size:15px">登录</button>
+<button onclick="showAuth('register')" class="btn btn-ghost" style="padding:12px 32px;font-size:15px;border-color:#5865f2;color:#5865f2">注册</button>
+</div>
+<div style="margin-top:48px;padding:24px;background:#36393f;border-radius:12px;max-width:600px;text-align:center">
+<p style="color:#b9bbbe;font-size:13px;margin-bottom:16px">无需登录，先看看行情</p>
+<div style="display:flex;gap:12px;justify-content:center">
+<button onclick="nav('crypto')" class="btn btn-ghost" style="font-size:13px">🪙 加密货币</button>
+<button onclick="nav('forex')" class="btn btn-ghost" style="font-size:13px">💱 外汇贵金属</button>
+<button onclick="nav('kline')" class="btn btn-ghost" style="font-size:13px">📊 K线分析</button>
+</div>
 </div>
 </div>`;
 return;
 }
 
-// 快速导航卡片
+// 快速导航卡片 - 高频功能优先
 content.innerHTML=`
 <div style="padding:24px">
-<h2 style="font-size:20px;font-weight:600;color:#fff;margin-bottom:20px">⚡ 欢迎回来，${S.user.username}</h2>
+<h2 style="font-size:20px;font-weight:600;color:#fff;margin-bottom:20px">⚡ 欢迎，${S.user.username}</h2>
 
-<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:32px">
-<div class="quote-card" onclick="nav('trading')" style="cursor:pointer">
-<div style="font-size:24px;margin-bottom:12px">📊</div>
-<div style="font-weight:600;color:#fff;font-size:16px">交易大厅</div>
-<div style="color:#b9bbbe;font-size:13px;margin-top:4px">MT4/MT5/交易所实时行情</div>
-</div>
-<div class="quote-card" onclick="nav('market')" style="cursor:pointer">
-<div style="font-size:24px;margin-bottom:12px">📈</div>
-<div style="font-weight:600;color:#fff;font-size:16px">行情分析</div>
-<div style="color:#b9bbbe;font-size:13px;margin-top:4px">股票、指数、期货</div>
-</div>
-<div class="quote-card" onclick="nav('crypto')" style="cursor:pointer">
-<div style="font-size:24px;margin-bottom:12px">🪙</div>
-<div style="font-weight:600;color:#fff;font-size:16px">加密货币</div>
-<div style="color:#b9bbbe;font-size:13px;margin-top:4px">BTC、ETH等主流币种</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:32px">
+<!-- 高频功能 -->
+<div class="quote-card" onclick="openTradingFloor('mt5')" style="cursor:pointer;background:linear-gradient(135deg,rgba(88,101,242,.2),rgba(88,101,242,.05));border:1px solid rgba(88,101,242,.3)">
+<div style="font-size:28px;margin-bottom:8px">📈</div>
+<div style="font-weight:600;color:#fff;font-size:15px">交易大厅</div>
+<div style="color:#b9bbbe;font-size:12px;margin-top:4px">MT4/MT5实时行情</div>
 </div>
 <div class="quote-card" onclick="nav('kline')" style="cursor:pointer">
-<div style="font-size:24px;margin-bottom:12px">📊</div>
-<div style="font-weight:600;color:#fff;font-size:16px">K线分析</div>
-<div style="color:#b9bbbe;font-size:13px;margin-top:4px">自定义K线图表</div>
+<div style="font-size:28px;margin-bottom:8px">📊</div>
+<div style="font-weight:600;color:#fff;font-size:15px">K线分析</div>
+<div style="color:#b9bbbe;font-size:12px;margin-top:4px">自定义K线图表</div>
+</div>
+<div class="quote-card" onclick="nav('crypto')" style="cursor:pointer">
+<div style="font-size:28px;margin-bottom:8px">🪙</div>
+<div style="font-weight:600;color:#fff;font-size:15px">加密货币</div>
+<div style="color:#b9bbbe;font-size:12px;margin-top:4px">BTC/ETH等主流</div>
 </div>
 <div class="quote-card" onclick="nav('forex')" style="cursor:pointer">
-<div style="font-size:24px;margin-bottom:12px">💱</div>
-<div style="font-weight:600;color:#fff;font-size:16px">外汇贵金属</div>
-<div style="color:#b9bbbe;font-size:13px;margin-top:4px">EUR/USD、黄金、白银</div>
+<div style="font-size:28px;margin-bottom:8px">💱</div>
+<div style="font-weight:600;color:#fff;font-size:15px">外汇贵金属</div>
+<div style="color:#b9bbbe;font-size:12px;margin-top:4px">EUR/USD 黄金</div>
+</div>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:32px">
+<div class="quote-card" onclick="nav('messages')" style="cursor:pointer">
+<div style="font-size:24px;margin-bottom:8px">💬</div>
+<div style="font-weight:600;color:#fff;font-size:14px">私信</div>
+<div style="color:#b9bbbe;font-size:12px;margin-top:4px">与交易者私聊</div>
+</div>
+<div class="quote-card" onclick="nav('friends')" style="cursor:pointer">
+<div style="font-size:24px;margin-bottom:8px">👥</div>
+<div style="font-weight:600;color:#fff;font-size:14px">好友</div>
+<div style="color:#b9bbbe;font-size:12px;margin-top:4px">管理交易伙伴</div>
 </div>
 <div class="quote-card" onclick="nav('chat')" style="cursor:pointer">
-<div style="font-size:24px;margin-bottom:12px">💬</div>
-<div style="font-weight:600;color:#fff;font-size:16px">聊天室</div>
-<div style="color:#b9bbbe;font-size:13px;margin-top:4px">与其他交易者交流</div>
+<div style="font-size:24px;margin-bottom:8px">🌐</div>
+<div style="font-weight:600;color:#fff;font-size:14px">社区频道</div>
+<div style="color:#b9bbbe;font-size:12px;margin-top:4px">交易者聊天室</div>
+</div>
+<div class="quote-card" onclick="nav('portfolio')" style="cursor:pointer">
+<div style="font-size:24px;margin-bottom:8px">📜</div>
+<div style="font-weight:600;color:#fff;font-size:14px">成绩单</div>
+<div style="color:#b9bbbe;font-size:12px;margin-top:4px">交易战绩分享</div>
 </div>
 </div>
 
@@ -868,6 +894,7 @@ openModal(`<h3 class="font-semibold mb-4">${tab==='login'?'登录':'注册'}</h3
 ${tab==='register'?'<input name="email" type="email" required class="input" placeholder="邮箱">':''}
 <input name="username" required class="input" placeholder="用户名">
 <input name="password" type="password" required class="input" placeholder="密码">
+${tab==='login'?'<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:#b9bbbe;margin:8px 0"><input type="checkbox" id="remember-me" style="width:16px;height:16px">记住我（7天内免登录）</label>':''}
 <button type="submit" class="btn btn-primary w-full">${tab==='login'?'登录':'注册'}</button>
 </form>`);
 }
@@ -876,7 +903,19 @@ e.preventDefault();
 const fd=new FormData(e.target);
 const data=Object.fromEntries(fd);
 const r=await api('/auth/'+mode,{method:'POST',body:JSON.stringify(data)});
-if(r?.access_token){S.token=r.access_token;S.user=r.user;localStorage.setItem('qt_token',S.token);localStorage.setItem('qt_user',JSON.stringify(S.user));closeModal();toast(mode==='login'?'欢迎回来！':'注册成功！','success');renderAll()}else{toast(r?.detail||'失败','error')}
+if(r?.access_token){
+S.token=r.access_token;S.user=r.user;
+// 检查是否勾选了"记住我"
+const remember=document.getElementById('remember-me')?.checked;
+if(remember){
+localStorage.setItem('qt_token',S.token);
+localStorage.setItem('qt_user',JSON.stringify(S.user));
+}else{
+// sessionStorage 仅保存在当前会话
+sessionStorage.setItem('qt_token',S.token);
+sessionStorage.setItem('qt_user',JSON.stringify(S.user));
+}
+closeModal();toast(mode==='login'?'欢迎回来！':'注册成功！','success');renderAll()}else{toast(r?.detail||'失败','error')}
 }
 function doLogout(){
 if(isLoggingOut) return;  // 防止重复调用
@@ -902,42 +941,37 @@ renderChannels(id);
 async function renderChannels(guildId){
 const el=document.getElementById('channels-list');
 el.innerHTML=`
-<!-- 交易模块 -->
-<div class="channel-group" data-group="trading">
+<!-- ========== 交易模块 ========== -->
 <div class="channel-group-header" onclick="toggleChannelGroup(this)"><span class="collapse-icon">▼</span>📊 交易</div>
-<div class="channel-item" onclick="joinChannel('general','text')"><span class="ch-icon">#</span>综合讨论</div>
-<div class="channel-item" onclick="openTradingFloor('mt4')"><span class="ch-icon">📈</span>MT4 交易</div>
-<div class="channel-item" onclick="openTradingFloor('mt5')"><span class="ch-icon">📊</span>MT5 交易</div>
-<div class="channel-item" onclick="openTradingFloor('binance')"><span class="ch-icon">🪙</span>Binance 加密货币</div>
-<div class="channel-item" onclick="openTradingFloor('okx')"><span class="ch-icon">🪙</span>OKX 加密货币</div>
-<div class="channel-item" onclick="openTradingFloor('bybit')"><span class="ch-icon">🪙</span>Bybit 加密货币</div>
-</div>
-
-<!-- 行情模块 -->
-<div class="channel-group" data-group="market">
-<div class="channel-group-header" onclick="toggleChannelGroup(this)"><span class="collapse-icon">▼</span>📈 行情</div>
-<div class="channel-item" onclick="nav('crypto')"><span class="ch-icon">🪙</span>加密货币</div>
-<div class="channel-item" onclick="nav('forex')"><span class="ch-icon">💱</span>外汇贵金属</div>
-<div class="channel-item" onclick="nav('kline')"><span class="ch-icon">📉</span>K线分析</div>
-</div>
-
-<!-- 社区模块 -->
-<div class="channel-group" data-group="community">
-<div class="channel-group-header collapsed" onclick="toggleChannelGroup(this)"><span class="collapse-icon">▼</span>🌐 社区</div>
+<div class="channel-item" onclick="openTradingFloor('mt5')"><span class="ch-icon">📈</span>交易大厅</div>
+<div class="channel-item" onclick="nav('kline')"><span class="ch-icon">📊</span>K线分析</div>
 <div class="channel-item" onclick="joinChannel('signals','text')"><span class="ch-icon">📢</span>交易信号</div>
-<div class="channel-item" onclick="joinChannel('analysis','text')"><span class="ch-icon">📝</span>技术分析</div>
-<div class="channel-item" onclick="joinChannel('voice1','voice')"><span class="ch-icon">🔊</span>交易喊单</div>
-<div class="channel-item" onclick="joinChannel('lounge','text')"><span class="ch-icon">#</span>休闲闲聊</div>
-</div>
 
-<!-- 个人模块 -->
-<div class="channel-group" data-group="personal">
-<div class="channel-group-header collapsed" onclick="toggleChannelGroup(this)"><span class="collapse-icon">▼</span>👤 个人</div>
+<!-- 加密货币子菜单 -->
+<div class="channel-item" style="padding-left:24px" onclick="openTradingFloor('binance')"><span class="ch-icon">🪙</span>├ Binance</div>
+<div class="channel-item" style="padding-left:24px" onclick="openTradingFloor('okx')"><span class="ch-icon">🪙</span>├ OKX</div>
+<div class="channel-item" style="padding-left:24px" onclick="openTradingFloor('bybit')"><span class="ch-icon">🪙</span>└ Bybit</div>
+
+<!-- ========== 行情模块 ========== -->
+<div class="channel-group-header" onclick="toggleChannelGroup(this)"><span class="collapse-icon">▼</span>📈 行情</div>
+<div class="channel-item" onclick="nav('crypto')"><span class="ch-icon">🪙</span>加密货币行情</div>
+<div class="channel-item" onclick="nav('forex')"><span class="ch-icon">💱</span>外汇贵金属</div>
+<div class="channel-item" onclick="joinChannel('analysis','text')"><span class="ch-icon">📝</span>技术分析</div>
+
+<!-- ========== 社交模块 ========== -->
+<div class="channel-group-header" onclick="toggleChannelGroup(this)"><span class="collapse-icon">▼</span>👥 社交</div>
+<div class="channel-item" onclick="joinChannel('general','text')"><span class="ch-icon">#</span>综合讨论</div>
+<div class="channel-item" onclick="nav('messages')"><span class="ch-icon">💬</span>私信</div>
+<div class="channel-item" onclick="nav('friends')"><span class="ch-icon">👥</span>好友</div>
+<div class="channel-item" onclick="nav('groups')"><span class="ch-icon">👥</span>群聊</div>
+<div class="channel-item" onclick="joinChannel('voice1','voice')"><span class="ch-icon">🔊</span>语音频道</div>
+
+<!-- ========== 个人中心 ========== -->
+<div class="channel-group-header" onclick="toggleChannelGroup(this)"><span class="collapse-icon">▼</span>👤 个人</div>
 <div class="channel-item" onclick="nav('portfolio')"><span class="ch-icon">📜</span>成绩单</div>
 <div class="channel-item" onclick="nav('wallet')"><span class="ch-icon">💰</span>我的钱包</div>
-<div class="channel-item" onclick="nav('friends')"><span class="ch-icon">👥</span>好友列表</div>
-<div class="channel-item" onclick="nav('messages')"><span class="ch-icon">💬</span>私信</div>
-</div>`;
+<div class="channel-item" onclick="nav('profile')"><span class="ch-icon">👤</span>个人主页</div>
+`;
 }
 
 // 折叠/展开频道组
@@ -2526,12 +2560,17 @@ showHome();
 function renderUserPanel(){
 const avatar=document.getElementById('user-avatar');
 const name=document.getElementById('user-name');
+const status=document.querySelector('.user-status');
 if(S.user){
 avatar.textContent=S.user.username[0].toUpperCase();
 name.textContent=S.user.username;
+status.textContent='在线';
+status.style.color='#23a559';
 }else{
 avatar.textContent='?';
-name.textContent='未登录';
+name.textContent='游客';
+status.textContent='离线';
+status.style.color='#72767d';
 }
 }
 
