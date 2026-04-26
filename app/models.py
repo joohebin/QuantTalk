@@ -297,38 +297,6 @@ class PortfolioPosition(Base):
     user = relationship("User", back_populates="portfolio_positions")
 
 
-class Strategy(Base):
-    """策略表 - 按文档新增"""
-    __tablename__ = "strategies"
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(100), nullable=False)  # 策略名称
-    creator_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    description = Column(Text)  # 策略描述
-    variety = Column(String(50), nullable=False)  # 适用品种
-    profit_rate = Column(Float)  # 收益率%
-    max_drawdown = Column(Float)  # 最大回撤%
-    win_rate = Column(Float)  # 胜率%
-    backtest_time = Column(String(50))  # 回测时间范围
-    is_public = Column(Boolean, default=True)  # 是否公开
-    subscribe_num = Column(Integer, default=0)  # 订阅人数
-    created_at = Column(DateTime, server_default=func.now())
-
-    creator = relationship("User")
-
-
-class StrategySubscription(Base):
-    """策略订阅表 - 按文档新增"""
-    __tablename__ = "strategy_subscriptions"
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    strategy_id = Column(Integer, ForeignKey("strategies.id"), nullable=False)
-    subscribe_time = Column(DateTime, server_default=func.now())
-    status = Column(Boolean, default=True)  # 订阅状态
-
-    user = relationship("User")
-    strategy = relationship("Strategy")
-
-
 class FollowTrade(Base):
     """跟单表 - 按文档新增"""
     __tablename__ = "follow_trades"
