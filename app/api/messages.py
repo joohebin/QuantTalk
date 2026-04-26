@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 from pydantic import BaseModel
 from datetime import datetime, timezone
 from app.database import get_db
@@ -13,6 +13,9 @@ router = APIRouter(tags=["私信"])
 class MessageCreate(BaseModel):
     receiver_id: int
     content: str
+    msg_type: str = "text"  # text, image, file, quote, chart
+    media_url: Optional[str] = None  # 图片/文件URL
+    reply_to: Optional[int] = None   # 回复的消息ID
 
 
 class MessageResponse(BaseModel):
@@ -20,6 +23,9 @@ class MessageResponse(BaseModel):
     sender_id: int
     receiver_id: int
     content: str
+    msg_type: str
+    media_url: Optional[str]
+    reply_to: Optional[int]
     is_read: bool
     created_at: datetime
     sender: dict = None
@@ -33,13 +39,26 @@ class ConversationResponse(BaseModel):
     user_id: int
     username: str
     avatar: str
+    is_online: bool
     last_message: str
+    msg_type: str
     last_time: datetime
     unread_count: int
 
 
 def user_to_dict(user):
     return {"id": user.id, "username": user.username, "avatar": user.avatar, "is_online": user.is_online}
+
+
+# 全局私信管理器引用（避免循环导入）
+_dm_manager = None
+
+def get_dm_manager():
+    global _dm_manager
+    if _dm_manager is None:
+        from app.api.ws import dm_manager
+        _dm_manager = dm_manager
+    return _dm_manager
 
 
 @router.post("/", response_model=MessageResponse)
@@ -49,19 +68,56 @@ async def send_message(message: MessageCreate, current_user: User = Depends(get_
         raise HTTPException(status_code=404, detail="用户不存在")
     if message.receiver_id == current_user.id:
         raise HTTPException(status_code=400, detail="不能给自己发私信")
-    db_message = PrivateMessage(sender_id=current_user.id, receiver_id=message.receiver_id, content=message.content)
+    
+    db_message = PrivateMessage(
+        sender_id=current_user.id, 
+        receiver_id=message.receiver_id, 
+        content=message.content,
+        msg_type=message.msg_type,
+        media_url=message.media_url,
+        reply_to=message.reply_to
+    )
     db.add(db_message)
+    
     # 发送私信通知
     notif = Notification(
         user_id=message.receiver_id,
         type="message",
-        content=f"{current_user.username} sent you a private message",
+        content=f"{current_user.username}: {message.content[:50]}",
         from_user_id=current_user.id
     )
     db.add(notif)
     db.commit()
     db.refresh(db_message)
-    return MessageResponse(id=db_message.id, sender_id=db_message.sender_id, receiver_id=db_message.receiver_id, content=db_message.content, is_read=db_message.is_read, created_at=db_message.created_at.replace(tzinfo=timezone.utc) if db_message.created_at else datetime.now(timezone.utc), sender=user_to_dict(current_user), receiver=user_to_dict(receiver))
+    
+    # WebSocket 实时推送
+    try:
+        dm_mgr = get_dm_manager()
+        msg_data = {
+            "id": db_message.id,
+            "content": db_message.content,
+            "msg_type": db_message.msg_type,
+            "media_url": db_message.media_url,
+            "reply_to": db_message.reply_to,
+            "created_at": db_message.created_at.isoformat() if db_message.created_at else datetime.now(timezone.utc).isoformat()
+        }
+        await dm_mgr.send_private_message(current_user.id, current_user.username, message.receiver_id, msg_data)
+    except Exception as e:
+        print(f"DM WS push error: {e}")
+    
+    return MessageResponse(
+        id=db_message.id, 
+        sender_id=db_message.sender_id, 
+        receiver_id=db_message.receiver_id, 
+        content=db_message.content,
+        msg_type=db_message.msg_type,
+        media_url=db_message.media_url,
+        reply_to=db_message.reply_to,
+        is_read=db_message.is_read, 
+        created_at=db_message.created_at.replace(tzinfo=timezone.utc) if db_message.created_at else datetime.now(timezone.utc), 
+        sender=user_to_dict(current_user), 
+        receiver=user_to_dict(receiver)
+    )
 
 
 @router.get("/conversations")

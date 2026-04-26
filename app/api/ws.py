@@ -379,3 +379,138 @@ async def get_channel_online_members(channel_id: int):
             "status": status["status"] if status else "offline"
         })
     return {"members": result, "count": len(result)}
+
+
+# ========== 私信 WebSocket 管理器 ==========
+
+class PrivateMessageManager:
+    """私信实时推送管理器"""
+    def __init__(self):
+        # user_id -> WebSocket 连接
+        self.connections: dict[int, WebSocket] = {}
+        # user_id -> username
+        self.usernames: dict[int, str] = {}
+
+    async def connect(self, websocket: WebSocket, user_id: int, username: str):
+        """用户连接私信WebSocket"""
+        await websocket.accept()
+        self.connections[user_id] = websocket
+        self.usernames[user_id] = username
+        print(f"User {user_id} ({username}) connected to private message WS")
+
+    def disconnect(self, user_id: int):
+        """用户断开连接"""
+        if user_id in self.connections:
+            del self.connections[user_id]
+        if user_id in self.usernames:
+            del self.usernames[user_id]
+        print(f"User {user_id} disconnected from private message WS")
+
+    async def send_to_user(self, user_id: int, message: dict):
+        """向指定用户发送私信"""
+        if user_id in self.connections:
+            try:
+                await self.connections[user_id].send_json(message)
+                return True
+            except Exception as e:
+                print(f"Error sending DM to user {user_id}: {e}")
+                self.disconnect(user_id)
+                return False
+        return False
+
+    async def send_private_message(self, sender_id: int, sender_username: str, receiver_id: int, message_data: dict):
+        """发送私信到接收者"""
+        message = {
+            "type": "new_message",
+            "id": message_data.get("id"),
+            "sender_id": sender_id,
+            "sender_username": sender_username,
+            "receiver_id": receiver_id,
+            "content": message_data.get("content"),
+            "created_at": message_data.get("created_at"),
+            "is_read": False
+        }
+        return await self.send_to_user(receiver_id, message)
+
+    def is_online(self, user_id: int) -> bool:
+        """检查用户是否在线"""
+        return user_id in self.connections
+
+    def get_online_users(self) -> list[int]:
+        """获取所有在线用户ID"""
+        return list(self.connections.keys())
+
+
+# 全局私信管理器
+dm_manager = PrivateMessageManager()
+
+
+@router.websocket("/ws/private")
+async def private_message_websocket(websocket: WebSocket):
+    """私信实时推送 WebSocket"""
+    token = websocket.query_params.get("token", "")
+    user_id = 0
+    username = "anonymous"
+
+    if token:
+        try:
+            from jose import jwt
+            from app.config import SECRET_KEY, ALGORITHM
+            payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+            user_id = int(payload.get("sub", 0))
+            username = payload.get("username", "anonymous")
+        except:
+            await websocket.close(code=4001)
+            return
+
+    await dm_manager.connect(websocket, user_id, username)
+
+    try:
+        while True:
+            try:
+                data = await asyncio.wait_for(websocket.receive_json(), timeout=60.0)
+                msg_type = data.get("type")
+
+                if msg_type == "heartbeat":
+                    # 心跳
+                    await websocket.send_json({"type": "heartbeat_ack", "timestamp": datetime.now().isoformat()})
+
+                elif msg_type == "typing":
+                    # 正在输入通知
+                    receiver_id = data.get("receiver_id")
+                    if receiver_id:
+                        await dm_manager.send_to_user(receiver_id, {
+                            "type": "typing",
+                            "from_user_id": user_id,
+                            "from_username": username
+                        })
+
+                elif msg_type == "read":
+                    # 消息已读通知
+                    sender_id = data.get("sender_id")
+                    message_id = data.get("message_id")
+                    if sender_id:
+                        await dm_manager.send_to_user(sender_id, {
+                            "type": "message_read",
+                            "message_id": message_id,
+                            "read_by": user_id
+                        })
+
+            except asyncio.TimeoutError:
+                await websocket.send_json({"type": "ping"})
+
+    except WebSocketDisconnect:
+        pass
+    except Exception as e:
+        print(f"Private message WS error: {e}")
+    finally:
+        dm_manager.disconnect(user_id)
+
+
+@router.get("/messages/ws-status")
+async def check_dm_ws_status(user_id: int = Depends(get_current_user)):
+    """检查用户WebSocket连接状态"""
+    return {
+        "ws_connected": dm_manager.is_online(user_id),
+        "online_users": dm_manager.get_online_users()
+    }

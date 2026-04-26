@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>视频通话 - QuantTalk</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+body {
+    background: #1a1a1a;
+    color: #dcddde;
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    height: 100vh;
+    overflow: hidden;
+}
+.video-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 16px;
+    padding: 16px;
+    height: calc(100vh - 80px);
+}
+.video-card {
+    background: #2b2d31;
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.video-card video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.video-card .avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #5865f2, #7289da);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    color: #fff;
+}
+.video-card .username {
+    position: absolute;
+    bottom: 12px;
+    left: 12px;
+    background: rgba(0,0,0,0.7);
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 14px;
+}
+.video-card .status {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+.status.muted { background: #f04747; }
+.status.speaking { background: #23a559; }
+.control-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #232428;
+    padding: 16px;
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    border-top: 1px solid #202225;
+}
+.control-btn {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+.control-btn.mic { background: #5865f2; color: #fff; }
+.control-btn.mic.off { background: #4a4a4a; }
+.control-btn.camera { background: #5865f2; color: #fff; }
+.control-btn.camera.off { background: #4a4a4a; }
+.control-btn.screen { background: #5865f2; color: #fff; }
+.control-btn.screen.active { background: #23a559; }
+.control-btn.call { background: #ed4245; color: #fff; }
+.control-btn.call:hover { background: #d63c3c; }
+.screen-share-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 80px;
+    background: #1a1a1a;
+    z-index: 50;
+    display: none;
+}
+.screen-share-container.active { display: block; }
+.chat-overlay {
+    position: fixed;
+    right: 16px;
+    bottom: 100px;
+    width: 300px;
+    max-height: 400px;
+    background: rgba(0,0,0,0.9);
+    border-radius: 8px;
+    overflow: hidden;
+    z-index: 40;
+    display: none;
+}
+.chat-overlay.active { display: flex; flex-direction: column; }
+.chat-messages { flex: 1; overflow-y: auto; padding: 8px; }
+.chat-input-row { display: flex; padding: 8px; gap: 4px; }
+.chat-input-row input { flex: 1; background: #404045; border: none; padding: 8px; border-radius: 4px; color: #fff; }
+.toast {
+    position: fixed;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.8);
+    padding: 12px 24px;
+    border-radius: 8px;
+    z-index: 100;
+}
+</style>
+</head>
+<body>
+
+<div id="app">
+    <!-- 通话信息 -->
+    <div style="position:fixed;top:16px;left:16px;z-index:10">
+        <div style="background:rgba(0,0,0,0.7);padding:8px 16px;border-radius:8px">
+            <div style="font-size:14px;color:#fff" id="call-info">连接中...</div>
+            <div style="font-size:12px;color:#72767d" id="duration">00:00</div>
+        </div>
+    </div>
+    
+    <!-- 屏幕共享容器 -->
+    <div id="screen-share-container" class="screen-share-container">
+        <div style="padding:16px;display:flex;justify-content:space-between;align-items:center;background:#232428">
+            <span style="color:#fff">屏幕共享中</span>
+            <button onclick="stopScreenShare()" style="background:#ed4245;border:none;color:#fff;padding:8px 16px;border-radius:4px;cursor:pointer">停止共享</button>
+        </div>
+        <video id="screen-video" autoplay playsinline style="width:100%;height:calc(100% - 56px)"></video>
+    </div>
+    
+    <!-- 视频区域 -->
+    <div class="video-container" id="video-grid">
+        <!-- 本地视频 -->
+        <div class="video-card" id="local-card">
+            <video id="local-video" autoplay playsinline muted></video>
+            <div class="avatar" id="local-avatar">?</div>
+            <div class="username" id="local-name">我</div>
+            <div class="status" id="local-mic-status" style="display:none">静音</div>
+        </div>
+    </div>
+    
+    <!-- 聊天浮窗 -->
+    <div id="chat-overlay" class="chat-overlay">
+        <div style="padding:8px 12px;background:#2b2d31;font-weight:600;border-bottom:1px solid #202225">
+            通话聊天
+            <button onclick="toggleChat()" style="float:right;background:none;border:none;color:#b9bbbe;cursor:pointer">X</button>
+        </div>
+        <div class="chat-messages" id="chat-messages"></div>
+        <div class="chat-input-row">
+            <input type="text" id="chat-input" placeholder="输入消息..." onkeydown="if(event.key==='Enter')sendChat()">
+            <button onclick="sendChat()" style="background:#5865f2;border:none;color:#fff;padding:8px 12px;border-radius:4px;cursor:pointer">发送</button>
+        </div>
+    </div>
+    
+    <!-- 控制栏 -->
+    <div class="control-bar">
+        <button id="mic-btn" class="control-btn mic" onclick="toggleMic()" title="麦克风">🎤</button>
+        <button id="camera-btn" class="control-btn camera" onclick="toggleCamera()" title="摄像头">📹</button>
+        <button id="screen-btn" class="control-btn screen" onclick="toggleScreenShare()" title="屏幕共享">🖥️</button>
+        <button id="chat-btn" class="control-btn" onclick="toggleChat()" style="background:#36393f" title="聊天">💬</button>
+        <button id="call-btn" class="control-btn call" onclick="endCall()" title="挂断">📞</button>
+    </div>
+</div>
+
+<script>
+// 获取URL参数
+const urlParams = new URLSearchParams(window.location.search);
+const roomId = urlParams.get('room');
+const callType = urlParams.get('type') || 'video';
+const remoteUsername = urlParams.get('user') || '未知用户';
+const token = localStorage.getItem('token') || '';
+
+// 状态
+let ws = null;
+let localStream = null;
+let screenStream = null;
+let peerConnections = {};
+let duration = 0;
+let durationTimer = null;
+let isMuted = false;
+let isCameraOff = false;
+let isScreenSharing = false;
+let isChatOpen = false;
+
+// WebRTC配置
+const rtcConfig = {
+    iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' }
+    ]
+};
+
+// 初始化
+async function init() {
+    document.getElementById('call-info').textContent = `${callType === 'video' ? '视频' : '语音'}通话 - ${remoteUsername}`;
+    document.getElementById('local-name').textContent = '我';
+    
+    // 获取本地用户名
+    const userRes = await fetch('/api/auth/me', {
+        headers: { 'Authorization': `Bearer ${token}` }
+    }).then(r => r.json()).catch(() => null);
+    if (userRes && userRes.username) {
+        document.getElementById('local-avatar').textContent = userRes.username[0].toUpperCase();
+        document.getElementById('local-name').textContent = userRes.username;
+    }
+    
+    // 获取本地媒体流
+    await startLocalStream();
+    
+    // 连接WebSocket
+    connectWebSocket();
+    
+    // 开始计时
+    startDurationTimer();
+}
+
+// 获取本地媒体流
+async function startLocalStream() {
+    try {
+        const constraints = {
+            audio: true,
+            video: callType === 'video' ? { width: 1280, height: 720 } : false
+        };
+        localStream = await navigator.mediaDevices.getUserMedia(constraints);
+        
+        const videoEl = document.getElementById('local-video');
+        if (callType === 'video') {
+            videoEl.srcObject = localStream;
+            videoEl.style.display = 'block';
+            document.getElementById('local-avatar').style.display = 'none';
+        } else {
+            videoEl.style.display = 'none';
+        }
+    } catch (err) {
+        console.error('Failed to get local stream:', err);
+        toast('无法访问摄像头/麦克风，请检查权限设置');
+    }
+}
+
+// WebSocket连接
+function connectWebSocket() {
+    const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const host = location.host;
+    
+    ws = new WebSocket(`${protocol}//${host}/api/ws/room/${roomId}?token=${encodeURIComponent(token)}`);
+    
+    ws.onopen = () => {
+        console.log('Room WS connected');
+        toast('已连接通话');
+    };
+    
+    ws.onmessage = async (event) => {
+        const data = JSON.parse(event.data);
+        await handleSignaling(data);
+    };
+    
+    ws.onclose = () => {
+        console.log('Room WS disconnected');
+        toast('连接已断开');
+    };
+    
+    ws.onerror = (err) => {
+        console.error('Room WS error:', err);
+    };
+}
+
+// 处理信令
+async function handleSignaling(data) {
+    const { type, from, from_username, sdp, candidate, room_id, participants } = data;
+    
+    switch (type) {
+        case 'room_joined':
+            // 加入房间成功，收到参与者列表
+            if (participants && participants.length > 0) {
+                for (const p of participants) {
+                    await createPeerConnection(p.user_id, p.username, true);
+                }
+            }
+            break;
+            
+        case 'user_joined':
+            // 新用户加入
+            toast(`${from_username} 加入了通话`);
+            await createPeerConnection(from, from_username, true);
+            break;
+            
+        case 'user_left':
+            // 用户离开
+            toast(`${from_username} 离开了通话`);
+            if (peerConnections[from]) {
+                peerConnections[from].close();
+                delete peerConnections[from];
+                removeVideoCard(from);
+            }
+            break;
+            
+        case 'offer':
+            // 收到offer
+            await handleOffer(from, from_username, sdp);
+            break;
+            
+        case 'answer':
+            // 收到answer
+            await handleAnswer(from, sdp);
+            break;
+            
+        case 'ice_candidate':
+            // 收到ICE候选
+            await handleIceCandidate(from, candidate);
+            break;
+            
+        case 'participant_updated':
+            // 参与者状态更新
+            updateParticipantStatus(from, data);
+            break;
+            
+        case 'chat':
+            // 收到聊天消息
+            addChatMessage(from_username, data.content);
+            break;
+    }
+}
+
+// 创建peer连接
+async function createPeerConnection(userId, username, createOffer = false) {
+    const pc = new RTCPeerConnection(rtcConfig);
+    peerConnections[userId] = pc;
+    
+    // 添加本地流
+    localStream.getTracks().forEach(track => {
+        pc.addTrack(track, localStream);
+    });
+    
+    // ICE候选
+    pc.onicecandidate = (event) => {
+        if (event.candidate && ws) {
+            ws.send(JSON.stringify({
+                type: 'ice_candidate',
+                to: userId,
+                candidate: event.candidate
+            }));
+        }
+    };
+    
+    // 收到远端流
+    pc.ontrack = (event) => {
+        const stream = event.streams[0];
+        if (stream) {
+            addVideoCard(userId, username, stream);
+        }
+    };
+    
+    pc.onconnectionstatechange = () => {
+        console.log(`Peer ${userId} state:`, pc.connectionState);
+        if (pc.connectionState === 'failed' || pc.connectionState === 'disconnected') {
+            toast(`${username} 连接失败`);
+        }
+    };
+    
+    // 如果是邀请方，创建offer
+    if (createOffer) {
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+        
+        ws.send(JSON.stringify({
+            type: 'offer',
+            to: userId,
+            sdp: offer
+        }));
+    }
+    
+    return pc;
+}
+
+// 处理offer
+async function handleOffer(userId, username, sdp) {
+    const pc = await createPeerConnection(userId, username, false);
+    await pc.setRemoteDescription(new RTCSessionDescription(sdp));
+    
+    const answer = await pc.createAnswer();
+    await pc.setLocalDescription(answer);
+    
+    ws.send(JSON.stringify({
+        type: 'answer',
+        to: userId,
+        sdp: answer
+    }));
+}
+
+// 处理answer
+async function handleAnswer(userId, sdp) {
+    const pc = peerConnections[userId];
+    if (pc) {
+        await pc.setRemoteDescription(new RTCSessionDescription(sdp));
+    }
+}
+
+// 处理ICE候选
+async function handleIceCandidate(userId, candidate) {
+    const pc = peerConnections[userId];
+    if (pc && candidate) {
+        try {
+            await pc.addIceCandidate(new RTCIceCandidate(candidate));
+        } catch (err) {
+            console.error('ICE candidate error:', err);
+        }
+    }
+}
+
+// 添加视频卡片
+function addVideoCard(userId, username, stream) {
+    const existing = document.getElementById(`video-${userId}`);
+    if (existing) return;
+    
+    const grid = document.getElementById('video-grid');
+    const card = document.createElement('div');
+    card.className = 'video-card';
+    card.id = `video-${userId}`;
+    card.innerHTML = `
+        <video id="video-el-${userId}" autoplay playsinline></video>
+        <div class="avatar" id="video-avatar-${userId}" style="display:none">${username[0].toUpperCase()}</div>
+        <div class="username">${username}</div>
+        <div class="status mic-status" id="mic-status-${userId}" style="display:none">静音</div>
+    `;
+    grid.appendChild(card);
+    
+    const videoEl = card.querySelector('video');
+    videoEl.srcObject = stream;
+}
+
+// 移除视频卡片
+function removeVideoCard(userId) {
+    const card = document.getElementById(`video-${userId}`);
+    if (card) card.remove();
+}
+
+// 更新参与者状态
+function updateParticipantStatus(userId, data) {
+    if (data.muted !== undefined) {
+        const statusEl = document.getElementById(`mic-status-${userId}`);
+        if (statusEl) {
+            statusEl.style.display = data.muted ? 'block' : 'none';
+        }
+    }
+    if (data.video_on !== undefined) {
+        const avatarEl = document.getElementById(`video-avatar-${userId}`);
+        const videoEl = document.getElementById(`video-el-${userId}`);
+        if (data.video_on) {
+            avatarEl.style.display = 'none';
+            videoEl.style.display = 'block';
+        } else {
+            avatarEl.style.display = 'flex';
+            videoEl.style.display = 'none';
+        }
+    }
+}
+
+// 切换麦克风
+function toggleMic() {
+    isMuted = !isMuted;
+    localStream.getAudioTracks().forEach(track => {
+        track.enabled = !isMuted;
+    });
+    
+    const btn = document.getElementById('mic-btn');
+    btn.classList.toggle('off', isMuted);
+    btn.textContent = isMuted ? '🔇' : '🎤';
+    
+    document.getElementById('local-mic-status').style.display = isMuted ? 'block' : 'none';
+    
+    ws.send(JSON.stringify({ type: 'mute', muted: isMuted }));
+}
+
+// 切换摄像头
+function toggleCamera() {
+    isCameraOff = !isCameraOff;
+    localStream.getVideoTracks().forEach(track => {
+        track.enabled = !isCameraOff;
+    });
+    
+    const btn = document.getElementById('camera-btn');
+    btn.classList.toggle('off', isCameraOff);
+    btn.textContent = isCameraOff ? '📷' : '📹';
+    
+    const avatar = document.getElementById('local-avatar');
+    const video = document.getElementById('local-video');
+    
+    if (isCameraOff) {
+        avatar.style.display = 'flex';
+        video.style.display = 'none';
+    } else {
+        avatar.style.display = 'none';
+        video.style.display = 'block';
+    }
+    
+    ws.send(JSON.stringify({ type: 'video_toggle', video_on: !isCameraOff }));
+}
+
+// 切换屏幕共享
+async function toggleScreenShare() {
+    if (isScreenSharing) {
+        stopScreenShare();
+    } else {
+        try {
+            screenStream = await navigator.mediaDevices.getDisplayMedia({
+                video: { cursor: 'always' },
+                audio: false
+            });
+            
+            // 替换视频轨道
+            const videoTrack = screenStream.getVideoTracks()[0];
+            for (const pc of Object.values(peerConnections)) {
+                const sender = pc.getSenders().find(s => s.track?.kind === 'video');
+                if (sender) {
+                    sender.replaceTrack(videoTrack);
+                }
+            }
+            
+            // 显示屏幕共享
+            const screenContainer = document.getElementById('screen-share-container');
+            const screenVideo = document.getElementById('screen-video');
+            screenVideo.srcObject = screenStream;
+            screenContainer.classList.add('active');
+            
+            // 监听停止共享
+            videoTrack.onended = () => {
+                stopScreenShare();
+            };
+            
+            const btn = document.getElementById('screen-btn');
+            btn.classList.add('active');
+            isScreenSharing = true;
+            
+        } catch (err) {
+            console.error('Screen share error:', err);
+            toast('无法共享屏幕');
+        }
+    }
+}
+
+// 停止屏幕共享
+function stopScreenShare() {
+    if (screenStream) {
+        screenStream.getTracks().forEach(track => track.stop());
+        screenStream = null;
+    }
+    
+    // 恢复摄像头
+    const videoTrack = localStream.getVideoTracks()[0];
+    for (const pc of Object.values(peerConnections)) {
+        const sender = pc.getSenders().find(s => s.track?.kind === 'video');
+        if (sender && videoTrack) {
+            sender.replaceTrack(videoTrack);
+        }
+    }
+    
+    document.getElementById('screen-share-container').classList.remove('active');
+    document.getElementById('screen-btn').classList.remove('active');
+    isScreenSharing = false;
+}
+
+// 切换聊天
+function toggleChat() {
+    isChatOpen = !isChatOpen;
+    document.getElementById('chat-overlay').classList.toggle('active', isChatOpen);
+}
+
+// 添加聊天消息
+function addChatMessage(username, content) {
+    const messagesEl = document.getElementById('chat-messages');
+    const msgEl = document.createElement('div');
+    msgEl.style.cssText = 'margin-bottom:8px;padding:4px 8px;background:#36393f;border-radius:4px';
+    msgEl.innerHTML = `<span style="color:#5865f2;font-weight:600">${username}:</span> ${content}`;
+    messagesEl.appendChild(msgEl);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+// 发送聊天
+function sendChat() {
+    const input = document.getElementById('chat-input');
+    const content = input.value.trim();
+    if (!content) return;
+    
+    ws.send(JSON.stringify({ type: 'chat', content }));
+    addChatMessage('我', content);
+    input.value = '';
+}
+
+// 结束通话
+function endCall() {
+    if (confirm('确定要结束通话吗？')) {
+        // 关闭所有peer连接
+        for (const pc of Object.values(peerConnections)) {
+            pc.close();
+        }
+        peerConnections = {};
+        
+        // 停止本地流
+        if (localStream) {
+            localStream.getTracks().forEach(track => track.stop());
+        }
+        
+        // 关闭WebSocket
+        if (ws) {
+            ws.close();
+        }
+        
+        // 关闭窗口
+        window.close();
+    }
+}
+
+// 开始计时
+function startDurationTimer() {
+    durationTimer = setInterval(() => {
+        duration++;
+        const mins = Math.floor(duration / 60).toString().padStart(2, '0');
+        const secs = (duration % 60).toString().padStart(2, '0');
+        document.getElementById('duration').textContent = `${mins}:${secs}`;
+    }, 1000);
+}
+
+// Toast提示
+function toast(message) {
+    const existing = document.querySelector('.toast');
+    if (existing) existing.remove();
+    
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => toast.remove(), 3000);
+}
+
+// 页面关闭时
+window.onbeforeunload = () => {
+    if (localStream) {
+        localStream.getTracks().forEach(track => track.stop());
+    }
+};
+
+// 启动
+init();
+</script>
+</body>
+</html>

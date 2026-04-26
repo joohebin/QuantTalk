@@ -1528,109 +1528,525 @@ if(res?.ok){loadFriendRequests();}
 else{toast(res?.detail||'操作失败','error');}
 }
 
-// ===== MESSAGES PAGE =====
+
+// ===== MESSAGES PAGE (ENHANCED) =====
+
+// 私信WebSocket连接
+let dmWs = null;
+let dmTypingTimeout = null;
+
+function connectDmWebSocket() {
+    if (!S.user || dmWs) return;
+    const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const host = location.host;
+    const token = localStorage.getItem('token') || '';
+    
+    dmWs = new WebSocket(`${protocol}//${host}/api/ws/private?token=${encodeURIComponent(token)}`);
+    
+    dmWs.onopen = () => {
+        console.log('DM WebSocket connected');
+        // 定期发送心跳
+        setInterval(() => {
+            if (dmWs && dmWs.readyState === WebSocket.OPEN) {
+                dmWs.send(JSON.stringify({type: 'heartbeat'}));
+            }
+        }, 30000);
+    };
+    
+    dmWs.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        handleDmMessage(data);
+    };
+    
+    dmWs.onclose = () => {
+        console.log('DM WebSocket disconnected');
+        dmWs = null;
+        // 5秒后重连
+        setTimeout(connectDmWebSocket, 5000);
+    };
+    
+    dmWs.onerror = (err) => {
+        console.error('DM WebSocket error:', err);
+    };
+}
+
+function handleDmMessage(data) {
+    if (data.type === 'new_message') {
+        // 收到新私信
+        const isCurrentChat = S.currentDmUser === data.sender_id;
+        
+        // 更新未读数
+        updateUnreadBadge();
+        
+        if (isCurrentChat) {
+            // 当前聊天中，追加消息
+            appendDmMessage(data);
+            // 标记已读
+            dmWs?.send(JSON.stringify({type: 'read', sender_id: data.sender_id, message_id: data.id}));
+        } else {
+            // 通知有新消息
+            toast(`${data.sender_username} 给你发了一条私信`, 'info');
+            // 刷新对话列表
+            loadConversations();
+        }
+    } else if (data.type === 'typing') {
+        // 显示对方正在输入
+        showTypingIndicator(data.from_username);
+    } else if (data.type === 'message_read') {
+        // 消息已读
+        markMessageAsRead(data.message_id);
+    }
+}
+
+function appendDmMessage(m) {
+    const el = document.getElementById('dm-messages');
+    if (!el) return;
+    
+    const isMe = m.sender_id === S.user.id;
+    const html = renderDmMessage(m, isMe);
+    el.innerHTML += html;
+    el.scrollTop = el.scrollHeight;
+}
+
+function renderDmMessage(m, isMe) {
+    const senderName = isMe ? '你' : (m.sender_username || '未知');
+    const time = new Date(m.created_at).toLocaleTimeString('zh-CN', {hour: '2-digit', minute: '2-digit'});
+    const avatarColor = isMe ? '#5865f2' : '#f04747';
+    const avatarLetter = (isMe ? S.user.username : senderName)[0].toUpperCase();
+    
+    let contentHtml = '';
+    if (m.msg_type === 'image' && m.media_url) {
+        contentHtml = `<img src="${m.media_url}" style="max-width:300px;border-radius:8px;cursor:pointer" onclick="window.open('${m.media_url}')">`;
+    } else if (m.msg_type === 'file' && m.media_url) {
+        contentHtml = `<a href="${m.media_url}" target="_blank" style="display:flex;align-items:center;gap:8px;padding:8px;background:#404045;border-radius:4px;text-decoration:none;color:#38bdf8">
+            <span style="font-size:20px">📎</span>
+            <span style="flex:1">${esc(m.content)}</span>
+        </a>`;
+    } else if (m.msg_type === 'chart' && m.media_url) {
+        contentHtml = `<div style="background:#2b2d31;border-radius:8px;padding:8px">
+            <div style="font-size:12px;color:#72767d;margin-bottom:4px">📊 行情截图</div>
+            <img src="${m.media_url}" style="max-width:280px;border-radius:4px;cursor:pointer" onclick="window.open('${m.media_url}')">
+        </div>`;
+    } else {
+        contentHtml = `<div class="msg-content">${parseMessageContent(m.content)}</div>`;
+    }
+    
+    const readStatus = isMe ? (m.is_read ? '<span style="color:#23a559;font-size:10px">已读</span>' : '<span style="color:#72767d;font-size:10px">未读</span>') : '';
+    
+    return `<div class="message" style="margin-bottom:12px">
+        <div class="msg-avatar" style="background:${avatarColor}">${avatarLetter}</div>
+        <div style="flex:1">
+            <div class="message-header">
+                <span class="msg-author">${senderName}</span>
+                <span class="msg-time">${time}</span>
+                ${readStatus}
+            </div>
+            ${contentHtml}
+        </div>
+    </div>`;
+}
+
+function parseMessageContent(content) {
+    // 支持表情包格式 :emoji:
+    return esc(content);
+}
+
+function showTypingIndicator(username) {
+    const el = document.getElementById('typing-indicator');
+    if (el) {
+        el.textContent = `${username} 正在输入...`;
+        el.style.display = 'block';
+        clearTimeout(dmTypingTimeout);
+        dmTypingTimeout = setTimeout(() => {
+            el.style.display = 'none';
+        }, 3000);
+    }
+}
+
+function markMessageAsRead(msgId) {
+    document.querySelectorAll(`[data-msg-id="${msgId}"] .read-status`).forEach(el => {
+        el.textContent = '已读';
+        el.style.color = '#23a559';
+    });
+}
+
+function updateUnreadBadge() {
+    api('/messages/unread/count').then(res => {
+        const badge = document.getElementById('msg-badge');
+        if (badge) {
+            if (res.unread > 0) {
+                badge.textContent = res.unread > 99 ? '99+' : res.unread;
+                badge.style.display = 'flex';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+    });
+}
+
 function renderMessages(){
-if(!S.user){showAuth('login');return;}
-const content=document.getElementById('main-content');
-content.innerHTML=`
-<div style="display:flex;height:100%">
-<div style="width:280px;border-right:1px solid #202225;display:flex;flex-direction:column">
-<div style="padding:12px 16px;border-bottom:1px solid #202225">
-<input type="text" class="input" placeholder="搜索对话..." id="msg-search" oninput="filterConversations()">
-</div>
-<div id="conversations-list" style="flex:1;overflow-y:auto"></div>
-</div>
-<div style="flex:1;display:flex;flex-direction:column">
-<div id="chat-area" style="flex:1;display:flex;align-items:center;justify-content:center;color:#72767b">
-<p>选择一个对话开始聊天</p>
-</div>
-<div class="chat-input-area">
-<input type="text" id="dm-input" class="chat-input" placeholder="发送消息..." onkeydown="if(event.key==='Enter')sendDm()">
-<button onclick="sendDm()" class="btn btn-primary">发送</button>
-</div>
-</div>
-</div>`;
-document.getElementById('right-panel').style.display='none';
-loadConversations();
+    if (!S.user) { showAuth('login'); return; }
+    
+    // 连接WebSocket
+    connectDmWebSocket();
+    
+    const content = document.getElementById('main-content');
+    content.innerHTML = `
+    <div style="display:flex;height:100%">
+        <!-- 对话列表 -->
+        <div style="width:280px;border-right:1px solid #202225;display:flex;flex-direction:column;background:#2b2d31">
+            <div style="padding:12px 16px;border-bottom:1px solid #202225;display:flex;align-items:center;gap:8px">
+                <span style="font-weight:600;color:#fff">💬 私信</span>
+                <button onclick="startNewDm()" style="margin-left:auto;background:#5865f2;border:none;color:#fff;padding:4px 12px;border-radius:4px;cursor:pointer;font-size:12px">新对话</button>
+            </div>
+            <div style="padding:8px 12px;border-bottom:1px solid #202225">
+                <input type="text" class="input" placeholder="🔍 搜索对话..." id="msg-search" oninput="filterConversations()">
+            </div>
+            <div id="conversations-list" style="flex:1;overflow-y:auto"></div>
+        </div>
+        
+        <!-- 聊天区域 -->
+        <div style="flex:1;display:flex;flex-direction:column;background:#313338">
+            <div id="chat-area" style="flex:1;display:flex;align-items:center;justify-content:center;color:#72767b">
+                <div style="text-align:center">
+                    <div style="font-size:48px;margin-bottom:12px">💬</div>
+                    <p>选择一个对话开始聊天</p>
+                    <p style="font-size:12px;margin-top:8px">或点击「新建对话」联系其他人</p>
+                </div>
+            </div>
+            
+            <!-- 输入区域 -->
+            <div id="chat-input-area" style="display:none">
+                <div style="padding:4px 16px;background:#2b2d31;border-top:1px solid #202225;display:flex;align-items:center;gap:8px">
+                    <button onclick="toggleEmojiPicker()" style="background:none;border:none;color:#b9bbbe;cursor:pointer;font-size:18px;padding:4px" title="表情">😊</button>
+                    <button onclick="attachImage()" style="background:none;border:none;color:#b9bbbe;cursor:pointer;font-size:18px;padding:4px" title="图片">🖼️</button>
+                    <button onclick="attachChart()" style="background:none;border:none;color:#b9bbbe;cursor:pointer;font-size:18px;padding:4px" title="行情截图">📊</button>
+                    <input type="file" id="dm-image-input" accept="image/*" style="display:none" onchange="handleImageUpload(event)">
+                </div>
+                <div id="typing-indicator" style="display:none;padding:4px 16px;font-size:12px;color:#72767d;background:#2b2d31"></div>
+                <div class="chat-input-area">
+                    <input type="text" id="dm-input" class="chat-input" placeholder="输入消息..." onkeydown="handleDmKeydown(event)" oninput="sendTypingIndicator()">
+                    <button onclick="sendDm()" class="btn btn-primary">发送</button>
+                </div>
+            </div>
+        </div>
+    </div>`;
+    
+    document.getElementById('right-panel').style.display = 'none';
+    loadConversations();
+    updateUnreadBadge();
 }
 
-async function loadConversations(){
-try{
-const res=await api('/messages/conversations');
-const el=document.getElementById('conversations-list');
-if(res&&res.length){
-el.innerHTML=res.map(c=>`
-<div class="channel-item ${S.currentDmUser===c.user_id?'active':''}" onclick="openPrivateChat(${c.user_id},'${esc(c.username)}')">
-<div class="avatar avatar-sm" style="position:relative;margin-right:10px">
-${c.username[0].toUpperCase()}
-${c.is_online?'<span style="position:absolute;bottom:-2px;right:-2px;width:8px;height:8px;background:#23a559;border-radius:50%;border:2px solid #2b2d31"></span>':''}
-</div>
-<div style="flex:1;min-width:0">
-<div style="font-weight:500;color:#fff">${c.username}</div>
-<div style="font-size:11px;color:#72767d;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.last_message||''}</div>
-</div>
-${c.unread?'<span class="badge" style="position:static;min-width:18px;height:18px">'+c.unread+'</span>':''}
-</div>`).join('');
-}else{
-el.innerHTML='<p style="padding:16px;color:#72767d;text-align:center">暂无对话</p>';
-}
-}catch(e){
-document.getElementById('conversations-list').innerHTML='<p style="padding:16px;color:#72767d">加载失败</p>';
-}
-}
-
-function openPrivateChat(userId,username){
-S.currentDmUser=userId;
-document.querySelectorAll('#conversations-list .channel-item').forEach(c=>c.classList.remove('active'));
-event.target.closest('.channel-item')?.classList.add('active');
-const chatArea=document.getElementById('chat-area');
-chatArea.innerHTML=`<div style="padding:16px;flex:1;overflow-y:auto" id="dm-messages"></div>
-<div style="padding:8px 16px;border-top:1px solid #202225;background:#2b2d31">
-<div style="font-weight:600;color:#fff">正在与 ${username} 聊天</div>
-</div>`;
-loadDmHistory(userId);
-}
-
-async function loadDmHistory(userId){
-try{
-const res=await api('/messages/'+userId);
-const el=document.getElementById('dm-messages');
-if(res&&res.length){
-el.innerHTML=res.map(m=>`
-<div class="message" style="margin-bottom:12px">
-<div class="msg-avatar" style="background:${m.sender_id===S.user.id?'#5865f2':'#f04747'}">${(m.sender_id===S.user.id?S.user.username:m.sender_username)[0].toUpperCase()}</div>
-<div>
-<div class="message-header"><span class="msg-author">${m.sender_id===S.user.id?'你':m.sender_username}</span><span class="msg-time">${new Date(m.created_at).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'})}</span></div>
-<div class="msg-content">${esc(m.content)}</div>
-</div>
-</div>`).join('');
-el.scrollTop=el.scrollHeight;
-}else{
-el.innerHTML='<p style="text-align:center;color:#72767d">暂无消息</p>';
-}
-}catch(e){
-document.getElementById('dm-messages').innerHTML='<p>加载失败</p>';
-}
+async function loadConversations() {
+    try {
+        const res = await api('/messages/conversations');
+        const el = document.getElementById('conversations-list');
+        if (res && res.length) {
+            el.innerHTML = res.map(c => {
+                const isActive = S.currentDmUser === c.user_id;
+                const onlineDot = c.is_online ? '<span style="position:absolute;bottom:-2px;right:-2px;width:10px;height:10px;background:#23a559;border-radius:50%;border:2px solid #2b2d31"></span>' : '';
+                const msgIcon = c.msg_type === 'image' ? '🖼️ ' : (c.msg_type === 'file' ? '📎 ' : '');
+                
+                return `<div class="channel-item ${isActive ? 'active' : ''}" onclick="openPrivateChat(${c.user_id},'${esc(c.username)}')">
+                    <div class="avatar avatar-sm" style="position:relative;margin-right:10px;flex-shrink:0">
+                        ${(c.username || '?')[0].toUpperCase()}
+                        ${onlineDot}
+                    </div>
+                    <div style="flex:1;min-width:0">
+                        <div style="display:flex;justify-content:space-between;align-items:center">
+                            <div style="font-weight:500;color:#fff">${c.username || '未知用户'}</div>
+                            <div style="font-size:10px;color:#72767d">${formatRelativeTime(c.last_time)}</div>
+                        </div>
+                        <div style="font-size:12px;color:#72767d;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+                            ${msgIcon}${c.last_message || ''}
+                        </div>
+                    </div>
+                    ${c.unread_count > 0 ? `<span class="badge" style="position:static;min-width:20px;height:20px;font-size:11px">${c.unread_count > 99 ? '99+' : c.unread_count}</span>` : ''}
+                </div>`;
+            }).join('');
+        } else {
+            el.innerHTML = '<div style="padding:24px;text-align:center;color:#72767d"><div style="font-size:32px;margin-bottom:8px">📭</div><div>暂无对话</div></div>';
+        }
+    } catch (e) {
+        console.error('Load conversations error:', e);
+        document.getElementById('conversations-list').innerHTML = '<p style="padding:16px;color:#f04747;text-align:center">加载失败</p>';
+    }
 }
 
-async function sendDm(){
-const input=document.getElementById('dm-input');
-const msg=input.value.trim();
-if(!msg||!S.currentDmUser)return;
-try{
-await api('/messages/'+S.currentDmUser,{method:'POST',body:JSON.stringify({content:msg})});
-input.value='';
-loadDmHistory(S.currentDmUser);
-}catch(e){
-toast('发送失败','error');
-}
+function formatRelativeTime(timeStr) {
+    if (!timeStr) return '';
+    const date = new Date(timeStr);
+    const now = new Date();
+    const diff = now - date;
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+    
+    if (minutes < 1) return '刚刚';
+    if (minutes < 60) return `${minutes}m`;
+    if (hours < 24) return `${hours}h`;
+    if (days < 7) return `${days}d`;
+    return date.toLocaleDateString('zh-CN', {month: 'short', day: 'numeric'});
 }
 
-function filterConversations(){
-const search=document.getElementById('msg-search').value.toLowerCase();
-document.querySelectorAll('#conversations-list .channel-item').forEach(c=>{
-c.style.display=c.textContent.toLowerCase().includes(search)?'flex':'none';
-});
+async function startNewDm() {
+    const userId = prompt('请输入用户ID：');
+    if (!userId || isNaN(parseInt(userId))) return;
+    
+    // 检查用户是否存在
+    try {
+        const res = await api('/users/' + userId);
+        if (res && res.id) {
+            openPrivateChat(res.id, res.username);
+        } else {
+            toast('用户不存在', 'error');
+        }
+    } catch (e) {
+        toast('用户不存在', 'error');
+    }
+}
+
+function openPrivateChat(userId, username) {
+    S.currentDmUser = userId;
+    S.currentDmUsername = username;
+    
+    // 更新对话列表选中状态
+    document.querySelectorAll('#conversations-list .channel-item').forEach(c => {
+        c.classList.remove('active');
+        if (c.onclick.toString().includes(userId)) {
+            c.classList.add('active');
+        }
+    });
+    
+    const chatArea = document.getElementById('chat-area');
+    const inputArea = document.getElementById('chat-input-area');
+    
+    chatArea.innerHTML = `
+        <div style="flex:1;display:flex;flex-direction:column">
+            <!-- 聊天头部 -->
+            <div style="padding:12px 16px;border-bottom:1px solid #3f4147;display:flex;align-items:center;gap:12px">
+                <div class="avatar" style="width:36px;height:36px;background:linear-gradient(135deg,#5865f2,#7289da)">${(username || '?')[0].toUpperCase()}</div>
+                <div>
+                    <div style="font-weight:600;color:#fff">${username}</div>
+                    <div style="font-size:12px;color:#72767d">在线</div>
+                </div>
+                <div style="margin-left:auto;display:flex;gap:8px">
+                    <button onclick="startVoiceCall(${userId}, '${username}')" style="background:#36393f;border:none;color:#b9bbbe;padding:8px;border-radius:50%;cursor:pointer" title="语音通话">📞</button>
+                    <button onclick="startVideoCall(${userId}, '${username}')" style="background:#36393f;border:none;color:#b9bbbe;padding:8px;border-radius:50%;cursor:pointer" title="视频通话">📹</button>
+                </div>
+            </div>
+            
+            <!-- 消息列表 -->
+            <div style="flex:1;overflow-y:auto;padding:16px" id="dm-messages"></div>
+            
+            <!-- 正在输入提示 -->
+            <div id="typing-indicator" style="display:none;padding:4px 16px;font-size:12px;color:#72767d;background:#313338"></div>
+        </div>`;
+    
+    inputArea.style.display = 'block';
+    loadDmHistory(userId);
+    
+    // 更新输入框头部
+    const headerInfo = chatArea.querySelector('.chat-header-info');
+}
+
+async function loadDmHistory(userId) {
+    try {
+        const res = await api('/messages/' + userId);
+        const el = document.getElementById('dm-messages');
+        if (res && res.length) {
+            el.innerHTML = res.map(m => renderDmMessage(m, m.sender_id === S.user.id)).join('');
+            el.scrollTop = el.scrollHeight;
+        } else {
+            el.innerHTML = '<div style="text-align:center;color:#72767d;padding:40px"><div style="font-size:32px;margin-bottom:8px">💬</div><div>开始和 ${S.currentDmUsername} 聊天吧</div></div>';
+        }
+    } catch (e) {
+        console.error('Load history error:', e);
+        document.getElementById('dm-messages').innerHTML = '<p style="text-align:center;color:#f04747">加载失败</p>';
+    }
+}
+
+async function sendDm() {
+    const input = document.getElementById('dm-input');
+    const msg = input.value.trim();
+    if (!msg || !S.currentDmUser) return;
+    
+    try {
+        await api('/messages/', {
+            method: 'POST',
+            body: JSON.stringify({
+                receiver_id: S.currentDmUser,
+                content: msg,
+                msg_type: 'text'
+            })
+        });
+        input.value = '';
+        loadDmHistory(S.currentDmUser);
+    } catch (e) {
+        toast('发送失败', 'error');
+    }
+}
+
+function handleDmKeydown(event) {
+    if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        sendDm();
+    }
+}
+
+function sendTypingIndicator() {
+    if (dmWs && dmWs.readyState === WebSocket.OPEN && S.currentDmUser) {
+        dmWs.send(JSON.stringify({
+            type: 'typing',
+            receiver_id: S.currentDmUser
+        }));
+    }
+}
+
+function filterConversations() {
+    const search = document.getElementById('msg-search').value.toLowerCase();
+    document.querySelectorAll('#conversations-list .channel-item').forEach(c => {
+        c.style.display = c.textContent.toLowerCase().includes(search) ? 'flex' : 'none';
+    });
+}
+
+function toggleEmojiPicker() {
+    // 简单表情选择器
+    const emojis = ['😀', '😂', '🥰', '😍', '🤔', '👍', '👎', '🎉', '🔥', '💯', '📈', '📉', '💰', '💎', '🚀', '⚡'];
+    const input = document.getElementById('dm-input');
+    const picker = document.createElement('div');
+    picker.style.cssText = 'position:absolute;bottom:80px;left:16px;background:#36393f;border:1px solid #202225;border-radius:8px;padding:8px;display:grid;grid-template-columns:repeat(8,1fr);gap:4px;z-index:100';
+    picker.innerHTML = emojis.map(e => `<button onclick="insertEmoji('${e}')" style="background:none;border:none;font-size:20px;cursor:pointer;padding:4px">${e}</button>`).join('');
+    picker.id = 'emoji-picker';
+    
+    // 移除已存在的picker
+    document.querySelectorAll('#emoji-picker').forEach(p => p.remove());
+    
+    document.querySelector('.chat-input-area').style.position = 'relative';
+    document.querySelector('.chat-input-area').appendChild(picker);
+    
+    // 点击其他地方关闭
+    setTimeout(() => {
+        document.addEventListener('click', function closePicker(e) {
+            if (!picker.contains(e.target) && e.target.id !== 'dm-input') {
+                picker.remove();
+                document.removeEventListener('click', closePicker);
+            }
+        });
+    }, 100);
+}
+
+function insertEmoji(emoji) {
+    const input = document.getElementById('dm-input');
+    input.value += emoji;
+    input.focus();
+    document.getElementById('emoji-picker')?.remove();
+}
+
+function attachImage() {
+    document.getElementById('dm-image-input').click();
+}
+
+async function handleImageUpload(event) {
+    const file = event.target.files[0];
+    if (!file || !S.currentDmUser) return;
+    
+    // 上传图片
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    try {
+        const res = await fetch('/api/upload/', {
+            method: 'POST',
+            headers: {'Authorization': 'Bearer ' + localStorage.getItem('token')},
+            body: formData
+        }).then(r => r.json());
+        
+        if (res.url) {
+            await api('/messages/', {
+                method: 'POST',
+                body: JSON.stringify({
+                    receiver_id: S.currentDmUser,
+                    content: '[图片]',
+                    msg_type: 'image',
+                    media_url: res.url
+                })
+            });
+            loadDmHistory(S.currentDmUser);
+        } else {
+            toast('上传失败', 'error');
+        }
+    } catch (e) {
+        toast('上传失败', 'error');
+    }
+    
+    event.target.value = '';
+}
+
+async function attachChart() {
+    // 生成当前行情截图
+    const chartEl = document.querySelector('.kline-container canvas') || document.querySelector('.kline-chart');
+    if (chartEl) {
+        try {
+            const canvas = await html2canvas(chartEl);
+            const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+            const formData = new FormData();
+            formData.append('file', blob, 'chart.png');
+            
+            const res = await fetch('/api/upload/', {
+                method: 'POST',
+                headers: {'Authorization': 'Bearer ' + localStorage.getItem('token')},
+                body: formData
+            }).then(r => r.json());
+            
+            if (res.url) {
+                await api('/messages/', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        receiver_id: S.currentDmUser,
+                        content: '[行情截图]',
+                        msg_type: 'chart',
+                        media_url: res.url
+                    })
+                });
+                loadDmHistory(S.currentDmUser);
+            }
+        } catch (e) {
+            toast('截图发送失败', 'error');
+        }
+    } else {
+        toast('请先打开行情页面', 'info');
+    }
+}
+
+// 音视频通话
+async function startVoiceCall(userId, username) {
+    if (confirm(`确定要向 ${username} 发起语音通话吗？`)) {
+        const roomId = `dm_${S.user.id}_${userId}_${Date.now()}`;
+        await api('/room/rooms', {
+            method: 'POST',
+            params: { room_id: roomId }
+        });
+        openCallWindow(roomId, 'voice', username);
+    }
+}
+
+async function startVideoCall(userId, username) {
+    if (confirm(`确定要向 ${username} 发起视频通话吗？`)) {
+        const roomId = `dm_${S.user.id}_${userId}_${Date.now()}`;
+        await api('/room/rooms', {
+            method: 'POST',
+            params: { room_id: roomId }
+        });
+        openCallWindow(roomId, 'video', username);
+    }
+}
+
+function openCallWindow(roomId, type, username) {
+    const width = 800, height = 600;
+    const left = (screen.width - width) / 2;
+    const top = (screen.height - height) / 2;
+    window.open(`/call.html?room=${roomId}&type=${type}&user=${encodeURIComponent(username)}`, 'call', `width=${width},height=${height},left=${left},top=${top}`);
 }
 
 // ===== GROUPS PAGE =====

@@ -65,6 +65,8 @@ class User(Base):
     is_online = Column(Boolean, default=False)
     last_seen = Column(DateTime, server_default=func.now())
     is_verified = Column(Boolean, default=False)
+    follower_count = Column(Integer, default=0)  # 粉丝数
+    following_count = Column(Integer, default=0)  # 关注数
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
     
@@ -208,6 +210,9 @@ class PrivateMessage(Base):
     sender_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     receiver_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     content = Column(Text, nullable=False)
+    msg_type = Column(String(20), default="text")  # text, image, file, quote, chart
+    media_url = Column(String(500), nullable=True)  # 图片/文件URL
+    reply_to = Column(Integer, nullable=True)  # 回复的消息ID
     is_read = Column(Boolean, default=False)
     created_at = Column(DateTime, server_default=func.now())
 
@@ -719,6 +724,8 @@ class GroupMember(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     is_owner = Column(Boolean, default=False)
     is_admin = Column(Boolean, default=False)
+    is_muted = Column(Boolean, default=False)  # 禁言状态
+    muted_until = Column(DateTime, nullable=True)  # 禁言截止时间
     joined_at = Column(DateTime, server_default=func.now())
 
     group = relationship("Group", back_populates="members")
@@ -799,3 +806,44 @@ class BacktestLike(Base):
     user_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
     report_id = Column(Integer, ForeignKey("backtest_reports.id"), primary_key=True)
     created_at = Column(DateTime, server_default=func.now())
+
+
+# ========== 社交关系系统 ==========
+
+class UserFollow(Base):
+    """用户关注关系"""
+    __tablename__ = "user_follows"
+    id = Column(Integer, primary_key=True, index=True)
+    follower_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    following_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    created_at = Column(DateTime, server_default=func.now())
+    
+    follower = relationship("User", foreign_keys=[follower_id])
+    following = relationship("User", foreign_keys=[following_id])
+
+
+class Favorite(Base):
+    """用户收藏"""
+    __tablename__ = "favorites"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    item_type = Column(String(20), nullable=False)  # signal, strategy, post, chart
+    item_id = Column(Integer, nullable=False)
+    title = Column(String(200), default="")
+    created_at = Column(DateTime, server_default=func.now())
+    
+    user = relationship("User")
+
+
+class ShareRecord(Base):
+    """分享记录"""
+    __tablename__ = "share_records"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    item_type = Column(String(20), nullable=False)  # signal, strategy, post
+    item_id = Column(Integer, nullable=False)
+    target_type = Column(String(20), nullable=False)  # community, friends
+    content = Column(Text, default="")
+    created_at = Column(DateTime, server_default=func.now())
+    
+    user = relationship("User")
