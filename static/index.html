@@ -52,6 +52,10 @@ body{background:#1a1a1a;color:#dcddde;font-family:'Inter',sans-serif;margin:0;he
 .channel-group{margin-bottom:16px}
 .channel-group-header{display:flex;align-items:center;padding:4px 8px;font-size:11px;font-weight:700;text-transform:uppercase;color:#939ba2;cursor:pointer;user-select:none}
 .channel-group-header:hover{color:#dcddde}
+.channel-group-header .collapse-icon{margin-right:4px;font-size:10px;transition:transform .2s}
+.channel-group-header.collapsed .collapse-icon{transform:rotate(-90deg)}
+.channel-group-header.collapsed+*{display:none}
+.channel-group{margin-bottom:4px}
 .channel-item{display:flex;align-items:center;padding:6px 8px;border-radius:4px;cursor:pointer;color:#b9bbbe;font-size:14px;transition:all .1s}
 .channel-item:hover{background:rgba(79,84,92,.4);color:#dcddde}
 .channel-item.active{background:rgba(79,84,92,.6);color:#fff}
@@ -886,29 +890,123 @@ renderChannels(id);
 async function renderChannels(guildId){
 const el=document.getElementById('channels-list');
 el.innerHTML=`
-<div class="channel-group">
-<div class="channel-group-header">📊 交易大厅</div>
+<!-- 交易模块 -->
+<div class="channel-group" data-group="trading">
+<div class="channel-group-header" onclick="toggleChannelGroup(this)"><span class="collapse-icon">▼</span>📊 交易</div>
 <div class="channel-item" onclick="joinChannel('general','text')"><span class="ch-icon">#</span>综合讨论</div>
-<div class="channel-item" onclick="joinChannel('mt4','text')"><span class="ch-icon">#</span>MT4交易</div>
-<div class="channel-item" onclick="joinChannel('mt5','text')"><span class="ch-icon">#</span>MT5交易</div>
-<div class="channel-item" onclick="joinChannel('crypto','text')"><span class="ch-icon">#</span>加密货币</div>
+<div class="channel-item" onclick="openTradingFloor('mt4')"><span class="ch-icon">📈</span>MT4 交易</div>
+<div class="channel-item" onclick="openTradingFloor('mt5')"><span class="ch-icon">📊</span>MT5 交易</div>
+<div class="channel-item" onclick="openTradingFloor('binance')"><span class="ch-icon">🪙</span>Binance 加密货币</div>
+<div class="channel-item" onclick="openTradingFloor('okx')"><span class="ch-icon">🪙</span>OKX 加密货币</div>
+<div class="channel-item" onclick="openTradingFloor('bybit')"><span class="ch-icon">🪙</span>Bybit 加密货币</div>
 </div>
-<div class="channel-group">
-<div class="channel-group-header">📈 行情分析</div>
-<div class="channel-item" onclick="joinChannel('analysis','text')"><span class="ch-icon">#</span>技术分析</div>
-<div class="channel-item" onclick="joinChannel('signals','text')"><span class="ch-icon">#</span>交易信号</div>
-<div class="channel-item" onclick="joinChannel('news','text')"><span class="ch-icon">#</span>市场新闻</div>
+
+<!-- 行情模块 -->
+<div class="channel-group" data-group="market">
+<div class="channel-group-header" onclick="toggleChannelGroup(this)"><span class="collapse-icon">▼</span>📈 行情</div>
+<div class="channel-item" onclick="nav('crypto')"><span class="ch-icon">🪙</span>加密货币</div>
+<div class="channel-item" onclick="nav('forex')"><span class="ch-icon">💱</span>外汇贵金属</div>
+<div class="channel-item" onclick="nav('kline')"><span class="ch-icon">📉</span>K线分析</div>
 </div>
-<div class="channel-group">
-<div class="channel-group-header">🎤 语音交易</div>
+
+<!-- 社区模块 -->
+<div class="channel-group" data-group="community">
+<div class="channel-group-header collapsed" onclick="toggleChannelGroup(this)"><span class="collapse-icon">▼</span>🌐 社区</div>
+<div class="channel-item" onclick="joinChannel('signals','text')"><span class="ch-icon">📢</span>交易信号</div>
+<div class="channel-item" onclick="joinChannel('analysis','text')"><span class="ch-icon">📝</span>技术分析</div>
 <div class="channel-item" onclick="joinChannel('voice1','voice')"><span class="ch-icon">🔊</span>交易喊单</div>
-<div class="channel-item" onclick="joinChannel('voice2','voice')"><span class="ch-icon">🔊</span>复盘讨论</div>
-</div>
-<div class="channel-group">
-<div class="channel-group-header">🌐 社区</div>
 <div class="channel-item" onclick="joinChannel('lounge','text')"><span class="ch-icon">#</span>休闲闲聊</div>
-<div class="channel-item" onclick="joinChannel('help','text')"><span class="ch-icon">#</span>帮助中心</div>
+</div>
+
+<!-- 个人模块 -->
+<div class="channel-group" data-group="personal">
+<div class="channel-group-header collapsed" onclick="toggleChannelGroup(this)"><span class="collapse-icon">▼</span>👤 个人</div>
+<div class="channel-item" onclick="nav('portfolio')"><span class="ch-icon">📜</span>成绩单</div>
+<div class="channel-item" onclick="nav('wallet')"><span class="ch-icon">💰</span>我的钱包</div>
+<div class="channel-item" onclick="nav('friends')"><span class="ch-icon">👥</span>好友列表</div>
+<div class="channel-item" onclick="nav('messages')"><span class="ch-icon">💬</span>私信</div>
 </div>`;
+}
+
+// 折叠/展开频道组
+function toggleChannelGroup(header) {
+header.classList.toggle('collapsed');
+}
+
+// 打开交易大厅（频道内嵌入）
+function openTradingFloor(exchange) {
+// 显示交易大厅在主内容区
+const content=document.getElementById('main-content');
+const header=document.getElementById('main-header-title');
+header.innerHTML='📈 交易大厅 <select class="exchange-select" id="floor-exchange" onchange="changeTradingFloor()"><option value="mt4" '+(exchange==='mt4'?'selected':'')+'>MT4</option><option value="mt5" '+(exchange==='mt5'?'selected':'')+'>MT5</option><option value="binance" '+(exchange==='binance'?'selected':'')+'>Binance</option><option value="okx" '+(exchange==='okx'?'selected':'')+'>OKX</option><option value="bybit" '+(exchange==='bybit'?'selected':'')+'>Bybit</option></select>';
+document.getElementById('right-panel').style.display='none';
+renderTradingFloorInContent(exchange);
+S.page='trading';
+}
+
+function changeTradingFloor(){
+const ex=document.getElementById('floor-exchange').value;
+renderTradingFloorInContent(ex);
+}
+
+function renderTradingFloorInContent(exchange){
+const content=document.getElementById('main-content');
+let symbols=[];
+let title='';
+switch(exchange){
+case 'mt4':title='MT4 交易';symbols=['EURUSD','GBPUSD','USDJPY','XAUUSD','GBPJPY'];break;
+case 'mt5':title='MT5 交易';symbols=['EURUSD','GBPUSD','USDJPY','XAUUSD','USDCNH'];break;
+case 'binance':title='Binance 加密货币';symbols=['BTCUSDT','ETHUSDT','BNBUSDT','SOLUSDT','XRPUSDT'];break;
+case 'okx':title='OKX 加密货币';symbols=['BTC-USDT','ETH-USDT','OKB-USDT','SOL-USDT','XRP-USDT'];break;
+case 'bybit':title='Bybit 加密货币';symbols=['BTCUSDT','ETHUSDT','XRPUSDT','SOLUSDT','LINKUSDT'];break;
+}
+content.innerHTML=`
+<div class="trading-selector">
+<select class="exchange-select" id="symbol-select" onchange="loadTradingChartInContent()">
+${symbols.map(s=>`<option value="${s}">${s}</option>`).join('')}
+</select>
+<select class="kline-btn" id="period-select" onchange="loadTradingChartInContent()" style="background:#383842;border:1px solid #202225;color:#b9bbbe;padding:6px 12px;border-radius:4px">
+<option value="1m">1分钟</option><option value="5m">5分钟</option><option value="15m">15分钟</option><option value="1h" selected>1小时</option><option value="4h">4小时</option><option value="1d">日线</option>
+</select>
+<button onclick="loadTradingChartInContent()" class="btn btn-primary" style="padding:6px 16px">刷新</button>
+</div>
+<div style="display:flex;flex:1;gap:16px;padding:16px;overflow:hidden">
+<div style="flex:1;min-width:0">
+<div id="kline-chart-incontent" style="height:400px;background:#36393f;border-radius:8px;padding:16px">
+<div style="height:100%;display:flex;align-items:center;justify-content:center;color:#72767d">点击刷新加载K线图</div>
+</div>
+<div class="kline-controls" style="margin-top:12px">
+<button class="kline-btn active" onclick="setKlinePeriod('1m',this)">1分钟</button>
+<button class="kline-btn" onclick="setKlinePeriod('5m',this)">5分钟</button>
+<button class="kline-btn" onclick="setKlinePeriod('15m',this)">15分钟</button>
+<button class="kline-btn" onclick="setKlinePeriod('1h',this)">1小时</button>
+<button class="kline-btn" onclick="setKlinePeriod('4h',this)">4小时</button>
+<button class="kline-btn" onclick="setKlinePeriod('1d',this)">日线</button>
+</div>
+</div>
+<div style="width:300px;display:flex;flex-direction:column;gap:12px">
+<div class="quote-card" style="padding:12px">
+<div style="font-size:12px;color:#939ba2;margin-bottom:4px">当前价格</div>
+<div id="current-price" style="font-size:28px;font-weight:700;color:#fff">--</div>
+<div id="price-change" style="font-size:14px;margin-top:4px">--</div>
+</div>
+<div class="quote-card" style="flex:1;overflow-y:auto">
+<div style="font-size:12px;color:#939ba2;margin-bottom:8px;font-weight:600">实时行情</div>
+<div id="quotes-list-incontent">
+${symbols.map(s=>`<div style="padding:8px;border-bottom:1px solid #404045"><span style="color:#fff">${s}</span><span style="float:right;color:#b9bbbe">--</span></div>`).join('')}
+</div>
+</div>
+</div>
+</div>`;
+loadTradingChartInContent();
+}
+
+function loadTradingChartInContent(){
+const ex=document.getElementById('floor-exchange').value;
+const sym=document.getElementById('symbol-select').value;
+const period=document.getElementById('period-select').value;
+loadKlineData(sym,period,document.getElementById('kline-chart-incontent'));
+updatePriceDisplay(sym);
 }
 
 function joinChannel(id,type){
