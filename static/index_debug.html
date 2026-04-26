@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>QuantTalk - 量化交易社交平台</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#1a1a1a;color:#dcddde;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;height:100vh;overflow:hidden}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-thumb{background:#2d2d2d;border-radius:4px}
+
+/* Layout */
+.discord-container{display:flex;height:100vh}
+.guilds-bar{width:72px;background:#1e1f22;display:flex;flex-direction:column;align-items:center;padding:12px 0;gap:8px;overflow-y:auto}
+.guild-icon{width:48px;height:48px;border-radius:24px;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;transition:all .2s;background:#36393f;color:#fff;font-weight:600}
+.guild-icon:hover{border-radius:16px;background:#5865f2}
+.guild-icon.active{border-radius:16px;background:#5865f2}
+.guild-icon.home{background:#5865f2}
+.guild-divider{width:32px;height:2px;background:#202225;border-radius:1px}
+.add-guild-btn{width:48px;height:48px;border-radius:24px;display:flex;align-items:center;justify-content:center;font-size:24px;cursor:pointer;background:#23a559;color:#fff;transition:all .2s}
+.add-guild-btn:hover{border-radius:16px}
+
+.channels-bar{width:240px;background:#2b2d31;display:flex;flex-direction:column}
+.channels-header{height:48px;padding:0 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #202225;font-weight:600;font-size:15px}
+.channels-list{flex:1;overflow-y:auto;padding:12px 8px}
+.channel-group{margin-bottom:16px}
+.channel-group-header{display:flex;align-items:center;padding:4px 8px;font-size:11px;font-weight:700;text-transform:uppercase;color:#939ba4;cursor:pointer}
+.channel-item{display:flex;align-items:center;padding:8px 12px;margin:2px 8px;border-radius:6px;cursor:pointer;color:#b9bbbe;font-size:13px;transition:all .15s;gap:10px}
+.channel-item:hover{background:#36393f;color:#dcddde}
+.channel-item.active{background:rgba(79,84,92,.6);color:#fff}
+.channel-item .ch-icon{width:20px;text-align:center}
+
+.main-area{flex:1;display:flex;flex-direction:column;background:#313338}
+.main-header{height:48px;padding:0 16px;display:flex;align-items:center;border-bottom:1px solid #1e1f22;gap:8px}
+.main-header-title{font-size:15px;font-weight:600;color:#fff}
+.main-header-title span{color:#b9bbbe;font-weight:400}
+
+.main-content{flex:1;overflow-y:auto;padding:16px}
+.main-footer{height:56px;padding:0 16px;display:flex;align-items:center;border-top:1px solid #1e1f22;gap:8px}
+.main-footer input{flex:1;background:#383842;border:1px solid #202225;border-radius:4px;padding:10px 12px;color:#dcddde;font-size:13px;outline:none}
+.main-footer input:focus{border-color:#5865f2}
+
+.sidebar{width:320px;background:#2b2d31;border-left:1px solid #1e1f22;display:flex;flex-direction:column}
+.sidebar-header{height:48px;padding:0 16px;display:flex;align-items:center;font-weight:600;font-size:14px;border-bottom:1px solid #1e1f22}
+.sidebar-content{flex:1;overflow-y:auto;padding:12px}
+
+/* User Panel */
+.user-panel{height:52px;padding:8px;display:flex;align-items:center;background:#232428;border-top:1px solid #1e1f22;gap:8px}
+.user-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#5865f2,#7289da);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+.user-info{flex:1}
+.user-name{font-size:13px;font-weight:600;color:#fff}
+.user-status{font-size:11px;color:#b9bbbe}
+
+/* Modal */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:100;display:flex;align-items:center;justify-content:center}
+.modal{background:#36393f;border-radius:8px;width:100%;max-width:420px;padding:24px}
+.modal-header{font-size:18px;font-weight:600;color:#fff;margin-bottom:20px}
+.modal-input{width:100%;background:#383842;border:1px solid #202225;border-radius:4px;padding:10px 12px;color:#dcddde;font-size:14px;margin-bottom:12px;outline:none}
+.modal-input:focus{border-color:#5865f2}
+.modal-btn{width:100%;padding:10px;background:#5865f2;color:#fff;border:none;border-radius:4px;font-size:14px;font-weight:500;cursor:pointer;margin-top:8px}
+.modal-btn:hover{background:#4752c4}
+.modal-link{text-align:center;margin-top:16px;font-size:13px;color:#b9bbbe}
+.modal-link a{color:#00aff4;text-decoration:none}
+
+/* Toast */
+.toast-wrap{position:fixed;top:16px;right:16px;z-index:200}
+.toast{padding:10px 16px;background:#2b2d31;border-radius:6px;color:#fff;font-size:13px;margin-bottom:8px;box-shadow:0 4px 12px rgba(0,0,0,.3)}
+.toast.success{border-left:3px solid #23a559}
+.toast.error{border-left:3px solid #ed4245}
+.toast.info{border-left:3px solid #5865f2}
+
+/* Tabs */
+.tabs{display:flex;gap:4px;margin-bottom:16px}
+.tab{padding:8px 16px;background:#383842;border-radius:6px;color:#b9bbbe;font-size:13px;cursor:pointer}
+.tab.active{background:#5865f2;color:#fff}
+
+/* Loading */
+.loading{text-align:center;padding:40px;color:#b9bbbe}
+.loading h2{color:#fff;margin-bottom:12px}
+</style>
+</head>
+<body>
+<div class="discord-container">
+    <!-- Server List -->
+    <div class="guilds-bar" id="guilds-bar">
+        <div class="guild-icon home active" onclick="selectGuild(0)">Q</div>
+        <div class="guild-divider"></div>
+        <div class="guild-icon" onclick="selectGuild(1)">T</div>
+        <div class="add-guild-btn">+</div>
+    </div>
+
+    <!-- Channel List -->
+    <div class="channels-bar">
+        <div class="channels-header">
+            <span id="current-server-name">QuantTalk</span>
+        </div>
+        <div class="channels-list">
+            <div class="channel-group">
+                <div class="channel-group-header">欢迎</div>
+                <div class="channel-item active" onclick="selectChannel('welcome', this)">
+                    <span class="ch-icon">#</span>
+                    <span>welcome</span>
+                </div>
+            </div>
+            <div class="channel-group">
+                <div class="channel-group-header">交易</div>
+                <div class="channel-item" onclick="selectChannel('btc', this)">
+                    <span class="ch-icon">#</span>
+                    <span>BTC/USDT</span>
+                </div>
+                <div class="channel-item" onclick="selectChannel('eth', this)">
+                    <span class="ch-icon">#</span>
+                    <span>ETH/USDT</span>
+                </div>
+            </div>
+            <div class="channel-group">
+                <div class="channel-group-header">社区</div>
+                <div class="channel-item" onclick="selectChannel('strategy', this)">
+                    <span class="ch-icon">#</span>
+                    <span>策略广场</span>
+                </div>
+                <div class="channel-item" onclick="selectChannel('signals', this)">
+                    <span class="ch-icon">#</span>
+                    <span>交易信号</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Panel -->
+        <div class="user-panel" id="user-panel">
+            <div class="user-avatar" id="user-avatar">?</div>
+            <div class="user-info">
+                <div class="user-name" id="user-name">游客</div>
+                <div class="user-status" id="user-status">离线</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Area -->
+    <div class="main-area">
+        <div class="main-header">
+            <span class="main-header-title" id="main-header-title">🏠 欢迎来到 QuantTalk</span>
+        </div>
+        <div class="main-content" id="main-content">
+            <div class="loading">
+                <h2>QuantTalk</h2>
+                <p>量化交易社交平台</p>
+                <p style="margin-top:20px">点击上方频道开始聊天</p>
+                <p style="margin-top:8px">或 <a href="#" onclick="showLoginModal()" style="color:#00aff4">登录</a> / <a href="#" onclick="showRegisterModal()" style="color:#00aff4">注册</a></p>
+            </div>
+        </div>
+        <div class="main-footer">
+            <input type="text" placeholder="发送消息..." id="message-input" onkeypress="handleKeyPress(event)">
+            <button class="modal-btn" style="width:auto;padding:8px 16px" onclick="sendMessage()">发送</button>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">在线用户</div>
+        <div class="sidebar-content" id="online-users">
+            <div style="padding:8px;color:#b9bbbe;font-size:12px">暂无用户在线</div>
+        </div>
+    </div>
+</div>
+
+<!-- Login Modal -->
+<div id="login-modal" class="modal-bg" style="display:none">
+    <div class="modal">
+        <div class="modal-header">登录</div>
+        <input type="text" class="modal-input" id="login-username" placeholder="用户名">
+        <input type="password" class="modal-input" id="login-password" placeholder="密码">
+        <button class="modal-btn" onclick="doLogin()">登录</button>
+        <div class="modal-link">没有账号？<a href="#" onclick="switchToRegister()">注册</a></div>
+    </div>
+</div>
+
+<!-- Register Modal -->
+<div id="register-modal" class="modal-bg" style="display:none">
+    <div class="modal">
+        <div class="modal-header">注册</div>
+        <input type="text" class="modal-input" id="reg-username" placeholder="用户名">
+        <input type="email" class="modal-input" id="reg-email" placeholder="邮箱">
+        <input type="password" class="modal-input" id="reg-password" placeholder="密码">
+        <button class="modal-btn" onclick="doRegister()">注册</button>
+        <div class="modal-link">已有账号？<a href="#" onclick="switchToLogin()">登录</a></div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<script>
+// State
+const S = {
+    user: null,
+    token: localStorage.getItem('qt_token'),
+    ws: null
+};
+
+// API helper
+async function api(path, options = {}) {
+    const headers = { 'Content-Type': 'application/json' };
+    if (S.token) headers['Authorization'] = `Bearer ${S.token}`;
+    const res = await fetch(path, { ...options, headers });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+}
+
+// Toast
+function toast(msg, type = 'info') {
+    const wrap = document.getElementById('toast-wrap');
+    const t = document.createElement('div');
+    t.className = `toast ${type}`;
+    t.textContent = msg;
+    wrap.appendChild(t);
+    setTimeout(() => t.remove(), 3000);
+}
+
+// Auth
+function showLoginModal() { document.getElementById('login-modal').style.display = 'flex'; }
+function showRegisterModal() { document.getElementById('register-modal').style.display = 'flex'; }
+function closeModals() { document.getElementById('login-modal').style.display = 'none'; document.getElementById('register-modal').style.display = 'none'; }
+function switchToLogin() { closeModals(); showLoginModal(); }
+function switchToRegister() { closeModals(); showRegisterModal(); }
+
+async function doLogin() {
+    const username = document.getElementById('login-username').value;
+    const password = document.getElementById('login-password').value;
+    try {
+        const r = await api('/api/auth/login', {
+            method: 'POST',
+            body: JSON.stringify({ username, password })
+        });
+        S.token = r.access_token;
+        S.user = r.user;
+        localStorage.setItem('qt_token', S.token);
+        localStorage.setItem('qt_user', JSON.stringify(S.user));
+        closeModals();
+        toast('登录成功！', 'success');
+        renderUserPanel();
+    } catch(e) {
+        toast('登录失败', 'error');
+    }
+}
+
+async function doRegister() {
+    const username = document.getElementById('reg-username').value;
+    const email = document.getElementById('reg-email').value;
+    const password = document.getElementById('reg-password').value;
+    try {
+        const r = await api('/api/auth/register', {
+            method: 'POST',
+            body: JSON.stringify({ username, email, password })
+        });
+        toast('注册成功，请登录', 'success');
+        switchToLogin();
+    } catch(e) {
+        toast('注册失败', 'error');
+    }
+}
+
+function doLogout() {
+    S.token = null;
+    S.user = null;
+    localStorage.removeItem('qt_token');
+    localStorage.removeItem('qt_user');
+    toast('已退出', 'info');
+    renderUserPanel();
+}
+
+function renderUserPanel() {
+    const avatar = document.getElementById('user-avatar');
+    const name = document.getElementById('user-name');
+    const status = document.getElementById('user-status');
+    if (S.user) {
+        avatar.textContent = S.user.username[0].toUpperCase();
+        name.textContent = S.user.username;
+        status.textContent = '在线';
+        status.style.color = '#23a559';
+    } else {
+        avatar.textContent = '?';
+        name.textContent = '游客';
+        status.textContent = '离线';
+        status.style.color = '#72767d';
+    }
+}
+
+// Navigation
+function selectGuild(id) {
+    document.querySelectorAll('.guild-icon').forEach((el, i) => {
+        el.classList.toggle('active', i === id);
+    });
+}
+
+function selectChannel(name, el) {
+    document.querySelectorAll('.channel-item').forEach(e => e.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('main-header-title').innerHTML = `# ${name}`;
+    document.getElementById('main-content').innerHTML = `
+        <div class="loading">
+            <h2># ${name}</h2>
+            <p>频道: ${name}</p>
+            <p style="margin-top:20px">这是一个示例频道</p>
+        </div>
+    `;
+}
+
+function handleKeyPress(e) {
+    if (e.key === 'Enter') sendMessage();
+}
+
+function sendMessage() {
+    const input = document.getElementById('message-input');
+    const msg = input.value.trim();
+    if (!msg) return;
+    if (!S.token) { toast('请先登录', 'error'); return; }
+    toast('消息发送功能开发中...', 'info');
+    input.value = '';
+}
+
+// Init
+(async function init() {
+    console.log('QuantTalk init...');
+    if (S.token) {
+        try {
+            const r = await api('/api/auth/me');
+            if (r && r.id) {
+                S.user = r;
+                localStorage.setItem('qt_user', JSON.stringify(r));
+                toast('欢迎回来, ' + r.username, 'success');
+            }
+        } catch(e) {
+            console.log('Auth check failed:', e);
+        }
+    }
+    renderUserPanel();
+    console.log('QuantTalk ready!');
+})();
+</script>
+</body>
+</html>
