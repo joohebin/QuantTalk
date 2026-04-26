@@ -202,6 +202,7 @@ const S={token:localStorage.getItem('qt_token')||'',user:JSON.parse(localStorage
 const A='/api';
 
 // ===== UTILS =====
+let isLoggingOut = false;  // 防止401触发无限循环
 async function api(p,o={}){
 const h={...(o.headers||{})};
 if(!h['Content-Type'] && !(o.body instanceof FormData)){
@@ -212,7 +213,12 @@ delete h['Content-Type'];
 }
 if(S.token)h.Authorization='Bearer '+S.token;
 const r=await fetch(A+p,{...o,headers:h});
-if(r.status===401&&!p.includes('/auth/')){doLogout();return null}
+if(r.status===401&&!p.includes('/auth/')&&!isLoggingOut){
+isLoggingOut=true;
+doLogout();
+isLoggingOut=false;
+return null;
+}
 return r.json();
 }
 function toast(msg,type='info'){const c={info:'#5865f2',success:'#23a559',error:'#ed4245'};const d=document.createElement('div');d.className='toast';d.style.background=c[type]||c.info;d.textContent=msg;document.getElementById('toasts').appendChild(d);setTimeout(()=>d.remove(),3000)}
@@ -873,6 +879,7 @@ const r=await api('/auth/'+mode,{method:'POST',body:JSON.stringify(data)});
 if(r?.access_token){S.token=r.access_token;S.user=r.user;localStorage.setItem('qt_token',S.token);localStorage.setItem('qt_user',JSON.stringify(S.user));closeModal();toast(mode==='login'?'欢迎回来！':'注册成功！','success');renderAll()}else{toast(r?.detail||'失败','error')}
 }
 function doLogout(){
+if(isLoggingOut) return;  // 防止重复调用
 S.token='';S.user=null;localStorage.removeItem('qt_token');localStorage.removeItem('qt_user');toast('已退出','info');renderAll();
 }
 

@@ -1018,6 +1018,15 @@ const DISCORD = {
             const res = await fetch('/api/guilds/', {
                 headers: { 'Authorization': `Bearer ${S.token}` }
             });
+            if (res.status === 401) {
+                // Token无效，清除并跳转登录
+                localStorage.removeItem('qt_token');
+                localStorage.removeItem('qt_user');
+                S.token = '';
+                S.user = null;
+                // 不触发renderAll()，避免循环
+                return;
+            }
             if (res.ok) {
                 this.state.guilds = await res.json();
                 this.renderGuilds();
