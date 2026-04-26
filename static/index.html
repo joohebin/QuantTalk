@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https: wss:">
+<!-- CSP暂时禁用，Tailwind CDN需要eval -->
 <title>QuantTalk - 量化交易社交平台</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.production.js"></script>
@@ -67,6 +67,22 @@ body{background:#1a1a1a;color:#dcddde;font-family:'Inter',sans-serif;margin:0;he
 .channel-item.active{background:rgba(79,84,92,.6);color:#fff}
 .channel-item .ch-icon{margin-right:8px;font-size:16px}
 .channel-item.sub-item{padding-left:32px;font-size:13px}
+
+/* 侧边栏品牌区 */
+.sidebar-brand{display:flex;align-items:center;padding:12px 16px;gap:8px;cursor:pointer;border-bottom:1px solid rgba(79,84,92,.2)}
+.sidebar-brand:hover{background:rgba(79,84,92,.1)}
+.brand-icon{font-size:24px}
+.brand-text{font-size:16px;font-weight:700;color:#fff;flex:1}
+.brand-settings{background:none;border:none;color:#939ba2;font-size:14px;cursor:pointer;padding:4px;border-radius:4px}
+.brand-settings:hover{background:rgba(79,84,92,.3);color:#dcddde}
+
+/* 快捷操作区 */
+.quick-actions{display:flex;gap:8px;padding:8px 16px}
+.quick-btn{width:36px;height:36px;border-radius:50%;border:none;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.quick-btn:first-child{background:#23a559;color:#fff}
+.quick-btn:first-child:hover{background:#2d8a4e;transform:scale(1.1)}
+.quick-btn:last-child{background:#5865f2;color:#fff}
+.quick-btn:last-child:hover{background:#4752c4;transform:scale(1.1)}
 
 /* 用户区域 */
 .user-panel{height:52px;background:#232428;display:flex;align-items:center;padding:0 8px;gap:8px}
@@ -946,32 +962,157 @@ renderChannels(id);
 async function renderChannels(guildId){
 const el=document.getElementById('channels-list');
 el.innerHTML=`
-<!-- ========== 交易模块 ========== -->
-<div class="channel-group-header" onclick="toggleChannelGroup(this)"><span class="collapse-icon">▼</span>📊 交易</div>
-<div class="channel-item" onclick="openTradingFloor('mt5')"><span class="ch-icon">📈</span>交易大厅</div>
-<div class="channel-item" onclick="nav('kline')"><span class="ch-icon">📊</span>K线分析</div>
-<div class="channel-item" onclick="nav('crypto')"><span class="ch-icon">🪙</span>加密货币</div>
-<div class="channel-item" onclick="nav('forex')"><span class="ch-icon">💱</span>外汇贵金属</div>
-<div class="channel-item" onclick="joinChannel('portfolio','text')"><span class="ch-icon">📊</span>持仓动态</div>
-<div class="channel-item" onclick="joinChannel('strategy','text')"><span class="ch-icon">📝</span>策略广场</div>
-<div class="channel-item" onclick="joinChannel('copytrade','text')"><span class="ch-icon">👥</span>一键跟单</div>
-<div class="channel-item" onclick="joinChannel('live','text')"><span class="ch-icon">🔴</span>交易直播</div>
+<!-- ========== 顶部品牌区 ========== -->
+<div class="sidebar-brand" onclick="showHome()">
+    <span class="brand-icon">⚡</span>
+    <span class="brand-text">QuantTalk</span>
+    <button class="brand-settings" onclick="showSettings(event)" title="系统设置">⚙️</button>
+</div>
 
-<!-- 分割线 -->
+<!-- ========== 模块1：交易工具区 ========== -->
+<div class="channel-group-header" onclick="toggleChannelGroup(this)"><span class="collapse-icon">▼</span>📊 交易工具</div>
+<div class="channel-item" onclick="openTradingFloor('mt5')"><span class="ch-icon">📈</span>交易大厅</div>
+<div class="channel-item" onclick="nav('market')"><span class="ch-icon">📊</span>行情分析</div>
+<div class="channel-item" onclick="nav('kline')"><span class="ch-icon">📉</span>K线分析</div>
+<div class="channel-item" onclick="nav('crypto')"><span class="ch-icon">💰</span>加密货币</div>
+<div class="channel-item" onclick="nav('forex')"><span class="ch-icon">💱</span>外汇贵金属</div>
+<div class="channel-item" onclick="nav('portfolio')"><span class="ch-icon">📊</span>持仓动态</div>
+<div class="channel-item" onclick="nav('quantai')"><span class="ch-icon">🧩</span>策略广场</div>
+<div class="channel-item" onclick="joinChannel('copytrade','text')"><span class="ch-icon">🎯</span>一键跟单</div>
+<div class="channel-item" onclick="joinChannel('live','text')"><span class="ch-icon">🎥</span>交易直播</div>
+
+<!-- 分割线1 -->
 <div style="height:1px;background:rgba(79,84,92,.4);margin:8px 16px"></div>
 
-<!-- ========== 社交模块 ========== -->
-<div class="channel-group-header" onclick="toggleChannelGroup(this)"><span class="collapse-icon">▼</span>💬 社交</div>
+<!-- ========== 模块2：社区社交区 ========== -->
+<div class="channel-group-header" onclick="toggleChannelGroup(this)"><span class="collapse-icon">▼</span>💬 社区社交</div>
+<div class="channel-item" onclick="joinChannel('community','text')"><span class="ch-icon">💬</span>交易社区</div>
 <div class="channel-item" onclick="nav('friends')"><span class="ch-icon">👥</span>好友</div>
-<div class="channel-item" onclick="nav('messages')"><span class="ch-icon">📨</span>私信</div>
+<div class="channel-item" onclick="nav('messages')"><span class="ch-icon">✉️</span>私信</div>
 <div class="channel-item" onclick="nav('groups')"><span class="ch-icon">👥</span>群聊</div>
-<div class="channel-item" onclick="joinChannel('general','text')"><span class="ch-icon">#</span>公共聊天室</div>
+<div class="channel-item" onclick="joinChannel('public','text')"><span class="ch-icon">🌐</span>公共聊天室</div>
+
+<!-- 分割线2 -->
+<div style="height:1px;background:rgba(79,84,92,.4);margin:8px 16px"></div>
+
+<!-- ========== 模块3：快捷操作区 ========== -->
+<div class="quick-actions">
+    <button class="quick-btn" onclick="showCreateModal(event)" title="创建频道/策略">+</button>
+    <button class="quick-btn" onclick="showWalletModal(event)" title="连接钱包">👛</button>
+</div>
 `;
 }
 
 // 折叠/展开频道组
 function toggleChannelGroup(header) {
 header.classList.toggle('collapsed');
+}
+
+// 系统设置弹窗
+function showSettings(e){
+e.stopPropagation();
+openModal(`
+<h3>⚙️ 系统设置</h3>
+<div style="display:flex;flex-direction:column;gap:12px;margin-top:16px">
+<div style="padding:12px;background:#2b2d31;border-radius:8px">
+<div style="font-weight:600;margin-bottom:8px">主题设置</div>
+<label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+<input type="checkbox" id="dark-mode" checked disabled> 深色主题 (默认)
+</label>
+</div>
+<div style="padding:12px;background:#2b2d31;border-radius:8px">
+<div style="font-weight:600;margin-bottom:8px">通知设置</div>
+<label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+<input type="checkbox" id="notify-sound" checked> 消息声音提醒
+</label>
+</div>
+<div style="padding:12px;background:#2b2d31;border-radius:8px">
+<div style="font-weight:600;margin-bottom:8px">关于</div>
+<p style="color:#939ba2;font-size:12px">QuantTalk v5.0<br>量化交易社交平台</p>
+</div>
+</div>
+<button onclick="closeModal()" class="btn btn-ghost" style="margin-top:16px;width:100%">关闭</button>
+`);
+}
+
+// 创建频道/策略弹窗
+function showCreateModal(e){
+e.stopPropagation();
+if(!S.user){showAuth('login');return;}
+openModal(`
+<h3>创建新内容</h3>
+<div style="display:flex;flex-direction:column;gap:16px;margin-top:16px">
+<button onclick="showAddChannelModal();closeModal()" class="btn btn-primary" style="padding:16px">
+<div style="font-size:20px;margin-bottom:4px">📁</div>
+<div>创建频道</div>
+</button>
+<button onclick="closeModal();nav('quantai')" class="btn btn-ghost" style="padding:16px">
+<div style="font-size:20px;margin-bottom:4px">📝</div>
+<div>发布策略</div>
+</button>
+</div>
+<button onclick="closeModal()" class="btn btn-ghost" style="margin-top:16px;width:100%">取消</button>
+`);
+}
+
+// 连接钱包弹窗
+function showWalletModal(e){
+e.stopPropagation();
+openModal(`
+<h3>👛 连接钱包</h3>
+<div style="display:flex;flex-direction:column;gap:16px;margin-top:16px">
+<button onclick="connectMetaMask()" class="btn btn-primary" style="padding:16px;display:flex;align-items:center;gap:12px">
+<div style="font-size:24px">🦊</div>
+<div>
+<div style="font-weight:600">MetaMask</div>
+<div style="font-size:12px;opacity:.8">一键连接以太坊钱包</div>
+</div>
+</button>
+<button onclick="showMetaApiBind()" class="btn btn-ghost" style="padding:16px;display:flex;align-items:center;gap:12px">
+<div style="font-size:24px">📊</div>
+<div>
+<div style="font-weight:600">MetaApi</div>
+<div style="font-size:12px;opacity:.8">绑定MT4/MT5账户</div>
+</div>
+</button>
+<div style="text-align:center;color:#72767d;font-size:12px;margin-top:8px">
+连接钱包后可使用交易、跟单等功能
+</div>
+</div>
+<button onclick="closeModal()" class="btn btn-ghost" style="margin-top:16px;width:100%">取消</button>
+`);
+}
+
+// MetaMask连接（模拟）
+function connectMetaMask(){
+toast('MetaMask连接功能开发中...','info');
+closeModal();
+}
+
+// MetaApi绑定弹窗
+function showMetaApiBind(){
+openModal(`
+<h3>📊 MetaApi 账户绑定</h3>
+<form onsubmit="bindMetaApi(event)" style="display:flex;flex-direction:column;gap:12px;margin-top:16px">
+<div>
+<label style="display:block;margin-bottom:4px;font-size:13px;color:#b9bbbe">Account ID</label>
+<input name="account_id" class="input" placeholder="ff982e56-23b0-..." required>
+</div>
+<div>
+<label style="display:block;margin-bottom:4px;font-size:13px;color:#b9bbbe">API Key</label>
+<input name="api_key" class="input" placeholder="a915ec00-8a72-..." required>
+</div>
+<button type="submit" class="btn btn-primary" style="padding:10px">绑定账户</button>
+</form>
+<button onclick="closeModal()" class="btn btn-ghost" style="margin-top:8px;width:100%">取消</button>
+`);
+}
+
+async function bindMetaApi(e){
+e.preventDefault();
+const fd=new FormData(e.target);
+toast('MetaApi绑定功能开发中...','info');
+closeModal();
 }
 
 // 打开交易大厅（频道内嵌入）
