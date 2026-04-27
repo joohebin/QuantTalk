@@ -3,34 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QuantTalk</title>
+    <title>QuantTalk - 量化交易平台</title>
     <style>
         * {margin:0;padding:0;box-sizing:border-box;font-family:Microsoft YaHei,sans-serif;}
-        body{background:#121212;color:#fff;height:100vh;overflow:hidden;}
-        .sidebar{width:260px;background:#1e1e1e;border-right:1px solid #333;padding:20px 0;overflow-y:auto;}
-        .logo{text-align:center;font-size:20px;color:#00ff88;font-weight:bold;margin-bottom:20px;}
+        html, body{
+            background:#121212;
+            color:#fff;
+            width:100%;
+            height:100%;
+            overflow:hidden;
+            position:fixed; /* 关键：锁定页面 */
+            top:0;
+            left:0;
+        }
+
+        /* 左侧边栏：固定定位，永远在左侧 */
+        .sidebar{
+            position:absolute;
+            left:0;
+            top:0;
+            width:260px;
+            height:100%;
+            background:#1e1e1e;
+            border-right:1px solid #333;
+            overflow-y:auto;
+            z-index:10;
+        }
+        .logo{text-align:center;font-size:20px;color:#00ff88;font-weight:bold;margin:20px 0;}
+        
         .menu-item{padding:12px 25px;color:#fff;cursor:pointer;font-size:15px;transition:.2s;}
         .menu-item.active{background:#2b291b;color:#ffcc00;}
+        
         .submenu{display:none;padding-left:20px;}
         .submenu.show{display:block;}
-        .submenu-item{padding:8px 25px;margin:2px 0;border-radius:4px;font-size:14px;color:#cccccc;cursor:pointer;transition:.2s;}
+        .submenu-item{
+            padding:8px 25px;
+            margin:2px 0;
+            border-radius:4px;
+            font-size:14px;
+            color:#cccccc;
+            cursor:pointer;
+            transition:.2s;
+        }
         .submenu-item:hover{background:#2a2a2a;color:#ffffff;}
         .submenu-item.active{color:#00ff88;font-weight:500;}
-        .content{flex:1;padding:30px;overflow-y:auto;background:#121212;}
+
+        /* 主内容区：固定定位，永远在右侧 */
+        .content{
+            position:absolute;
+            left:260px;
+            top:0;
+            right:0;
+            bottom:0;
+            padding:30px;
+            overflow-y:auto;
+            background:#121212;
+        }
         .page-title{font-size:22px;color:#00ff88;margin-bottom:20px;}
+        
         .card{background:#1e1e1e;border:1px solid #333;border-radius:8px;padding:20px;margin-bottom:20px;}
         .tv-container{width:100%;height:480px;border-radius:8px;background:#1e1e1e;margin-bottom:20px;}
-        input, select, textarea, button{width:100%;padding:10px 12px;border-radius:4px;border:1px solid #444;background:#252525;color:#fff;outline:none;margin-bottom:12px;}
+        
+        input, select, textarea, button{
+            width:100%;padding:10px 12px;border-radius:4px;
+            border:1px solid #444;background:#252525;color:#fff;
+            outline:none;margin-bottom:12px;
+        }
         button{background:#00ff88;color:#111;font-weight:bold;cursor:pointer;border:none;}
         button:hover{opacity:.9;}
+
         .form-label{margin-bottom:6px;display:block;color:#eee;}
         .tip{color:#888;font-size:12px;margin-top:4px;}
+        
         .chat-box{height:400px;border:1px solid #333;border-radius:8px;padding:15px;background:#1a1a1a;margin-bottom:15px;overflow-y:auto;}
+        .chat-input{height:auto;}
         .post-card{border:1px solid #333;border-radius:8px;padding:16px;margin-bottom:12px;background:#1b1b1b;}
         .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
         .voice-controls{display:flex;gap:10px;margin-top:10px;}
         .voice-btn{flex:1;padding:8px;background:#252525;border:none;color:#fff;border-radius:4px;cursor:pointer;}
         .voice-btn.active{background:#00ff88;color:#111;}
+
         .modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:9999;}
         .modal-box{background:#1e1e1e;padding:30px;border-radius:8px;width:400px;}
         .tab-btn{width:50%;background:#252525;border:none;color:#fff;padding:10px;cursor:pointer;}
@@ -39,7 +91,7 @@
     <script src="https://s3.tradingview.com/tv.js"></script>
 </head>
 <body>
-<!-- 登录弹窗（修复版） -->
+<!-- 登录弹窗 -->
 <div class="modal-overlay" id="loginModal">
     <div class="modal-box">
         <div style="display:flex;margin-bottom:20px;">
@@ -440,7 +492,7 @@ function switchTab(type){
     }
 }
 
-// 修复：登录/注册按钮
+// 登录/注册模拟函数
 function handleLogin(){
     alert(getLangTxt('login_ok'));
     document.getElementById('loginModal').style.display='none';
