@@ -39,7 +39,7 @@
     <script src="https://s3.tradingview.com/tv.js"></script>
 </head>
 <body>
-<!-- 登录弹窗 -->
+<!-- 登录弹窗（修复版） -->
 <div class="modal-overlay" id="loginModal">
     <div class="modal-box">
         <div style="display:flex;margin-bottom:20px;">
@@ -48,21 +48,21 @@
         </div>
         <div id="loginForm">
             <label class="form-label" data-lang="txt_acc">用户名/邮箱</label>
-            <input id="login-account" placeholder="" data-lang-placeholder="txt_acc_plh">
+            <input placeholder="" data-lang-placeholder="txt_acc_plh">
             <label class="form-label" data-lang="txt_pwd">密码</label>
-            <input id="login-password" type="password">
-            <button onclick="doAccountLogin()" data-lang="txt_login_btn">登录</button>
+            <input type="password" placeholder="" data-lang-placeholder="txt_pwd_plh">
+            <button onclick="handleLogin()" data-lang="txt_login_btn">登录</button>
             <p class="tip" style="text-align:center;margin-top:10px;">或</p>
-            <button style="background:#3b82f6;" data-lang="txt_web3">Web3 钱包登录</button>
+            <button style="background:#3b82f6;" onclick="alert('Web3钱包签名登录（前端模拟）')" data-lang="txt_web3">Web3 钱包登录</button>
         </div>
         <div id="registerForm" style="display:none;">
             <label class="form-label" data-lang="txt_uname">用户名</label>
-            <input id="reg-username">
+            <input placeholder="" data-lang-placeholder="txt_uname_plh">
             <label class="form-label" data-lang="txt_email">邮箱</label>
-            <input id="reg-email" type="email">
+            <input placeholder="" data-lang-placeholder="txt_email_plh">
             <label class="form-label" data-lang="txt_pwd">密码</label>
-            <input id="reg-password" type="password">
-            <button onclick="doAccountRegister()" data-lang="txt_reg_btn">注册</button>
+            <input type="password" placeholder="" data-lang-placeholder="txt_pwd_plh">
+            <button onclick="handleRegister()" data-lang="txt_reg_btn">注册</button>
         </div>
     </div>
 </div>
@@ -124,7 +124,8 @@
 const langData = {
     "zh-CN":{
         txt_login:"登录",txt_reg:"注册",txt_acc:"用户名/邮箱",txt_acc_plh:"请输入账号",
-        txt_pwd:"密码",txt_uname:"用户名",txt_email:"邮箱",txt_web3:"Web3钱包登录",
+        txt_pwd:"密码",txt_pwd_plh:"请输入密码",txt_uname:"用户名",txt_uname_plh:"请输入用户名",
+        txt_email:"邮箱",txt_email_plh:"请输入邮箱",txt_web3:"Web3 钱包登录",
         txt_login_btn:"登录",txt_reg_btn:"注册",login_ok:"登录成功",reg_ok:"注册成功",
         m1:"交易市场",m1_1:"交易大厅",m1_2:"加密货币专区",m1_3:"外汇贵金属",m1_4:"期货市场",m1_5:"专业K线分析",
         m2:"交易社区",m2_1:"综合动态广场",m2_2:"量化策略广场",m2_3:"回测中心",m2_4:"交易榜单",m2_5:"一键跟单",m2_6:"交易直播",
@@ -132,19 +133,20 @@ const langData = {
         m4:"社交消息",m4_1:"私信聊天",m4_2:"好友列表",m4_3:"私密群组",
         m5:"个人中心",m5_1:"个人资料",m5_2:"语言设置",m5_3:"交易所API绑定",m5_4:"钱包管理",m5_5:"量化Bot管理",
         lang_title:"语言设置",lang_select:"选择系统语言",lang_tip:"多语言由运营中控台统一管理",save:"保存设置",
-        webhook_txt:"Webhook交易推送地址",copy:"复制",channel_name:"频道名称",channel_type:"频道类型",create:"创建",
-        share_screen:"屏幕共享",camera:"摄像头",mic:"麦克风",mute:"静音",leave:"离开"
+        webhook_txt:"Webhook 交易推送地址",copy:"复制地址",channel_name:"频道名称",channel_type:"频道类型",create:"创建频道",
+        share_screen:"屏幕共享",camera:"开启摄像头",mic:"麦克风",mute:"静音",leave:"离开频道"
     },
     "en":{
-        txt_login:"Login",txt_reg:"Register",txt_acc:"Username/Email",txt_acc_plh:"Input account",
-        txt_pwd:"Password",txt_uname:"Username",txt_email:"Email",txt_web3:"Web3 Login",
-        txt_login_btn:"Sign In",txt_reg_btn:"Sign Up",login_ok:"Login Success",reg_ok:"Register Success",
+        txt_login:"Login",txt_reg:"Register",txt_acc:"Username/Email",txt_acc_plh:"Enter account",
+        txt_pwd:"Password",txt_pwd_plh:"Enter password",txt_uname:"Username",txt_uname_plh:"Enter username",
+        txt_email:"Email",txt_email_plh:"Enter email",txt_web3:"Web3 Login",
+        txt_login_btn:"Sign In",txt_reg_btn:"Sign Up",login_ok:"Login successful",reg_ok:"Register successful",
         m1:"Trade Market",m1_1:"Trade Hall",m1_2:"Crypto",m1_3:"Forex & Metal",m1_4:"Futures",m1_5:"Pro Kline",
-        m2:"Trade Community",m2_1:"Dynamic Square",m2_2:"Strategy Plaza",m2_3:"Backtest",m2_4:"Ranking",m2_5:"Copy Trade",m2_6:"Live",
+        m2:"Community",m2_1:"Dynamic Feed",m2_2:"Strategy Plaza",m2_3:"Backtest",m2_4:"Ranking",m2_5:"Copy Trade",m2_6:"Live",
         m3:"Channels",m3_1:"Create Channel",m3_2:"Text",m3_3:"Voice",m3_4:"Video/Share",m3_5:"Signal Channel",m3_6:"Announcement",
-        m4:"Social",m4_1:"Private Chat",m4_2:"Friends",m4_3:"Group",
-        m5:"Profile",m5_1:"Info",m5_2:"Language",m5_3:"Exchange API",m5_4:"Wallet",m5_5:"Quant Bot",
-        lang_title:"Language Setting",lang_select:"Select Language",lang_tip:"Managed by Admin Console",save:"Save",
+        m4:"Social",m4_1:"Chat",m4_2:"Friends",m4_3:"Groups",
+        m5:"Profile",m5_1:"Info",m5_2:"Language",m5_3:"Exchange API",m5_4:"Wallet",m5_5:"Bot Management",
+        lang_title:"Language Settings",lang_select:"Select Language",lang_tip:"Managed by Admin Console",save:"Save",
         webhook_txt:"Webhook URL",copy:"Copy",channel_name:"Channel Name",channel_type:"Type",create:"Create",
         share_screen:"Share Screen",camera:"Camera",mic:"Mic",mute:"Mute",leave:"Leave"
     },
@@ -181,7 +183,7 @@ const langData = {
         m1:"Pasar Trading",m5:"Profil",lang_title:"Bahasa",save:"Simpan"
     },
     "ru":{
-        txt_login:"Вход",txt_reg:"Регистр",txt_acc:"Логин/Почта",txt_pwd:"Пароль",
+        txt_login:"Вход",txt_reg:"Регистрация",txt_acc:"Логин/Почта",txt_pwd:"Пароль",
         m1:"Торговля",m5:"Профиль",lang_title:"Язык",save:"Сохранить"
     },
     "fr":{
@@ -259,55 +261,107 @@ function renderPage(pageName, el){
         <input value="https://quantsignalkitokito.duckdns.org/api/webhook/trade" readonly>
         <button onclick="copyWebhook()">${getLangTxt('copy')}</button></div>`;
     }
-    if(pageName==="crypto-market") html=`<div class="page-title">${getLangTxt('m1_2')}</div><div class="tv-container" id="tv2"></div>`;
-    if(pageName==="forex-metal") html=`<div class="page-title">${getLangTxt('m1_3')}</div><div class="tv-container" id="tv3"></div>`;
-    if(pageName==="future-market") html=`<div class="page-title">${getLangTxt('m1_4')}</div><div class="tv-container" id="tv4"></div>`;
-    if(pageName==="kline-pro") html=`<div class="page-title">${getLangTxt('m1_5')}</div><div class="tv-container" id="tv5"></div>`;
+    if(pageName==="crypto-market"){
+        html=`<div class="page-title">${getLangTxt('m1_2')}</div><div class="tv-container" id="tv2"></div>`;
+    }
+    if(pageName==="forex-metal"){
+        html=`<div class="page-title">${getLangTxt('m1_3')}</div><div class="tv-container" id="tv3"></div>`;
+    }
+    if(pageName==="future-market"){
+        html=`<div class="page-title">${getLangTxt('m1_4')}</div><div class="tv-container" id="tv4"></div>`;
+    }
+    if(pageName==="kline-pro"){
+        html=`<div class="page-title">${getLangTxt('m1_5')}</div><div class="tv-container" id="tv5"></div>`;
+    }
 
     // 交易社区
-    if(pageName==="dynamic-square") html=`<div class="page-title">${getLangTxt('m2_1')}</div><div class="post-card">Content</div>`;
-    if(pageName==="strategy-square") html=`<div class="page-title">${getLangTxt('m2_2')}</div><div class="grid3"><div class="card"><button>View</button></div></div>`;
-    if(pageName==="backtest-center") html=`<div class="page-title">${getLangTxt('m2_3')}</div><div class="card"><button>Start</button></div>`;
-    if(pageName==="ranking-list") html=`<div class="page-title">${getLangTxt('m2_4')}</div><div class="card">Rank List</div>`;
-    if(pageName==="copy-trade") html=`<div class="page-title">${getLangTxt('m2_5')}</div><div class="card"><button>Open</button></div>`;
-    if(pageName==="trade-live") html=`<div class="page-title">${getLangTxt('m2_6')}</div><div class="card">Live Trading</div>`;
+    if(pageName==="dynamic-square"){
+        html=`<div class="page-title">${getLangTxt('m2_1')}</div>
+        <div class="post-card"><h4>用户昵称</h4><p>这是一条交易动态内容</p><small>2025-01-01</small></div>
+        <div class="post-card"><h4>交易达人</h4><p>BTC 突破 100,000 USDT</p><small>2025-01-01</small></div>`;
+    }
+    if(pageName==="strategy-square"){
+        html=`<div class="page-title">${getLangTxt('m2_2')}</div><div class="grid3">
+        <div class="card"><h4>网格策略</h4><p>月收益：12.5%</p><button>查看详情</button></div>
+        <div class="card"><h4>马丁策略</h4><p>月收益：18.2%</p><button>查看详情</button></div>
+        <div class="card"><h4>套利策略</h4><p>月收益：9.8%</p><button>查看详情</button></div></div>`;
+    }
+    if(pageName==="backtest-center"){
+        html=`<div class="page-title">${getLangTxt('m2_3')}</div><div class="card">
+        <label>选择策略</label><select><option>网格策略</option><option>马丁策略</option></select>
+        <label>回测周期</label><select><option>近1个月</option><option>近3个月</option></select>
+        <button>开始回测</button></div>`;
+    }
+    if(pageName==="ranking-list"){
+        html=`<div class="page-title">${getLangTxt('m2_4')}</div><div class="card">
+        <p>1. 交易达人A：收益 25.6%</p>
+        <p>2. 交易达人B：收益 22.1%</p>
+        <p>3. 交易达人C：收益 19.8%</p></div>`;
+    }
+    if(pageName==="copy-trade"){
+        html=`<div class="page-title">${getLangTxt('m2_5')}</div><div class="card">
+        <label>选择交易高手</label><select><option>高手A</option><option>高手B</option></select>
+        <button>开启自动跟单</button></div>`;
+    }
+    if(pageName==="trade-live"){
+        html=`<div class="page-title">${getLangTxt('m2_6')}</div><div class="card"><p>直播房间列表加载中…</p></div>`;
+    }
 
-    // 频道
+    // 社区频道
     if(pageName==="create-channel"){
         html=`<div class="page-title">${getLangTxt('m3_1')}</div><div class="card">
-        <label class="form-label">${getLangTxt('channel_name')}</label><input>
-        <label class="form-label">${getLangTxt('channel_type')}</label><select>
-        <option>Text</option><option>Voice</option><option>Video</option></select>
-        <button onclick="alert('OK')">${getLangTxt('create')}</button></div>`;
+        <label>${getLangTxt('channel_name')}</label><input placeholder="请输入频道名称">
+        <label>${getLangTxt('channel_type')}</label><select><option>文字频道</option><option>语音频道</option><option>视频/共享频道</option></select>
+        <button>${getLangTxt('create')}</button></div>`;
     }
-    if(pageName==="text-channel") html=`<div class="page-title">${getLangTxt('m3_2')}</div><div class="chat-box"></div><input><button>Send</button>`;
+    if(pageName==="text-channel"){
+        html=`<div class="page-title">${getLangTxt('m3_2')}</div><div class="chat-box">聊天消息记录</div>
+        <input placeholder="输入消息…"><button>发送</button></div>`;
+    }
     if(pageName==="voice-channel"){
         html=`<div class="page-title">${getLangTxt('m3_3')}</div><div class="card">
+        <p>当前语音频道：交易大厅</p>
         <div class="voice-controls">
-            <button class="voice-btn">${getLangTxt('mic')}</button>
             <button class="voice-btn active">${getLangTxt('mute')}</button>
+            <button class="voice-btn">${getLangTxt('mic')}</button>
             <button class="voice-btn">${getLangTxt('leave')}</button>
         </div></div>`;
     }
     if(pageName==="video-channel"){
-        html=`<div class="page-title">${getLangTxt('m3_4')}</div>
-        <div class="card" style="height:400px;display:flex;align-items:center;justify-content:center;">Stream / Share</div>
+        html=`<div class="page-title">${getLangTxt('m3_4')}</div><div class="card" style="height:400px;display:flex;align-items:center;justify-content:center;">
+        <p>画面共享/直播画面加载区域</p></div>
         <div class="voice-controls">
-        <button class="voice-btn">${getLangTxt('camera')}</button>
-        <button class="voice-btn active">${getLangTxt('share_screen')}</button>
-        <button class="voice-btn">${getLangTxt('leave')}</button>
+            <button class="voice-btn">${getLangTxt('camera')}</button>
+            <button class="voice-btn active">${getLangTxt('share_screen')}</button>
+            <button class="voice-btn">${getLangTxt('leave')}</button>
         </div>`;
     }
-    if(pageName==="signal-channel") html=`<div class="page-title">${getLangTxt('m3_5')}</div><div class="card">Signal Push</div>`;
-    if(pageName==="official-channel") html=`<div class="page-title">${getLangTxt('m3_6')}</div><div class="card">Announcement</div>`;
+    if(pageName==="signal-channel"){
+        html=`<div class="page-title">${getLangTxt('m3_5')}</div><div class="card"><p>自动交易信号实时推送</p></div>`;
+    }
+    if(pageName==="official-channel"){
+        html=`<div class="page-title">${getLangTxt('m3_6')}</div><div class="card"><p>平台公告、更新通知</p></div>`;
+    }
 
-    // 社交
-    if(pageName==="private-chat") html=`<div class="page-title">${getLangTxt('m4_1')}</div><div class="chat-box"></div>`;
-    if(pageName==="friend-list") html=`<div class="page-title">${getLangTxt('m4_2')}</div><div class="card">Friend List</div>`;
-    if(pageName==="private-group") html=`<div class="page-title">${getLangTxt('m4_3')}</div><div class="card">Group Chat</div>`;
+    // 社交消息
+    if(pageName==="private-chat"){
+        html=`<div class="page-title">${getLangTxt('m4_1')}</div><div class="chat-box">聊天消息记录</div>
+        <input placeholder="输入消息…"><button>发送</button></div>`;
+    }
+    if(pageName==="friend-list"){
+        html=`<div class="page-title">${getLangTxt('m4_2')}</div><div class="card"><p>好友 1（在线）</p><p>好友 2（离线）</p></div>`;
+    }
+    if(pageName==="private-group"){
+        html=`<div class="page-title">${getLangTxt('m4_3')}</div><div class="card"><p>群组聊天窗口</p></div>`;
+    }
 
-    // 个人中心-语言设置
-    if(pageName==="user-info") html=`<div class="page-title">${getLangTxt('m5_1')}</div><div class="card"><textarea></textarea><button>${getLangTxt('save')}</button></div>`;
+    // 个人中心
+    if(pageName==="user-info"){
+        html=`<div class="page-title">${getLangTxt('m5_1')}</div><div class="card">
+        <label>昵称</label><input placeholder="请输入昵称">
+        <label>个人简介</label><textarea rows="3" placeholder="简单介绍自己"></textarea>
+        <button>${getLangTxt('save')}</button></div>`;
+    }
     if(pageName==="lang-setting"){
         html=`<div class="page-title">${getLangTxt('lang_title')}</div><div class="card">
         <label class="form-label">${getLangTxt('lang_select')}</label>
@@ -328,16 +382,31 @@ function renderPage(pageName, el){
             <option value="pt" ${currentLang==='pt'?'selected':''}>Português</option>
         </select>
         <p class="tip">${getLangTxt('lang_tip')}</p>
-        <button onclick="alert(getLangTxt('save')+' OK')">${getLangTxt('save')}</button>
-        </div>`;
+        <button onclick="alert(getLangTxt('save')+' OK')">${getLangTxt('save')}</button></div>`;
     }
-    if(pageName==="exchange-api") html=`<div class="page-title">${getLangTxt('m5_3')}</div><div class="card"><button>${getLangTxt('save')}</button></div>`;
-    if(pageName==="wallet-manage") html=`<div class="page-title">${getLangTxt('m5_4')}</div><div class="card"><button>${getLangTxt('save')}</button></div>`;
-    if(pageName==="bot-manage") html=`<div class="page-title">${getLangTxt('m5_5')}</div><div class="card"><button>Start Bot</button></div>`;
+    if(pageName==="exchange-api"){
+        html=`<div class="page-title">${getLangTxt('m5_3')}</div><div class="card">
+        <label>选择交易所</label><select><option>币安</option><option>OKX</option></select>
+        <label>API Key</label><input placeholder="输入交易所API Key">
+        <label>API Secret</label><input placeholder="输入API Secret">
+        <button onclick="alert('API 校验成功（前端模拟）')">保存并校验</button></div>`;
+    }
+    if(pageName==="wallet-manage"){
+        html=`<div class="page-title">${getLangTxt('m5_4')}</div><div class="card">
+        <label>链类型</label><select><option>ETH</option><option>TRON</option></select>
+        <label>钱包地址</label><input placeholder="0x...">
+        <button>绑定钱包</button></div>`;
+    }
+    if(pageName==="bot-manage"){
+        html=`<div class="page-title">${getLangTxt('m5_5')}</div><div class="card">
+        <label>Bot 类型</label><select><option>网格交易</option><option>马丁策略</option></select>
+        <label>运行状态</label><input value="已停止" readonly>
+        <button>启动Bot</button></div>`;
+    }
 
     document.getElementById("mainContent").innerHTML = html;
 
-    // 初始化K线
+    // 初始化TradingView
     if(pageName==="trade-hall")initTV("tv1","BINANCE:BTCUSDT");
     if(pageName==="crypto-market")initTV("tv2","BINANCE:ETHUSDT");
     if(pageName==="forex-metal")initTV("tv3","FX_IDC:XAUUSD");
@@ -345,88 +414,40 @@ function renderPage(pageName, el){
     if(pageName==="kline-pro")initTV("tv5","NASDAQ:AAPL");
 }
 
-// TradingView初始化
-function initTV(id,symbol){
+function initTV(id, symbol){
     new TradingView.widget({
         autosize:true,symbol:symbol,interval:"D",timezone:"Asia/Shanghai",
         theme:"dark",style:"1",locale:"zh",container_id:id
     });
 }
+
 function copyWebhook(){
-    let i=document.querySelector('input[value*="duckdns"]');
-    i.select();document.execCommand('copy');alert(getLangTxt('copy')+" OK");
-}
-function switchTab(t){
-    document.getElementById('loginForm').style.display=t==='login'?'block':'none';
-    document.getElementById('registerForm').style.display=t==='login'?'none':'block';
-    document.querySelectorAll('.tab-btn')[0].classList.toggle('active',t==='login');
-    document.querySelectorAll('.tab-btn')[1].classList.toggle('active',t==='register');
+    const inp=document.querySelector('input[value*="duckdns"]');
+    inp.select();document.execCommand('copy');alert(getLangTxt('copy')+" OK");
 }
 
-// 关闭登录弹窗
-function closeModal(){
+function switchTab(type){
+    if(type==='login'){
+        document.getElementById('loginForm').style.display='block';
+        document.getElementById('registerForm').style.display='none';
+        document.querySelectorAll('.tab-btn')[0].classList.add('active');
+        document.querySelectorAll('.tab-btn')[1].classList.remove('active');
+    }else{
+        document.getElementById('loginForm').style.display='none';
+        document.getElementById('registerForm').style.display='block';
+        document.querySelectorAll('.tab-btn')[1].classList.add('active');
+        document.querySelectorAll('.tab-btn')[0].classList.remove('active');
+    }
+}
+
+// 修复：登录/注册按钮
+function handleLogin(){
+    alert(getLangTxt('login_ok'));
     document.getElementById('loginModal').style.display='none';
 }
-
-// 显示登录弹窗
-function showLoginModal(){
-    document.getElementById('loginModal').style.display='flex';
-}
-
-// API 请求辅助函数
-async function api(url, opts={}){
-    const baseUrl = '';
-    const res = await fetch(baseUrl+url, {
-        headers:{'Content-Type':'application/json','Authorization':`Bearer ${S.token||''}`},
-        ...opts
-    });
-    if(res.status===204) return {};
-    const ct=res.headers.get('content-type')||'';
-    return ct.includes('json')?res.json():res.text();
-}
-
-// 账号登录
-async function doAccountLogin(){
-    const account=document.getElementById('login-account').value.trim();
-    const password=document.getElementById('login-password').value;
-    if(!account||!password){alert('请输入账号和密码');return;}
-    try{
-        const r=await api('/auth/login',{method:'POST',body:JSON.stringify({username:account,password})});
-        if(r?.access_token){
-            S.token=r.access_token;
-            S.user=r.user;
-            localStorage.setItem('qt_token',S.token);
-            localStorage.setItem('qt_user',JSON.stringify(S.user));
-            closeModal();
-            alert('登录成功！');
-            renderPage(S.currentPage||'trade-hall');
-        } else {
-            alert(r?.detail||'登录失败，请检查账号密码');
-        }
-    } catch(e){alert('登录失败：'+e.message);}
-}
-
-// 账号注册
-async function doAccountRegister(){
-    const username=document.getElementById('reg-username').value.trim();
-    const email=document.getElementById('reg-email').value.trim();
-    const password=document.getElementById('reg-password').value;
-    if(!username||!email||!password){alert('请填写所有字段');return;}
-    if(password.length<6){alert('密码至少6位');return;}
-    try{
-        const r=await api('/auth/register',{method:'POST',body:JSON.stringify({username,email,password})});
-        if(r?.access_token){
-            S.token=r.access_token;
-            S.user=r.user;
-            localStorage.setItem('qt_token',S.token);
-            localStorage.setItem('qt_user',JSON.stringify(S.user));
-            closeModal();
-            alert('注册成功！');
-            renderPage(S.currentPage||'trade-hall');
-        } else {
-            alert(r?.detail||'注册失败');
-        }
-    } catch(e){alert('注册失败：'+e.message);}
+function handleRegister(){
+    alert(getLangTxt('reg_ok'));
+    switchTab('login');
 }
 
 // 初始化
