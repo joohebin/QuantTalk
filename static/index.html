@@ -1,137 +1,167 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <title>QuantTalk - 量化交易社交平台</title>
-  <script src="https://s3.tradingview.com/tv.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-  <link rel="stylesheet" href="/static/style.css?v=10">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuantTalk</title>
+    <style>
+        * {margin:0;padding:0;box-sizing:border-box;font-family:Microsoft YaHei,sans-serif;}
+        body{background:#121212;color:#fff;height:100vh;display:flex;overflow:hidden;}
+        /* 侧边栏 */
+        .sidebar{width:260px;background:#1e1e1e;border-right:1px solid #333;padding:20px 0;overflow-y:auto;}
+        .logo{text-align:center;font-size:20px;color:#00ff88;font-weight:bold;margin-bottom:30px;}
+        /* 一级菜单 */
+        .menu-item{padding:12px 25px;color:#fff;cursor:pointer;font-size:15px;transition:.2s;}
+        .menu-item.active{background:#2b291b;color:#ffcc00;}
+        /* 二级菜单 全局统一配色 强制固定 */
+        .submenu{display:none;padding-left:20px;}
+        .submenu.show{display:block;}
+        .submenu-item{
+            padding:8px 25px;
+            margin:2px 0;
+            border-radius:4px;
+            font-size:14px;
+            color:#cccccc; /* 默认浅灰统一 */
+            cursor:pointer;
+            transition:.2s;
+        }
+        .submenu-item:hover{background:#2a2a2a;color:#ffffff;} /* hover纯白 */
+        .submenu-item.active{color:#00ff88;font-weight:500;} /* 选中荧光绿 */
+        /* 主内容区 */
+        .content{flex:1;padding:30px;overflow-y:auto;background:#121212;}
+        .page-title{font-size:22px;color:#00ff88;margin-bottom:20px;}
+        .card{background:#1e1e1e;border:1px solid #333;border-radius:8px;padding:20px;margin-bottom:20px;}
+        .kline-box{width:100%;height:400px;background:#1a1a1a;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#666;margin-bottom:20px;}
+        input,button{width:100%;padding:10px;border:1px solid #444;background:#252525;color:#fff;border-radius:4px;margin:8px 0;outline:none;}
+        button{background:#00ff88;color:#111;font-weight:bold;border:none;cursor:pointer;}
+        .tip{color:#888;font-size:12px;}
+    </style>
 </head>
 <body>
-<div class="app-layout">
-  <div class="sidebar-left">
-    <div class="app-logo">
-      <i class="fa fa-line-chart"></i>
-      <span>QuantTalk</span>
-    </div>
-    <ul class="nav-main" id="navMain">
-      <li class="nav-item active" data-target="market">交易市场</li>
-      <li class="nav-item" data-target="community">交易社区</li>
-      <li class="nav-item" data-target="channel">社区频道</li>
-      <li class="nav-item" data-target="chat">社交消息</li>
-      <li class="nav-item bottom" data-target="profile">个人中心</li>
-    </ul>
-  </div>
+<!-- 侧边导航 -->
+<div class="sidebar">
+    <div class="logo">QuantTalk</div>
 
-  <div class="sidebar-right">
-    <div class="submenu active" id="market">
-      <div class="sub-title">交易市场</div>
-      <ul>
-        <li class="sub-item" data-symbol="BINANCE:BTCUSDT" data-period="15">交易大厅</li>
-        <li class="sub-item" data-symbol="BINANCE:ETHUSDT" data-period="15">全局行情</li>
-        <li class="sub-item" data-symbol="BINANCE:BNBUSDT" data-period="15">加密货币专区</li>
-        <li class="sub-item" data-symbol="FX:EURUSD" data-period="60">外汇贵金属</li>
-        <li class="sub-item" data-symbol="COMEX:GC1!" data-period="60">期货市场</li>
-        <li class="sub-item" data-symbol="BINANCE:SOLUSDT" data-period="240">专业K线分析</li>
-        <li class="sub-item" data-symbol="NASDAQ:NDX" data-period="1D">纳斯达克指数</li>
-        <li class="sub-item" data-symbol="HKEX:HSI" data-period="1D">恒生指数</li>
-      </ul>
+    <!-- 1.交易市场 -->
+    <div class="menu-item active" onclick="toggleSub(1)">交易市场</div>
+    <div class="submenu show" id="sub1">
+        <div class="submenu-item active" onclick="renderPage('trade-hall')">交易大厅</div>
+        <div class="submenu-item" onclick="renderPage('crypto-market')">加密货币专区</div>
+        <div class="submenu-item" onclick="renderPage('forex-metal')">外汇贵金属</div>
+        <div class="submenu-item" onclick="renderPage('future-market')">期货市场</div>
+        <div class="submenu-item" onclick="renderPage('kline-pro')">专业K线分析</div>
     </div>
 
-    <div class="submenu" id="community">
-      <div class="sub-title">交易社区</div>
-      <ul>
-        <li>综合动态广场</li>
-        <li>高手持仓动态</li>
-        <li>量化策略广场</li>
-        <li>一键跟单</li>
-        <li>交易直播</li>
-        <li>我的交易战绩</li>
-        <li>策略排行榜</li>
-        <li>策略回测中心</li>
-      </ul>
+    <!-- 2.交易社区 -->
+    <div class="menu-item" onclick="toggleSub(2)">交易社区</div>
+    <div class="submenu" id="sub2">
+        <div class="submenu-item" onclick="renderPage('dynamic-square')">综合动态广场</div>
+        <div class="submenu-item" onclick="renderPage('strategy-square')">量化策略广场</div>
+        <div class="submenu-item" onclick="renderPage('copy-trade')">一键跟单</div>
+        <div class="submenu-item" onclick="renderPage('trade-live')">交易直播</div>
     </div>
 
-    <div class="submenu" id="channel">
-      <div class="sub-title">社区频道</div>
-      <ul>
-        <li>全部公共频道</li>
-        <li>已加入频道</li>
-        <li>交易信号频道</li>
-        <li>官方公告频道</li>
-        <li>我的频道管理</li>
-      </ul>
-      <div class="tip">支持：文字 | 语音 | 视频 实时共享K线/策略</div>
+    <!-- 3.社区频道 -->
+    <div class="menu-item" onclick="toggleSub(3)">社区频道</div>
+    <div class="submenu" id="sub3">
+        <div class="submenu-item" onclick="renderPage('all-channel')">全部公共频道</div>
+        <div class="submenu-item" onclick="renderPage('signal-channel')">交易信号频道</div>
+        <div class="submenu-item" onclick="renderPage('official-channel')">官方公告频道</div>
+        <div class="submenu-item" onclick="renderPage('my-channel')">我的频道管理</div>
     </div>
 
-    <div class="submenu" id="chat">
-      <div class="sub-title">社交消息</div>
-      <ul>
-        <li>私信聊天</li>
-        <li>好友列表</li>
-        <li>私密群组</li>
-        <li>好友申请</li>
-      </ul>
+    <!-- 4.社交消息 -->
+    <div class="menu-item" onclick="toggleSub(4)">社交消息</div>
+    <div class="submenu" id="sub4">
+        <div class="submenu-item" onclick="renderPage('private-chat')">私信聊天</div>
+        <div class="submenu-item" onclick="renderPage('friend-list')">好友列表</div>
+        <div class="submenu-item" onclick="renderPage('private-group')">私密群组</div>
+        <div class="submenu-item" onclick="renderPage('friend-apply')">好友申请</div>
     </div>
 
-    <div class="submenu" id="profile">
-      <div class="sub-title">个人中心</div>
-      <ul>
-        <li>行情价格提醒</li>
-        <li>个人资料（换头像/昵称/简介）</li>
-        <li>消息通知设置</li>
-        <li>系统设置</li>
-        <li>账号安全</li>
-        <li class="panel-header">• 加密钱包管理</li>
-        <li class="panel-item">Web3 热钱包绑定</li>
-        <li class="panel-item">冷钱包地址绑定</li>
-        <li class="panel-item">20家交易所 APIKey 绑定</li>
-        <li class="panel-header">• 量化 Bot 管理</li>
-        <li class="panel-item" onclick="openBotPanel()">网格交易 Bot</li>
-        <li class="panel-item" onclick="openBotPanel()">马丁策略 Bot</li>
-        <li class="panel-item" onclick="openBotPanel()">现货/合约量化 Bot</li>
-        <li class="panel-header">• 个人专属 API Key</li>
-        <li class="panel-item">生成 / 重置 / 禁用</li>
-        <li class="panel-header highlight">• MetaApi 令牌管理</li>
-        <li class="panel-item" onclick="openMetaApiPanel()">绑定 MetaApi 令牌</li>
-      </ul>
+    <!-- 5.个人中心 -->
+    <div class="menu-item" onclick="toggleSub(5)">个人中心</div>
+    <div class="submenu" id="sub5">
+        <div class="submenu-item" onclick="renderPage('user-info')">个人资料</div>
+        <div class="submenu-item" onclick="renderPage('safe-set')">账号安全</div>
+        <div class="submenu-item" onclick="renderPage('exchange-api')">交易所API绑定</div>
+        <div class="submenu-item" onclick="renderPage('wallet-manage')">钱包管理</div>
+        <div class="submenu-item" onclick="renderPage('bot-manage')">量化Bot管理</div>
     </div>
-  </div>
-
-  <div class="main-content">
-    <div id="tv-chart-container"></div>
-    <div class="webhook-panel">
-      <h3>WebhookTrade 桥接地址</h3>
-      <input type="text" value="https://quantsignalkitokito.duckdns.org/api/webhook/trade" readonly>
-      <button onclick="copyWebhook()">复制地址</button>
-    </div>
-  </div>
 </div>
 
-<div id="metaApiModal" class="modal">
-  <div class="modal-content">
-    <span class="close" onclick="closeMetaApiPanel()">&times;</span>
-    <h2>MetaApi 令牌绑定</h2>
-    <input type="text" id="metaApiToken" placeholder="输入 MetaApi Token">
-    <button onclick="saveMetaApiToken()">保存绑定</button>
-  </div>
-</div>
+<!-- 右侧内容区 -->
+<div class="content" id="mainContent"></div>
 
-<div id="botModal" class="modal">
-  <div class="modal-content">
-    <span class="close" onclick="closeBotPanel()">&times;</span>
-    <h2>量化 Bot 设置</h2>
-    <input type="text" id="botSymbol" placeholder="交易对" value="BTCUSDT">
-    <input type="number" id="botAmount" placeholder="投入金额" value="100">
-    <select id="botStrategy"><option>网格交易</option><option>马丁策略</option></select>
-    <button onclick="startBot()">启动 Bot</button>
-    <button onclick="stopBot()">停止 Bot</button>
-    <p id="botStatus">状态：未运行</p>
-  </div>
-</div>
+<script>
+// 收起/展开一级子菜单
+function toggleSub(num){
+    document.querySelectorAll('.submenu').forEach(el=>el.classList.remove('show'));
+    document.getElementById('sub'+num).classList.add('show');
+    document.querySelectorAll('.menu-item').forEach(el=>el.classList.remove('active'));
+    event.target.classList.add('active');
+}
 
-<script src="/static/script.js?v=10"></script>
+// 切换二级页面 + 统一高亮
+function renderPage(pageName){
+    document.querySelectorAll('.submenu-item').forEach(el=>el.classList.remove('active'));
+    event.target.classList.add('active');
+    let html = "";
+
+    // ========== 交易市场 ==========
+    if(pageName==="trade-hall"){
+        html = `
+            <h2 class="page-title">交易大厅</h2>
+            <div class="kline-box">TradingView 全局行情图表<br>（API由运营中控台统一配置）</div>
+            <div class="card">
+                <p>Webhook 交易推送地址</p>
+                <input value="https://qt-api.xxx.com/webhook/trade" readonly>
+                <button onclick="copyText(this.previousElementSibling)">复制地址</button>
+            </div>
+        `;
+    }
+    else if(pageName==="crypto-market"){html=`<h2 class="page-title">加密货币专区</h2><div class="kline-box">加密货币实时行情</div>`;}
+    else if(pageName==="forex-metal"){html=`<h2 class="page-title">外汇贵金属</h2><div class="kline-box">外汇/黄金/白银行情</div>`;}
+    else if(pageName==="future-market"){html=`<h2 class="page-title">期货市场</h2><div class="kline-box">全球期货行情</div>`;}
+    else if(pageName==="kline-pro"){html=`<h2 class="page-title">专业K线分析</h2><div class="kline-box">高级指标+画线工具</div>`;}
+
+    // ========== 交易社区 ==========
+    else if(pageName==="dynamic-square"){html=`<h2 class="page-title">综合动态广场</h2><div class="card">用户动态、交易分享内容列表</div>`;}
+    else if(pageName==="strategy-square"){html=`<h2 class="page-title">量化策略广场</h2><div class="card">公开策略、回测数据、收益排行</div>`;}
+    else if(pageName==="copy-trade"){html=`<h2 class="page-title">一键跟单</h2><div class="card">高手跟单配置、仓位同步</div>`;}
+    else if(pageName==="trade-live"){html=`<h2 class="page-title">交易直播</h2><div class="card">分析师直播房间列表</div>`;}
+
+    // ========== 社区频道 ==========
+    else if(pageName==="all-channel"){html=`<h2 class="page-title">全部公共频道</h2><div class="card">公开交易交流频道</div>`;}
+    else if(pageName==="signal-channel"){html=`<h2 class="page-title">交易信号频道</h2><div class="card">策略信号自动推送频道</div>`;}
+    else if(pageName==="official-channel"){html=`<h2 class="page-title">官方公告频道</h2><div class="card">平台公告、更新通知</div>`;}
+    else if(pageName==="my-channel"){html=`<h2 class="page-title">我的频道管理</h2><div class="card">自建频道、权限设置</div>`;}
+
+    // ========== 社交消息 ==========
+    else if(pageName==="private-chat"){html=`<h2 class="page-title">私信聊天</h2><div class="card">一对一私聊窗口</div>`;}
+    else if(pageName==="friend-list"){html=`<h2 class="page-title">好友列表</h2><div class="card">好友分组、在线状态</div>`;}
+    else if(pageName==="private-group"){html=`<h2 class="page-title">私密群组</h2><div class="card">内部私密交流群</div>`;}
+    else if(pageName==="friend-apply"){html=`<h2 class="page-title">好友申请</h2><div class="card">待处理申请列表</div>`;}
+
+    // ========== 个人中心（无任何全局API） ==========
+    else if(pageName==="user-info"){html=`<h2 class="page-title">个人资料</h2><div class="card">头像、昵称、个人简介编辑</div>`;}
+    else if(pageName==="safe-set"){html=`<h2 class="page-title">账号安全</h2><div class="card">密码修改、登录保护</div>`;}
+    else if(pageName==="exchange-api"){html=`<h2 class="page-title">交易所API绑定</h2><div class="card">用户自行绑定现货/合约交易所密钥</div>`;}
+    else if(pageName==="wallet-manage"){html=`<h2 class="page-title">钱包管理</h2><div class="card">Web3钱包地址绑定管理</div>`;}
+    else if(pageName==="bot-manage"){html=`<h2 class="page-title">量化Bot管理</h2><div class="card">网格/马丁/套利机器人配置</div>`;}
+
+    document.getElementById("mainContent").innerHTML = html;
+}
+
+// 复制方法
+function copyText(el){
+    el.select();
+    document.execCommand("copy");
+    alert("复制成功");
+}
+
+// 默认首页
+window.onload = ()=>renderPage('trade-hall');
+</script>
 </body>
 </html>
