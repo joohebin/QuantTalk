@@ -17,7 +17,7 @@
             left:0;
         }
 
-        /* 左侧边栏：固定定位，永远在左侧 */
+        /* 左侧边栏 */
         .sidebar{
             position:absolute;
             left:0;
@@ -48,7 +48,7 @@
         .submenu-item:hover{background:#2a2a2a;color:#ffffff;}
         .submenu-item.active{color:#00ff88;font-weight:500;}
 
-        /* 主内容区：固定定位，永远在右侧 */
+        /* 主内容区 */
         .content{
             position:absolute;
             left:260px;
@@ -87,7 +87,7 @@
         .tab-btn{width:50%;background:#252525;border:none;color:#fff;padding:10px;cursor:pointer;}
         .tab-btn.active{background:#00ff88;color:#111;}
     </style>
-    <!-- 引入 i18next 库 -->
+    <!-- 引入 i18next -->
     <script src="https://cdn.jsdelivr.net/npm/i18next@23.10.1/dist/i18next.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/i18next-http-backend@2.5.1/dist/i18nextHttpBackend.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/i18next-browser-languagedetector@7.2.1/dist/i18nextBrowserLanguageDetector.min.js"></script>
@@ -236,7 +236,8 @@ i18n
         translation: {
           txt_login:"로그인",txt_reg:"회원가입",txt_acc:"아이디/이메일",txt_pwd:"비밀번호",txt_web3:"Web3 로그인",
           m1:"거래시장",m1_1:"거래홀",m2:"커뮤니티",m3:"채널",m4:"메시지",m5:"마이페이지",
-          lang_title:"언어 설정",save:"저장"
+          lang_title:"언어 설정",save:"저장",
+          channel_name:"채널 이름",channel_type:"채널 유형",create:"생성"
         }
       }
     }
@@ -247,24 +248,23 @@ i18n
   });
 
 // 更新所有带 data-i18n 属性的元素
-function updateContent() {
-  document.querySelectorAll('[data-i18n]').forEach(el => {
-    const key = el.getAttribute('data-i18n');
-    el.innerText = i18n.t(key);
-  });
-  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
-    const key = el.getAttribute('data-i18n-placeholder');
-    el.placeholder = i18n.t(key);
-  });
+function updateContent(){
+    document.querySelectorAll('[data-i18n]').forEach(el=>{
+        let k = el.getAttribute('data-i18n');
+        el.innerText = i18n.t(k);
+    });
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el=>{
+        let k = el.getAttribute('data-i18n-placeholder');
+        el.placeholder = i18n.t(k);
+    });
 }
 
 // 切换语言
-function setLanguage(lang) {
-  i18n.changeLanguage(lang, (err, t) => {
-    if (err) return console.error(err);
-    updateContent();
-    renderPage(currPage, currActiveEl);
-  });
+function setLang(lang){
+    i18n.changeLanguage(lang, () => {
+        updateContent();
+        renderPage(currPage, currActiveEl);
+    });
 }
 
 // ========== 全局变量 ==========
@@ -279,7 +279,7 @@ function toggleSub(num){
     document.querySelectorAll('.menu-item')[num-1].classList.add('active');
 }
 
-// 页面渲染（核心：所有标题和文案都用 i18n.t 包裹）
+// 页面渲染（所有标题和文案都用 i18n.t 包裹）
 function renderPage(pageName, el){
     currPage = pageName;
     currActiveEl = el;
@@ -336,12 +336,16 @@ function renderPage(pageName, el){
         html=`<div class="page-title">${i18n.t('m2_6')}</div><div class="card"><p>${i18n.t('live_rooms')}</p></div>`;
     }
 
-    // 社区频道
+    // 社区频道（你当前的创建频道页面）
     if(pageName==="create-channel"){
         html=`<div class="page-title">${i18n.t('m3_1')}</div><div class="card">
-        <label>${i18n.t('channel_name')}</label><input placeholder="${i18n.t('channel_name')}">
-        <label>${i18n.t('channel_type')}</label><select><option>文字频道</option><option>语音频道</option><option>视频/共享频道</option></select>
-        <button>${i18n.t('create')}</button></div>`;
+        <label>${i18n.t('channel_name')}</label><input placeholder="${i18n.t('channel_name_plh') || '请输入频道名称'}">
+        <label>${i18n.t('channel_type')}</label><select>
+            <option value="text">${i18n.t('m3_2')}</option>
+            <option value="voice">${i18n.t('m3_3')}</option>
+            <option value="video">${i18n.t('m3_4')}</option>
+        </select>
+        <button onclick="alert(i18n.t('create')+' OK')">${i18n.t('create')}</button></div>`;
     }
     if(pageName==="text-channel"){
         html=`<div class="page-title">${i18n.t('m3_2')}</div><div class="chat-box">聊天消息记录</div><input placeholder="输入消息…"><button>发送</button></div>`;
@@ -390,7 +394,7 @@ function renderPage(pageName, el){
     if(pageName==="lang-setting"){
         html=`<div class="page-title">${i18n.t('lang_title')}</div><div class="card">
         <label class="form-label">${i18n.t('lang_select')}</label>
-        <select id="langSelect" onchange="setLanguage(this.value)">
+        <select id="langSelect" onchange="setLang(this.value)">
             <option value="zh-CN" ${i18n.language==='zh-CN'?'selected':''}>中文（简体）</option>
             <option value="en" ${i18n.language==='en'?'selected':''}>English</option>
             <option value="ko" ${i18n.language==='ko'?'selected':''}>한국어</option>
@@ -420,7 +424,7 @@ function renderPage(pageName, el){
 
     document.getElementById("mainContent").innerHTML = html;
 
-    // 渲染完页面后，更新新生成内容的翻译
+    // 渲染完页面后，再执行一次全局语言渲染，把新生成的内容里的 data-i18n 元素也翻译了
     updateContent();
 
     // 初始化TradingView
@@ -469,6 +473,7 @@ function handleRegister(){
 
 // 初始化
 window.onload=()=>{
+    updateContent();
     renderPage('trade-hall', document.querySelector('.submenu-item.active'));
 }
 </script>
