@@ -48,21 +48,21 @@
         </div>
         <div id="loginForm">
             <label class="form-label" data-lang="txt_acc">用户名/邮箱</label>
-            <input placeholder="" data-lang-placeholder="txt_acc_plh">
+            <input id="login-account" placeholder="" data-lang-placeholder="txt_acc_plh">
             <label class="form-label" data-lang="txt_pwd">密码</label>
-            <input type="password">
-            <button onclick="alert(getLangTxt('login_ok'))" data-lang="txt_login_btn">登录</button>
+            <input id="login-password" type="password">
+            <button onclick="doAccountLogin()" data-lang="txt_login_btn">登录</button>
             <p class="tip" style="text-align:center;margin-top:10px;">或</p>
             <button style="background:#3b82f6;" data-lang="txt_web3">Web3 钱包登录</button>
         </div>
         <div id="registerForm" style="display:none;">
             <label class="form-label" data-lang="txt_uname">用户名</label>
-            <input>
+            <input id="reg-username">
             <label class="form-label" data-lang="txt_email">邮箱</label>
-            <input>
+            <input id="reg-email" type="email">
             <label class="form-label" data-lang="txt_pwd">密码</label>
-            <input type="password">
-            <button onclick="alert(getLangTxt('reg_ok'))" data-lang="txt_reg_btn">注册</button>
+            <input id="reg-password" type="password">
+            <button onclick="doAccountRegister()" data-lang="txt_reg_btn">注册</button>
         </div>
     </div>
 </div>
@@ -361,6 +361,72 @@ function switchTab(t){
     document.getElementById('registerForm').style.display=t==='login'?'none':'block';
     document.querySelectorAll('.tab-btn')[0].classList.toggle('active',t==='login');
     document.querySelectorAll('.tab-btn')[1].classList.toggle('active',t==='register');
+}
+
+// 关闭登录弹窗
+function closeModal(){
+    document.getElementById('loginModal').style.display='none';
+}
+
+// 显示登录弹窗
+function showLoginModal(){
+    document.getElementById('loginModal').style.display='flex';
+}
+
+// API 请求辅助函数
+async function api(url, opts={}){
+    const baseUrl = '';
+    const res = await fetch(baseUrl+url, {
+        headers:{'Content-Type':'application/json','Authorization':`Bearer ${S.token||''}`},
+        ...opts
+    });
+    if(res.status===204) return {};
+    const ct=res.headers.get('content-type')||'';
+    return ct.includes('json')?res.json():res.text();
+}
+
+// 账号登录
+async function doAccountLogin(){
+    const account=document.getElementById('login-account').value.trim();
+    const password=document.getElementById('login-password').value;
+    if(!account||!password){alert('请输入账号和密码');return;}
+    try{
+        const r=await api('/auth/login',{method:'POST',body:JSON.stringify({username:account,password})});
+        if(r?.access_token){
+            S.token=r.access_token;
+            S.user=r.user;
+            localStorage.setItem('qt_token',S.token);
+            localStorage.setItem('qt_user',JSON.stringify(S.user));
+            closeModal();
+            alert('登录成功！');
+            renderPage(S.currentPage||'trade-hall');
+        } else {
+            alert(r?.detail||'登录失败，请检查账号密码');
+        }
+    } catch(e){alert('登录失败：'+e.message);}
+}
+
+// 账号注册
+async function doAccountRegister(){
+    const username=document.getElementById('reg-username').value.trim();
+    const email=document.getElementById('reg-email').value.trim();
+    const password=document.getElementById('reg-password').value;
+    if(!username||!email||!password){alert('请填写所有字段');return;}
+    if(password.length<6){alert('密码至少6位');return;}
+    try{
+        const r=await api('/auth/register',{method:'POST',body:JSON.stringify({username,email,password})});
+        if(r?.access_token){
+            S.token=r.access_token;
+            S.user=r.user;
+            localStorage.setItem('qt_token',S.token);
+            localStorage.setItem('qt_user',JSON.stringify(S.user));
+            closeModal();
+            alert('注册成功！');
+            renderPage(S.currentPage||'trade-hall');
+        } else {
+            alert(r?.detail||'注册失败');
+        }
+    } catch(e){alert('注册失败：'+e.message);}
 }
 
 // 初始化
