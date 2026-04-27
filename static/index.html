@@ -3,17 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QuantTalk</title>
+    <title>QuantTalk - 量化交易平台</title>
     <style>
         * {margin:0;padding:0;box-sizing:border-box;font-family:Microsoft YaHei,sans-serif;}
         body{background:#121212;color:#fff;height:100vh;display:flex;overflow:hidden;}
-        /* 侧边栏 */
+        
+        /* 左侧导航 */
         .sidebar{width:260px;background:#1e1e1e;border-right:1px solid #333;padding:20px 0;overflow-y:auto;}
         .logo{text-align:center;font-size:20px;color:#00ff88;font-weight:bold;margin-bottom:30px;}
+        
         /* 一级菜单 */
         .menu-item{padding:12px 25px;color:#fff;cursor:pointer;font-size:15px;transition:.2s;}
         .menu-item.active{background:#2b291b;color:#ffcc00;}
-        /* 二级菜单 全局统一配色 强制固定 */
+        
+        /* 二级菜单 - 全局统一颜色 */
         .submenu{display:none;padding-left:20px;}
         .submenu.show{display:block;}
         .submenu-item{
@@ -21,147 +24,160 @@
             margin:2px 0;
             border-radius:4px;
             font-size:14px;
-            color:#cccccc; /* 默认浅灰统一 */
+            color:#cccccc;
             cursor:pointer;
             transition:.2s;
         }
-        .submenu-item:hover{background:#2a2a2a;color:#ffffff;} /* hover纯白 */
-        .submenu-item.active{color:#00ff88;font-weight:500;} /* 选中荧光绿 */
-        /* 主内容区 */
+        .submenu-item:hover{background:#2a2a2a;color:#ffffff;}
+        .submenu-item.active{color:#00ff88;font-weight:500;}
+        
+        /* 内容区 */
         .content{flex:1;padding:30px;overflow-y:auto;background:#121212;}
         .page-title{font-size:22px;color:#00ff88;margin-bottom:20px;}
         .card{background:#1e1e1e;border:1px solid #333;border-radius:8px;padding:20px;margin-bottom:20px;}
-        .kline-box{width:100%;height:400px;background:#1a1a1a;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#666;margin-bottom:20px;}
+        
+        /* TradingView K线容器 */
+        .tradingview-frame {
+            width: 100%;
+            height: 480px;
+            border-radius: 8px;
+            border: none;
+            background: #1e1e1e;
+            margin-bottom: 20px;
+        }
+
         input,button{width:100%;padding:10px;border:1px solid #444;background:#252525;color:#fff;border-radius:4px;margin:8px 0;outline:none;}
         button{background:#00ff88;color:#111;font-weight:bold;border:none;cursor:pointer;}
-        .tip{color:#888;font-size:12px;}
     </style>
 </head>
 <body>
-<!-- 侧边导航 -->
+
+<!-- 左侧导航 -->
 <div class="sidebar">
     <div class="logo">QuantTalk</div>
 
-    <!-- 1.交易市场 -->
+    <!-- 交易市场 -->
     <div class="menu-item active" onclick="toggleSub(1)">交易市场</div>
     <div class="submenu show" id="sub1">
-        <div class="submenu-item active" onclick="renderPage('trade-hall')">交易大厅</div>
-        <div class="submenu-item" onclick="renderPage('crypto-market')">加密货币专区</div>
-        <div class="submenu-item" onclick="renderPage('forex-metal')">外汇贵金属</div>
-        <div class="submenu-item" onclick="renderPage('future-market')">期货市场</div>
-        <div class="submenu-item" onclick="renderPage('kline-pro')">专业K线分析</div>
+        <div class="submenu-item active" onclick="renderPage('trade-hall', this)">交易大厅</div>
+        <div class="submenu-item" onclick="renderPage('crypto-market', this)">加密货币</div>
+        <div class="submenu-item" onclick="renderPage('forex-metal', this)">外汇贵金属</div>
+        <div class="submenu-item" onclick="renderPage('future-market', this)">期货市场</div>
     </div>
 
-    <!-- 2.交易社区 -->
+    <!-- 交易社区 -->
     <div class="menu-item" onclick="toggleSub(2)">交易社区</div>
     <div class="submenu" id="sub2">
-        <div class="submenu-item" onclick="renderPage('dynamic-square')">综合动态广场</div>
-        <div class="submenu-item" onclick="renderPage('strategy-square')">量化策略广场</div>
-        <div class="submenu-item" onclick="renderPage('copy-trade')">一键跟单</div>
-        <div class="submenu-item" onclick="renderPage('trade-live')">交易直播</div>
+        <div class="submenu-item" onclick="renderPage('dynamic-square', this)">综合动态</div>
+        <div class="submenu-item" onclick="renderPage('strategy-square', this)">策略广场</div>
+        <div class="submenu-item" onclick="renderPage('copy-trade', this)">一键跟单</div>
     </div>
 
-    <!-- 3.社区频道 -->
+    <!-- 社区频道 -->
     <div class="menu-item" onclick="toggleSub(3)">社区频道</div>
     <div class="submenu" id="sub3">
-        <div class="submenu-item" onclick="renderPage('all-channel')">全部公共频道</div>
-        <div class="submenu-item" onclick="renderPage('signal-channel')">交易信号频道</div>
-        <div class="submenu-item" onclick="renderPage('official-channel')">官方公告频道</div>
-        <div class="submenu-item" onclick="renderPage('my-channel')">我的频道管理</div>
+        <div class="submenu-item" onclick="renderPage('all-channel', this)">公共频道</div>
+        <div class="submenu-item" onclick="renderPage('signal-channel', this)">信号频道</div>
     </div>
 
-    <!-- 4.社交消息 -->
+    <!-- 社交消息 -->
     <div class="menu-item" onclick="toggleSub(4)">社交消息</div>
     <div class="submenu" id="sub4">
-        <div class="submenu-item" onclick="renderPage('private-chat')">私信聊天</div>
-        <div class="submenu-item" onclick="renderPage('friend-list')">好友列表</div>
-        <div class="submenu-item" onclick="renderPage('private-group')">私密群组</div>
-        <div class="submenu-item" onclick="renderPage('friend-apply')">好友申请</div>
+        <div class="submenu-item" onclick="renderPage('private-chat', this)">私信</div>
+        <div class="submenu-item" onclick="renderPage('friend-list', this)">好友</div>
     </div>
 
-    <!-- 5.个人中心 -->
+    <!-- 个人中心 -->
     <div class="menu-item" onclick="toggleSub(5)">个人中心</div>
     <div class="submenu" id="sub5">
-        <div class="submenu-item" onclick="renderPage('user-info')">个人资料</div>
-        <div class="submenu-item" onclick="renderPage('safe-set')">账号安全</div>
-        <div class="submenu-item" onclick="renderPage('exchange-api')">交易所API绑定</div>
-        <div class="submenu-item" onclick="renderPage('wallet-manage')">钱包管理</div>
-        <div class="submenu-item" onclick="renderPage('bot-manage')">量化Bot管理</div>
+        <div class="submenu-item" onclick="renderPage('user-info', this)">个人资料</div>
+        <div class="submenu-item" onclick="renderPage('exchange-api', this)">交易所API</div>
+        <div class="submenu-item" onclick="renderPage('bot-manage', this)">量化Bot</div>
     </div>
 </div>
 
-<!-- 右侧内容区 -->
+<!-- 右侧内容 -->
 <div class="content" id="mainContent"></div>
 
 <script>
-// 收起/展开一级子菜单
+// 展开/收起菜单
 function toggleSub(num){
     document.querySelectorAll('.submenu').forEach(el=>el.classList.remove('show'));
     document.getElementById('sub'+num).classList.add('show');
     document.querySelectorAll('.menu-item').forEach(el=>el.classList.remove('active'));
-    event.target.classList.add('active');
+    document.querySelectorAll('.menu-item')[num-1].classList.add('active');
 }
 
-// 切换二级页面 + 统一高亮
-function renderPage(pageName){
-    document.querySelectorAll('.submenu-item').forEach(el=>el.classList.remove('active'));
-    event.target.classList.add('active');
+// 页面渲染 + 高亮
+function renderPage(pageName, el){
+    document.querySelectorAll('.submenu-item').forEach(item=>item.classList.remove('active'));
+    el.classList.add('active');
     let html = "";
 
-    // ========== 交易市场 ==========
+    // ====================== 交易大厅 - 带真实 TradingView K线 ======================
     if(pageName==="trade-hall"){
         html = `
-            <h2 class="page-title">交易大厅</h2>
-            <div class="kline-box">TradingView 全局行情图表<br>（API由运营中控台统一配置）</div>
-            <div class="card">
-                <p>Webhook 交易推送地址</p>
-                <input value="https://qt-api.xxx.com/webhook/trade" readonly>
-                <button onclick="copyText(this.previousElementSibling)">复制地址</button>
-            </div>
-        `;
+        <div class="page-title">交易大厅</div>
+        
+        <!-- TradingView 官方K线图表（运营中控台配置API） -->
+        <iframe class="tradingview-frame" src="https://www.tradingview.com/chart/?symbol=BINANCE:BTCUSDT&theme=dark"></iframe>
+        
+        <div class="card">
+            <p>Webhook 交易推送地址</p>
+            <input id="webhookUrl" value="https://quantsignalkitokito.duckdns.org/api/webhook/trade" readonly>
+            <button onclick="copyWebhook()">复制地址</button>
+        </div>`;
     }
-    else if(pageName==="crypto-market"){html=`<h2 class="page-title">加密货币专区</h2><div class="kline-box">加密货币实时行情</div>`;}
-    else if(pageName==="forex-metal"){html=`<h2 class="page-title">外汇贵金属</h2><div class="kline-box">外汇/黄金/白银行情</div>`;}
-    else if(pageName==="future-market"){html=`<h2 class="page-title">期货市场</h2><div class="kline-box">全球期货行情</div>`;}
-    else if(pageName==="kline-pro"){html=`<h2 class="page-title">专业K线分析</h2><div class="kline-box">高级指标+画线工具</div>`;}
 
-    // ========== 交易社区 ==========
-    else if(pageName==="dynamic-square"){html=`<h2 class="page-title">综合动态广场</h2><div class="card">用户动态、交易分享内容列表</div>`;}
-    else if(pageName==="strategy-square"){html=`<h2 class="page-title">量化策略广场</h2><div class="card">公开策略、回测数据、收益排行</div>`;}
-    else if(pageName==="copy-trade"){html=`<h2 class="page-title">一键跟单</h2><div class="card">高手跟单配置、仓位同步</div>`;}
-    else if(pageName==="trade-live"){html=`<h2 class="page-title">交易直播</h2><div class="card">分析师直播房间列表</div>`;}
+    // 加密货币行情
+    else if(pageName==="crypto-market"){
+        html = `<div class="page-title">加密货币专区</div>
+        <iframe class="tradingview-frame" src="https://www.tradingview.com/chart/?symbol=BINANCE:ETHUSDT&theme=dark"></iframe>`;
+    }
 
-    // ========== 社区频道 ==========
-    else if(pageName==="all-channel"){html=`<h2 class="page-title">全部公共频道</h2><div class="card">公开交易交流频道</div>`;}
-    else if(pageName==="signal-channel"){html=`<h2 class="page-title">交易信号频道</h2><div class="card">策略信号自动推送频道</div>`;}
-    else if(pageName==="official-channel"){html=`<h2 class="page-title">官方公告频道</h2><div class="card">平台公告、更新通知</div>`;}
-    else if(pageName==="my-channel"){html=`<h2 class="page-title">我的频道管理</h2><div class="card">自建频道、权限设置</div>`;}
+    // 外汇行情
+    else if(pageName==="forex-metal"){
+        html = `<div class="page-title">外汇贵金属</div>
+        <iframe class="tradingview-frame" src="https://www.tradingview.com/chart/?symbol=FX_IDC:XAUUSD&theme=dark"></iframe>`;
+    }
 
-    // ========== 社交消息 ==========
-    else if(pageName==="private-chat"){html=`<h2 class="page-title">私信聊天</h2><div class="card">一对一私聊窗口</div>`;}
-    else if(pageName==="friend-list"){html=`<h2 class="page-title">好友列表</h2><div class="card">好友分组、在线状态</div>`;}
-    else if(pageName==="private-group"){html=`<h2 class="page-title">私密群组</h2><div class="card">内部私密交流群</div>`;}
-    else if(pageName==="friend-apply"){html=`<h2 class="page-title">好友申请</h2><div class="card">待处理申请列表</div>`;}
+    // 期货行情
+    else if(pageName==="future-market"){
+        html = `<div class="page-title">期货市场</div>
+        <iframe class="tradingview-frame" src="https://www.tradingview.com/chart/?symbol=CME:NQ1!&theme=dark"></iframe>`;
+    }
 
-    // ========== 个人中心（无任何全局API） ==========
-    else if(pageName==="user-info"){html=`<h2 class="page-title">个人资料</h2><div class="card">头像、昵称、个人简介编辑</div>`;}
-    else if(pageName==="safe-set"){html=`<h2 class="page-title">账号安全</h2><div class="card">密码修改、登录保护</div>`;}
-    else if(pageName==="exchange-api"){html=`<h2 class="page-title">交易所API绑定</h2><div class="card">用户自行绑定现货/合约交易所密钥</div>`;}
-    else if(pageName==="wallet-manage"){html=`<h2 class="page-title">钱包管理</h2><div class="card">Web3钱包地址绑定管理</div>`;}
-    else if(pageName==="bot-manage"){html=`<h2 class="page-title">量化Bot管理</h2><div class="card">网格/马丁/套利机器人配置</div>`;}
+    // 交易社区
+    else if(pageName==="dynamic-square") html=`<div class="page-title">综合动态</div><div class="card">社区动态列表</div>`;
+    else if(pageName==="strategy-square") html=`<div class="page-title">策略广场</div><div class="card">量化策略库</div>`;
+    else if(pageName==="copy-trade") html=`<div class="page-title">一键跟单</div><div class="card">高手交易信号</div>`;
+
+    // 社区频道
+    else if(pageName==="all-channel") html=`<div class="page-title">公共频道</div><div class="card">交易聊天大厅</div>`;
+    else if(pageName==="signal-channel") html=`<div class="page-title">信号频道</div><div class="card">自动交易信号</div>`;
+
+    // 社交
+    else if(pageName==="private-chat") html=`<div class="page-title">私信聊天</div><div class="card">一对一聊天窗口</div>`;
+    else if(pageName==="friend-list") html=`<div class="page-title">好友列表</div><div class="card">好友/在线状态</div>`;
+
+    // 个人中心
+    else if(pageName==="user-info") html=`<div class="page-title">个人资料</div><div class="card">头像/昵称/简介</div>`;
+    else if(pageName==="exchange-api") html=`<div class="page-title">交易所API绑定</div><div class="card">用户私有API配置</div>`;
+    else if(pageName==="bot-manage") html=`<div class="page-title">量化Bot管理</div><div class="card">网格/马丁/套利机器人</div>`;
 
     document.getElementById("mainContent").innerHTML = html;
 }
 
-// 复制方法
-function copyText(el){
-    el.select();
-    document.execCommand("copy");
-    alert("复制成功");
+// 复制Webhook
+function copyWebhook(){
+    const input = document.getElementById('webhookUrl');
+    input.select();
+    document.execCommand('copy');
+    alert("✅ Webhook 地址已复制");
 }
 
-// 默认首页
-window.onload = ()=>renderPage('trade-hall');
+// 初始化
+window.onload = () => renderPage('trade-hall', document.querySelector('.submenu-item.active'));
 </script>
 </body>
 </html>
