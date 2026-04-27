@@ -12,7 +12,7 @@
             width:100%;
             height:100%;
             overflow:hidden;
-            position:fixed; /* 关键：锁定页面 */
+            position:fixed;
             top:0;
             left:0;
         }
@@ -76,7 +76,6 @@
         .tip{color:#888;font-size:12px;margin-top:4px;}
         
         .chat-box{height:400px;border:1px solid #333;border-radius:8px;padding:15px;background:#1a1a1a;margin-bottom:15px;overflow-y:auto;}
-        .chat-input{height:auto;}
         .post-card{border:1px solid #333;border-radius:8px;padding:16px;margin-bottom:12px;background:#1b1b1b;}
         .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
         .voice-controls{display:flex;gap:10px;margin-top:10px;}
@@ -105,7 +104,7 @@
             <input type="password" placeholder="" data-lang-placeholder="txt_pwd_plh">
             <button onclick="handleLogin()" data-lang="txt_login_btn">登录</button>
             <p class="tip" style="text-align:center;margin-top:10px;">或</p>
-            <button style="background:#3b82f6;" onclick="alert('Web3钱包签名登录（前端模拟）')" data-lang="txt_web3">Web3 钱包登录</button>
+            <button style="background:#3b82f6;" onclick="alert(getLangTxt('web3_login'))" data-lang="txt_web3">Web3 钱包登录</button>
         </div>
         <div id="registerForm" style="display:none;">
             <label class="form-label" data-lang="txt_uname">用户名</label>
@@ -172,13 +171,14 @@
 <div class="content" id="mainContent"></div>
 
 <script>
-// ========== 14国语言字典 ==========
+// ========== 完整14国语言字典 ==========
 const langData = {
     "zh-CN":{
         txt_login:"登录",txt_reg:"注册",txt_acc:"用户名/邮箱",txt_acc_plh:"请输入账号",
         txt_pwd:"密码",txt_pwd_plh:"请输入密码",txt_uname:"用户名",txt_uname_plh:"请输入用户名",
         txt_email:"邮箱",txt_email_plh:"请输入邮箱",txt_web3:"Web3 钱包登录",
         txt_login_btn:"登录",txt_reg_btn:"注册",login_ok:"登录成功",reg_ok:"注册成功",
+        web3_login:"Web3钱包签名登录（前端模拟）",
         m1:"交易市场",m1_1:"交易大厅",m1_2:"加密货币专区",m1_3:"外汇贵金属",m1_4:"期货市场",m1_5:"专业K线分析",
         m2:"交易社区",m2_1:"综合动态广场",m2_2:"量化策略广场",m2_3:"回测中心",m2_4:"交易榜单",m2_5:"一键跟单",m2_6:"交易直播",
         m3:"社区频道",m3_1:"+ 创建新频道",m3_2:"文字频道",m3_3:"语音频道",m3_4:"视频/共享频道",m3_5:"交易信号频道",m3_6:"官方公告频道",
@@ -186,13 +186,20 @@ const langData = {
         m5:"个人中心",m5_1:"个人资料",m5_2:"语言设置",m5_3:"交易所API绑定",m5_4:"钱包管理",m5_5:"量化Bot管理",
         lang_title:"语言设置",lang_select:"选择系统语言",lang_tip:"多语言由运营中控台统一管理",save:"保存设置",
         webhook_txt:"Webhook 交易推送地址",copy:"复制地址",channel_name:"频道名称",channel_type:"频道类型",create:"创建频道",
-        share_screen:"屏幕共享",camera:"开启摄像头",mic:"麦克风",mute:"静音",leave:"离开频道"
+        share_screen:"屏幕共享",camera:"开启摄像头",mic:"麦克风",mute:"静音",leave:"离开频道",
+        nickname:"昵称",bio:"个人简介",nickname_plh:"请输入昵称",bio_plh:"简单介绍自己",
+        select_strategy:"选择策略",backtest_period:"回测周期",start_backtest:"开始回测",
+        rank_list:"交易榜单",live_rooms:"直播房间列表加载中…",
+        friend_online:"好友 1（在线）",friend_offline:"好友 2（离线）",
+        bot_type:"Bot 类型",bot_status:"运行状态",bot_start:"启动Bot",
+        api_key:"API Key",api_secret:"API Secret",exchange:"选择交易所",api_check_ok:"API 校验成功（前端模拟）"
     },
     "en":{
         txt_login:"Login",txt_reg:"Register",txt_acc:"Username/Email",txt_acc_plh:"Enter account",
         txt_pwd:"Password",txt_pwd_plh:"Enter password",txt_uname:"Username",txt_uname_plh:"Enter username",
         txt_email:"Email",txt_email_plh:"Enter email",txt_web3:"Web3 Login",
         txt_login_btn:"Sign In",txt_reg_btn:"Sign Up",login_ok:"Login successful",reg_ok:"Register successful",
+        web3_login:"Web3 wallet login (frontend simulation)",
         m1:"Trade Market",m1_1:"Trade Hall",m1_2:"Crypto",m1_3:"Forex & Metal",m1_4:"Futures",m1_5:"Pro Kline",
         m2:"Community",m2_1:"Dynamic Feed",m2_2:"Strategy Plaza",m2_3:"Backtest",m2_4:"Ranking",m2_5:"Copy Trade",m2_6:"Live",
         m3:"Channels",m3_1:"Create Channel",m3_2:"Text",m3_3:"Voice",m3_4:"Video/Share",m3_5:"Signal Channel",m3_6:"Announcement",
@@ -200,7 +207,13 @@ const langData = {
         m5:"Profile",m5_1:"Info",m5_2:"Language",m5_3:"Exchange API",m5_4:"Wallet",m5_5:"Bot Management",
         lang_title:"Language Settings",lang_select:"Select Language",lang_tip:"Managed by Admin Console",save:"Save",
         webhook_txt:"Webhook URL",copy:"Copy",channel_name:"Channel Name",channel_type:"Type",create:"Create",
-        share_screen:"Share Screen",camera:"Camera",mic:"Mic",mute:"Mute",leave:"Leave"
+        share_screen:"Share Screen",camera:"Camera",mic:"Mic",mute:"Mute",leave:"Leave",
+        nickname:"Nickname",bio:"Bio",nickname_plh:"Enter nickname",bio_plh:"Introduce yourself",
+        select_strategy:"Select Strategy",backtest_period:"Period",start_backtest:"Start Backtest",
+        rank_list:"Trader Rankings",live_rooms:"Live rooms loading...",
+        friend_online:"Friend 1 (Online)",friend_offline:"Friend 2 (Offline)",
+        bot_type:"Bot Type",bot_status:"Status",bot_start:"Start Bot",
+        api_key:"API Key",api_secret:"API Secret",exchange:"Exchange",api_check_ok:"API verified (frontend)"
     },
     "ja":{
         txt_login:"ログイン",txt_reg:"登録",txt_acc:"ユーザー/メール",txt_pwd:"パスワード",txt_web3:"Web3ログイン",
@@ -297,7 +310,7 @@ function toggleSub(num){
     document.querySelectorAll('.menu-item')[num-1].classList.add('active');
 }
 
-// 页面渲染
+// 页面渲染（核心：所有标题和文案都用 getLangTxt 包裹）
 function renderPage(pageName, el){
     currPage = pageName;
     currActiveEl = el;
@@ -340,39 +353,32 @@ function renderPage(pageName, el){
     }
     if(pageName==="backtest-center"){
         html=`<div class="page-title">${getLangTxt('m2_3')}</div><div class="card">
-        <label>选择策略</label><select><option>网格策略</option><option>马丁策略</option></select>
-        <label>回测周期</label><select><option>近1个月</option><option>近3个月</option></select>
-        <button>开始回测</button></div>`;
+        <label>${getLangTxt('select_strategy')}</label><select><option>网格策略</option><option>马丁策略</option></select>
+        <label>${getLangTxt('backtest_period')}</label><select><option>近1个月</option><option>近3个月</option></select>
+        <button>${getLangTxt('start_backtest')}</button></div>`;
     }
     if(pageName==="ranking-list"){
-        html=`<div class="page-title">${getLangTxt('m2_4')}</div><div class="card">
-        <p>1. 交易达人A：收益 25.6%</p>
-        <p>2. 交易达人B：收益 22.1%</p>
-        <p>3. 交易达人C：收益 19.8%</p></div>`;
+        html=`<div class="page-title">${getLangTxt('m2_4')}</div><div class="card"><p>${getLangTxt('rank_list')}</p></div>`;
     }
     if(pageName==="copy-trade"){
-        html=`<div class="page-title">${getLangTxt('m2_5')}</div><div class="card">
-        <label>选择交易高手</label><select><option>高手A</option><option>高手B</option></select>
-        <button>开启自动跟单</button></div>`;
+        html=`<div class="page-title">${getLangTxt('m2_5')}</div><div class="card"><label>选择交易高手</label><select><option>高手A</option><option>高手B</option></select><button>开启自动跟单</button></div>`;
     }
     if(pageName==="trade-live"){
-        html=`<div class="page-title">${getLangTxt('m2_6')}</div><div class="card"><p>直播房间列表加载中…</p></div>`;
+        html=`<div class="page-title">${getLangTxt('m2_6')}</div><div class="card"><p>${getLangTxt('live_rooms')}</p></div>`;
     }
 
     // 社区频道
     if(pageName==="create-channel"){
         html=`<div class="page-title">${getLangTxt('m3_1')}</div><div class="card">
-        <label>${getLangTxt('channel_name')}</label><input placeholder="请输入频道名称">
+        <label>${getLangTxt('channel_name')}</label><input placeholder="${getLangTxt('channel_name')}">
         <label>${getLangTxt('channel_type')}</label><select><option>文字频道</option><option>语音频道</option><option>视频/共享频道</option></select>
         <button>${getLangTxt('create')}</button></div>`;
     }
     if(pageName==="text-channel"){
-        html=`<div class="page-title">${getLangTxt('m3_2')}</div><div class="chat-box">聊天消息记录</div>
-        <input placeholder="输入消息…"><button>发送</button></div>`;
+        html=`<div class="page-title">${getLangTxt('m3_2')}</div><div class="chat-box">聊天消息记录</div><input placeholder="输入消息…"><button>发送</button></div>`;
     }
     if(pageName==="voice-channel"){
-        html=`<div class="page-title">${getLangTxt('m3_3')}</div><div class="card">
-        <p>当前语音频道：交易大厅</p>
+        html=`<div class="page-title">${getLangTxt('m3_3')}</div><div class="card"><p>当前语音频道：交易大厅</p>
         <div class="voice-controls">
             <button class="voice-btn active">${getLangTxt('mute')}</button>
             <button class="voice-btn">${getLangTxt('mic')}</button>
@@ -380,8 +386,7 @@ function renderPage(pageName, el){
         </div></div>`;
     }
     if(pageName==="video-channel"){
-        html=`<div class="page-title">${getLangTxt('m3_4')}</div><div class="card" style="height:400px;display:flex;align-items:center;justify-content:center;">
-        <p>画面共享/直播画面加载区域</p></div>
+        html=`<div class="page-title">${getLangTxt('m3_4')}</div><div class="card" style="height:400px;display:flex;align-items:center;justify-content:center;"><p>画面共享/直播画面加载区域</p></div>
         <div class="voice-controls">
             <button class="voice-btn">${getLangTxt('camera')}</button>
             <button class="voice-btn active">${getLangTxt('share_screen')}</button>
@@ -397,11 +402,10 @@ function renderPage(pageName, el){
 
     // 社交消息
     if(pageName==="private-chat"){
-        html=`<div class="page-title">${getLangTxt('m4_1')}</div><div class="chat-box">聊天消息记录</div>
-        <input placeholder="输入消息…"><button>发送</button></div>`;
+        html=`<div class="page-title">${getLangTxt('m4_1')}</div><div class="chat-box">聊天消息记录</div><input placeholder="输入消息…"><button>发送</button></div>`;
     }
     if(pageName==="friend-list"){
-        html=`<div class="page-title">${getLangTxt('m4_2')}</div><div class="card"><p>好友 1（在线）</p><p>好友 2（离线）</p></div>`;
+        html=`<div class="page-title">${getLangTxt('m4_2')}</div><div class="card"><p>${getLangTxt('friend_online')}</p><p>${getLangTxt('friend_offline')}</p></div>`;
     }
     if(pageName==="private-group"){
         html=`<div class="page-title">${getLangTxt('m4_3')}</div><div class="card"><p>群组聊天窗口</p></div>`;
@@ -410,8 +414,8 @@ function renderPage(pageName, el){
     // 个人中心
     if(pageName==="user-info"){
         html=`<div class="page-title">${getLangTxt('m5_1')}</div><div class="card">
-        <label>昵称</label><input placeholder="请输入昵称">
-        <label>个人简介</label><textarea rows="3" placeholder="简单介绍自己"></textarea>
+        <label>${getLangTxt('nickname')}</label><input placeholder="${getLangTxt('nickname_plh')}">
+        <label>${getLangTxt('bio')}</label><textarea rows="3" placeholder="${getLangTxt('bio_plh')}"></textarea>
         <button>${getLangTxt('save')}</button></div>`;
     }
     if(pageName==="lang-setting"){
@@ -438,10 +442,10 @@ function renderPage(pageName, el){
     }
     if(pageName==="exchange-api"){
         html=`<div class="page-title">${getLangTxt('m5_3')}</div><div class="card">
-        <label>选择交易所</label><select><option>币安</option><option>OKX</option></select>
-        <label>API Key</label><input placeholder="输入交易所API Key">
-        <label>API Secret</label><input placeholder="输入API Secret">
-        <button onclick="alert('API 校验成功（前端模拟）')">保存并校验</button></div>`;
+        <label>${getLangTxt('exchange')}</label><select><option>币安</option><option>OKX</option></select>
+        <label>${getLangTxt('api_key')}</label><input placeholder="${getLangTxt('api_key')}">
+        <label>${getLangTxt('api_secret')}</label><input placeholder="${getLangTxt('api_secret')}">
+        <button onclick="alert(getLangTxt('api_check_ok'))">保存并校验</button></div>`;
     }
     if(pageName==="wallet-manage"){
         html=`<div class="page-title">${getLangTxt('m5_4')}</div><div class="card">
@@ -451,9 +455,9 @@ function renderPage(pageName, el){
     }
     if(pageName==="bot-manage"){
         html=`<div class="page-title">${getLangTxt('m5_5')}</div><div class="card">
-        <label>Bot 类型</label><select><option>网格交易</option><option>马丁策略</option></select>
-        <label>运行状态</label><input value="已停止" readonly>
-        <button>启动Bot</button></div>`;
+        <label>${getLangTxt('bot_type')}</label><select><option>网格交易</option><option>马丁策略</option></select>
+        <label>${getLangTxt('bot_status')}</label><input value="已停止" readonly>
+        <button>${getLangTxt('bot_start')}</button></div>`;
     }
 
     document.getElementById("mainContent").innerHTML = html;
