@@ -94,26 +94,26 @@
 <div class="modal-overlay" id="loginModal">
     <div class="modal-box">
         <div style="display:flex;margin-bottom:20px;">
-            <button class="tab-btn active" onclick="switchTab('login')" data-lang="txt_login">登录</button>
-            <button class="tab-btn" onclick="switchTab('register')" data-lang="txt_reg">注册</button>
+            <button class="tab-btn active" onclick="switchTab('login')"></button>
+            <button class="tab-btn" onclick="switchTab('register')"></button>
         </div>
         <div id="loginForm">
-            <label class="form-label" data-lang="txt_acc">用户名/邮箱</label>
-            <input placeholder="" data-lang-placeholder="txt_acc_plh">
-            <label class="form-label" data-lang="txt_pwd">密码</label>
-            <input type="password" placeholder="" data-lang-placeholder="txt_pwd_plh">
-            <button onclick="handleLogin()" data-lang="txt_login_btn">登录</button>
+            <label class="form-label"></label>
+            <input placeholder="">
+            <label class="form-label"></label>
+            <input type="password" placeholder="">
+            <button onclick="handleLogin()"></button>
             <p class="tip" style="text-align:center;margin-top:10px;">或</p>
-            <button style="background:#3b82f6;" onclick="alert(getLangTxt('web3_login'))" data-lang="txt_web3">Web3 钱包登录</button>
+            <button style="background:#3b82f6;" onclick="alert(getLangTxt('web3_login'))"></button>
         </div>
         <div id="registerForm" style="display:none;">
-            <label class="form-label" data-lang="txt_uname">用户名</label>
-            <input placeholder="" data-lang-placeholder="txt_uname_plh">
-            <label class="form-label" data-lang="txt_email">邮箱</label>
-            <input placeholder="" data-lang-placeholder="txt_email_plh">
-            <label class="form-label" data-lang="txt_pwd">密码</label>
-            <input type="password" placeholder="" data-lang-placeholder="txt_pwd_plh">
-            <button onclick="handleRegister()" data-lang="txt_reg_btn">注册</button>
+            <label class="form-label"></label>
+            <input placeholder="">
+            <label class="form-label"></label>
+            <input placeholder="">
+            <label class="form-label"></label>
+            <input type="password" placeholder="">
+            <button onclick="handleRegister()"></button>
         </div>
     </div>
 </div>
@@ -122,49 +122,49 @@
 <div class="sidebar">
     <div class="logo">QuantTalk</div>
 
-    <div class="menu-item active" onclick="toggleSub(1)" data-lang="m1">交易市场</div>
+    <div class="menu-item active" onclick="toggleSub(1)"></div>
     <div class="submenu show" id="sub1">
-        <div class="submenu-item active" onclick="renderPage('trade-hall', this)" data-lang="m1_1">交易大厅</div>
-        <div class="submenu-item" onclick="renderPage('crypto-market', this)" data-lang="m1_2">加密货币专区</div>
-        <div class="submenu-item" onclick="renderPage('forex-metal', this)" data-lang="m1_3">外汇贵金属</div>
-        <div class="submenu-item" onclick="renderPage('future-market', this)" data-lang="m1_4">期货市场</div>
-        <div class="submenu-item" onclick="renderPage('kline-pro', this)" data-lang="m1_5">专业K线分析</div>
+        <div class="submenu-item active" onclick="renderPage('trade-hall', this)"></div>
+        <div class="submenu-item" onclick="renderPage('crypto-market', this)"></div>
+        <div class="submenu-item" onclick="renderPage('forex-metal', this)"></div>
+        <div class="submenu-item" onclick="renderPage('future-market', this)"></div>
+        <div class="submenu-item" onclick="renderPage('kline-pro', this)"></div>
     </div>
 
-    <div class="menu-item" onclick="toggleSub(2)" data-lang="m2">交易社区</div>
+    <div class="menu-item" onclick="toggleSub(2)"></div>
     <div class="submenu" id="sub2">
-        <div class="submenu-item" onclick="renderPage('dynamic-square', this)" data-lang="m2_1">综合动态广场</div>
-        <div class="submenu-item" onclick="renderPage('strategy-square', this)" data-lang="m2_2">量化策略广场</div>
-        <div class="submenu-item" onclick="renderPage('backtest-center', this)" data-lang="m2_3">回测中心</div>
-        <div class="submenu-item" onclick="renderPage('ranking-list', this)" data-lang="m2_4">交易榜单</div>
-        <div class="submenu-item" onclick="renderPage('copy-trade', this)" data-lang="m2_5">一键跟单</div>
-        <div class="submenu-item" onclick="renderPage('trade-live', this)" data-lang="m2_6">交易直播</div>
+        <div class="submenu-item" onclick="renderPage('dynamic-square', this)"></div>
+        <div class="submenu-item" onclick="renderPage('strategy-square', this)"></div>
+        <div class="submenu-item" onclick="renderPage('backtest-center', this)"></div>
+        <div class="submenu-item" onclick="renderPage('ranking-list', this)"></div>
+        <div class="submenu-item" onclick="renderPage('copy-trade', this)"></div>
+        <div class="submenu-item" onclick="renderPage('trade-live', this)"></div>
     </div>
 
-    <div class="menu-item" onclick="toggleSub(3)" data-lang="m3">社区频道</div>
+    <div class="menu-item" onclick="toggleSub(3)"></div>
     <div class="submenu" id="sub3">
-        <div class="submenu-item" onclick="renderPage('create-channel', this)" data-lang="m3_1">+ 创建新频道</div>
-        <div class="submenu-item" onclick="renderPage('text-channel', this)" data-lang="m3_2">文字频道</div>
-        <div class="submenu-item" onclick="renderPage('voice-channel', this)" data-lang="m3_3">语音频道</div>
-        <div class="submenu-item" onclick="renderPage('video-channel', this)" data-lang="m3_4">视频/共享频道</div>
-        <div class="submenu-item" onclick="renderPage('signal-channel', this)" data-lang="m3_5">交易信号频道</div>
-        <div class="submenu-item" onclick="renderPage('official-channel', this)" data-lang="m3_6">官方公告频道</div>
+        <div class="submenu-item" onclick="renderPage('create-channel', this)"></div>
+        <div class="submenu-item" onclick="renderPage('text-channel', this)"></div>
+        <div class="submenu-item" onclick="renderPage('voice-channel', this)"></div>
+        <div class="submenu-item" onclick="renderPage('video-channel', this)"></div>
+        <div class="submenu-item" onclick="renderPage('signal-channel', this)"></div>
+        <div class="submenu-item" onclick="renderPage('official-channel', this)"></div>
     </div>
 
-    <div class="menu-item" onclick="toggleSub(4)" data-lang="m4">社交消息</div>
+    <div class="menu-item" onclick="toggleSub(4)"></div>
     <div class="submenu" id="sub4">
-        <div class="submenu-item" onclick="renderPage('private-chat', this)" data-lang="m4_1">私信聊天</div>
-        <div class="submenu-item" onclick="renderPage('friend-list', this)" data-lang="m4_2">好友列表</div>
-        <div class="submenu-item" onclick="renderPage('private-group', this)" data-lang="m4_3">私密群组</div>
+        <div class="submenu-item" onclick="renderPage('private-chat', this)"></div>
+        <div class="submenu-item" onclick="renderPage('friend-list', this)"></div>
+        <div class="submenu-item" onclick="renderPage('private-group', this)"></div>
     </div>
 
-    <div class="menu-item" onclick="toggleSub(5)" data-lang="m5">个人中心</div>
+    <div class="menu-item" onclick="toggleSub(5)"></div>
     <div class="submenu" id="sub5">
-        <div class="submenu-item" onclick="renderPage('user-info', this)" data-lang="m5_1">个人资料</div>
-        <div class="submenu-item" onclick="renderPage('lang-setting', this)" data-lang="m5_2">语言设置</div>
-        <div class="submenu-item" onclick="renderPage('exchange-api', this)" data-lang="m5_3">交易所API绑定</div>
-        <div class="submenu-item" onclick="renderPage('wallet-manage', this)" data-lang="m5_4">钱包管理</div>
-        <div class="submenu-item" onclick="renderPage('bot-manage', this)" data-lang="m5_5">量化Bot管理</div>
+        <div class="submenu-item" onclick="renderPage('user-info', this)"></div>
+        <div class="submenu-item" onclick="renderPage('lang-setting', this)"></div>
+        <div class="submenu-item" onclick="renderPage('exchange-api', this)"></div>
+        <div class="submenu-item" onclick="renderPage('wallet-manage', this)"></div>
+        <div class="submenu-item" onclick="renderPage('bot-manage', this)"></div>
     </div>
 </div>
 
@@ -272,30 +272,9 @@ const langData = {
 // 当前语言
 let currentLang = localStorage.getItem('qt_lang') || "zh-CN";
 
-// 获取文字
+// 获取文字（核心：统一入口，所有文字都从这里获取）
 function getLangTxt(key){
     return langData[currentLang][key] || key;
-}
-
-// 全局渲染语言
-function renderAllLang(){
-    document.querySelectorAll('[data-lang]').forEach(el=>{
-        let k = el.getAttribute('data-lang');
-        el.innerText = getLangTxt(k);
-    });
-    document.querySelectorAll('[data-lang-placeholder]').forEach(el=>{
-        let k = el.getAttribute('data-lang-placeholder');
-        el.placeholder = getLangTxt(k);
-    });
-    document.documentElement.lang = currentLang;
-}
-
-// 切换语言并缓存
-function setLang(lang){
-    currentLang = lang;
-    localStorage.setItem('qt_lang',lang);
-    renderAllLang();
-    renderPage(currPage,currActiveEl);
 }
 
 // ========== 全局变量 ==========
@@ -308,6 +287,67 @@ function toggleSub(num){
     document.getElementById('sub'+num).classList.add('show');
     document.querySelectorAll('.menu-item').forEach(el=>el.classList.remove('active'));
     document.querySelectorAll('.menu-item')[num-1].classList.add('active');
+    // 切换菜单时，直接更新文字
+    updateMenuText();
+}
+
+// 更新所有菜单文字（核心：直接用 getLangTxt 替换所有菜单文字）
+function updateMenuText(){
+    // 一级菜单
+    document.querySelectorAll('.menu-item')[0].innerText = getLangTxt('m1');
+    document.querySelectorAll('.menu-item')[1].innerText = getLangTxt('m2');
+    document.querySelectorAll('.menu-item')[2].innerText = getLangTxt('m3');
+    document.querySelectorAll('.menu-item')[3].innerText = getLangTxt('m4');
+    document.querySelectorAll('.menu-item')[4].innerText = getLangTxt('m5');
+
+    // 二级菜单
+    document.querySelectorAll('#sub1 .submenu-item')[0].innerText = getLangTxt('m1_1');
+    document.querySelectorAll('#sub1 .submenu-item')[1].innerText = getLangTxt('m1_2');
+    document.querySelectorAll('#sub1 .submenu-item')[2].innerText = getLangTxt('m1_3');
+    document.querySelectorAll('#sub1 .submenu-item')[3].innerText = getLangTxt('m1_4');
+    document.querySelectorAll('#sub1 .submenu-item')[4].innerText = getLangTxt('m1_5');
+
+    document.querySelectorAll('#sub2 .submenu-item')[0].innerText = getLangTxt('m2_1');
+    document.querySelectorAll('#sub2 .submenu-item')[1].innerText = getLangTxt('m2_2');
+    document.querySelectorAll('#sub2 .submenu-item')[2].innerText = getLangTxt('m2_3');
+    document.querySelectorAll('#sub2 .submenu-item')[3].innerText = getLangTxt('m2_4');
+    document.querySelectorAll('#sub2 .submenu-item')[4].innerText = getLangTxt('m2_5');
+    document.querySelectorAll('#sub2 .submenu-item')[5].innerText = getLangTxt('m2_6');
+
+    document.querySelectorAll('#sub3 .submenu-item')[0].innerText = getLangTxt('m3_1');
+    document.querySelectorAll('#sub3 .submenu-item')[1].innerText = getLangTxt('m3_2');
+    document.querySelectorAll('#sub3 .submenu-item')[2].innerText = getLangTxt('m3_3');
+    document.querySelectorAll('#sub3 .submenu-item')[3].innerText = getLangTxt('m3_4');
+    document.querySelectorAll('#sub3 .submenu-item')[4].innerText = getLangTxt('m3_5');
+    document.querySelectorAll('#sub3 .submenu-item')[5].innerText = getLangTxt('m3_6');
+
+    document.querySelectorAll('#sub4 .submenu-item')[0].innerText = getLangTxt('m4_1');
+    document.querySelectorAll('#sub4 .submenu-item')[1].innerText = getLangTxt('m4_2');
+    document.querySelectorAll('#sub4 .submenu-item')[2].innerText = getLangTxt('m4_3');
+
+    document.querySelectorAll('#sub5 .submenu-item')[0].innerText = getLangTxt('m5_1');
+    document.querySelectorAll('#sub5 .submenu-item')[1].innerText = getLangTxt('m5_2');
+    document.querySelectorAll('#sub5 .submenu-item')[2].innerText = getLangTxt('m5_3');
+    document.querySelectorAll('#sub5 .submenu-item')[3].innerText = getLangTxt('m5_4');
+    document.querySelectorAll('#sub5 .submenu-item')[4].innerText = getLangTxt('m5_5');
+
+    // 登录弹窗文字
+    document.querySelectorAll('.tab-btn')[0].innerText = getLangTxt('txt_login');
+    document.querySelectorAll('.tab-btn')[1].innerText = getLangTxt('txt_reg');
+    document.querySelector('#loginForm .form-label').innerText = getLangTxt('txt_acc');
+    document.querySelector('#loginForm input').placeholder = getLangTxt('txt_acc_plh');
+    document.querySelectorAll('#loginForm .form-label')[1].innerText = getLangTxt('txt_pwd');
+    document.querySelectorAll('#loginForm input')[1].placeholder = getLangTxt('txt_pwd_plh');
+    document.querySelector('#loginForm button').innerText = getLangTxt('txt_login_btn');
+    document.querySelector('#loginForm button:last-child').innerText = getLangTxt('txt_web3');
+
+    document.querySelector('#registerForm .form-label').innerText = getLangTxt('txt_uname');
+    document.querySelector('#registerForm input').placeholder = getLangTxt('txt_uname_plh');
+    document.querySelectorAll('#registerForm .form-label')[1].innerText = getLangTxt('txt_email');
+    document.querySelectorAll('#registerForm input')[1].placeholder = getLangTxt('txt_email_plh');
+    document.querySelectorAll('#registerForm .form-label')[2].innerText = getLangTxt('txt_pwd');
+    document.querySelectorAll('#registerForm input')[2].placeholder = getLangTxt('txt_pwd_plh');
+    document.querySelector('#registerForm button').innerText = getLangTxt('txt_reg_btn');
 }
 
 // 页面渲染（核心：所有标题和文案都用 getLangTxt 包裹）
@@ -470,6 +510,14 @@ function renderPage(pageName, el){
     if(pageName==="kline-pro")initTV("tv5","NASDAQ:AAPL");
 }
 
+// 切换语言并缓存（核心：切换后更新菜单和页面）
+function setLang(lang){
+    currentLang = lang;
+    localStorage.setItem('qt_lang',lang);
+    updateMenuText();
+    renderPage(currPage,currActiveEl);
+}
+
 function initTV(id, symbol){
     new TradingView.widget({
         autosize:true,symbol:symbol,interval:"D",timezone:"Asia/Shanghai",
@@ -486,13 +534,9 @@ function switchTab(type){
     if(type==='login'){
         document.getElementById('loginForm').style.display='block';
         document.getElementById('registerForm').style.display='none';
-        document.querySelectorAll('.tab-btn')[0].classList.add('active');
-        document.querySelectorAll('.tab-btn')[1].classList.remove('active');
     }else{
         document.getElementById('loginForm').style.display='none';
         document.getElementById('registerForm').style.display='block';
-        document.querySelectorAll('.tab-btn')[1].classList.add('active');
-        document.querySelectorAll('.tab-btn')[0].classList.remove('active');
     }
 }
 
@@ -506,9 +550,9 @@ function handleRegister(){
     switchTab('login');
 }
 
-// 初始化
+// 初始化（核心：页面加载时更新菜单和页面）
 window.onload=()=>{
-    renderAllLang();
+    updateMenuText();
     renderPage('trade-hall', document.querySelector('.submenu-item.active'));
 }
 </script>
