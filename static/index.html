@@ -3,377 +3,452 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QuantTalk - 量化交易平台</title>
-    <style>
-        * {margin:0;padding:0;box-sizing:border-box;font-family:Microsoft YaHei,sans-serif;}
-        html, body{
-            background:#121212;
-            color:#fff;
-            width:100%;
-            height:100%;
-            overflow:hidden;
-            position:fixed;
-            top:0;
-            left:0;
-        }
-        .sidebar{
-            position:absolute;left:0;top:0;width:260px;height:100%;
-            background:#1e1e1e;border-right:1px solid #333;overflow-y:auto;z-index:10;
-        }
-        .logo{text-align:center;font-size:20px;color:#00ff88;font-weight:bold;margin:20px 0;}
-        .menu-item{padding:12px 25px;color:#fff;cursor:pointer;font-size:15px;transition:.2s;}
-        .menu-item.active{background:#2b291b;color:#ffcc00;}
-        .submenu{display:none;padding-left:20px;}
-        .submenu.show{display:block;}
-        .submenu-item{
-            padding:8px 25px;margin:2px 0;border-radius:4px;font-size:14px;
-            color:#cccccc;cursor:pointer;transition:.2;
-        }
-        .submenu-item:hover{background:#2a2a2a;color:#ffffff;}
-        .submenu-item.active{color:#00ff88;font-weight:500;}
-        .content{
-            position:absolute;left:260px;top:0;right:0;bottom:0;padding:30px;
-            overflow-y:auto;background:#121212;
-        }
-        .page-title{font-size:22px;color:#00ff88;margin-bottom:20px;}
-        .card{background:#1e1e1e;border:1px solid #333;border-radius:8px;padding:20px;margin-bottom:20px;}
-        .tv-container{width:100%;height:480px;border-radius:8px;background:#1e1e1e;margin-bottom:20px;}
-        input, select, textarea, button{
-            width:100%;padding:10px 12px;border-radius:4px;
-            border:1px solid #444;background:#252525;color:#fff;outline:none;margin-bottom:12px;
-        }
-        button{background:#00ff88;color:#111;font-weight:bold;cursor:pointer;border:none;}
-        button:hover{opacity:.9;}
-        .form-label{margin-bottom:6px;display:block;color:#eee;}
-        .tip{color:#888;font-size:12px;margin-top:4px;}
-        .chat-box{height:400px;border:1px solid #333;border-radius:8px;padding:15px;background:#1a1a1a;margin-bottom:15px;overflow-y:auto;}
-        .post-card{border:1px solid #333;border-radius:8px;padding:16px;margin-bottom:12px;background:#1b1b1b;}
-        .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
-        .voice-controls{display:flex;gap:10px;margin-top:10px;}
-        .voice-btn{flex:1;padding:8px;background:#252525;border:none;color:#fff;border-radius:4px;cursor:pointer;}
-        .voice-btn.active{background:#00ff88;color:#111;}
-        .modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:9999;}
-        .modal-box{background:#1e1e1e;padding:30px;border-radius:8px;width:400px;}
-        .tab-btn{width:50%;background:#252525;border:none;color:#fff;padding:10px;cursor:pointer;}
-        .tab-btn.active{background:#00ff88;color:#111;}
-    </style>
-    <script src="https://cdn.jsdelivr.net/npm/i18next@23.10.1/dist/i18next.min.js"></script>
+    <title>QuantTalk - 量化社交交易平台</title>
     <script src="https://s3.tradingview.com/tv.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", Arial, sans-serif;
+        }
+        body {
+            background: #121314;
+            color: #fff;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+        }
+        .hide { display: none !important; }
+
+        /* 登录弹窗 */
+        .auth-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .auth-box {
+            width: 420px;
+            background: #1e1f22;
+            border-radius: 12px;
+            padding: 30px;
+            border: 1px solid #333;
+        }
+        .tab-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .tab {
+            flex:1;
+            text-align:center;
+            padding:10px;
+            background:#292a2d;
+            border-radius:6px;
+            cursor:pointer;
+        }
+        .tab.active {
+            background: #f9a825;
+            color: #000;
+        }
+        input, button {
+            width:100%;
+            padding:12px;
+            border-radius:6px;
+            border:1px solid #444;
+            background:#292a2d;
+            color:#fff;
+            outline:none;
+        }
+        button {
+            background:#f9a825;
+            color:#000;
+            font-weight:bold;
+            border:none;
+            cursor:pointer;
+        }
+
+        /* 固定宽度布局，防止被挤压 */
+        .server-bar {
+            width:72px;
+            flex-shrink: 0; /* 防止被挤压 */
+            background:#1e1f22;
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            padding:12px 0;
+            border-right:1px solid #2f3136;
+        }
+        .server-icon {
+            width:48px;
+            height:48px;
+            border-radius:50%;
+            background:#f9a825;
+            margin-bottom:12px;
+            display:grid;
+            place-items:center;
+            font-weight:bold;
+            cursor:pointer;
+        }
+        .channel-bar {
+            width:260px;
+            flex-shrink: 0; /* 防止被挤压 */
+            background:#1e1f22;
+            border-right:1px solid #2f3136;
+            overflow-y:auto;
+            /* 防文字溢出 */
+            word-break: break-word;
+            overflow-wrap: break-word;
+        }
+        .main-content {
+            flex:1;
+            display:flex;
+            flex-direction:column;
+            min-width: 0; /* 允许内容区被压缩，不挤爆整体 */
+        }
+        .right-panel {
+            width:280px;
+            flex-shrink: 0; /* 防止被挤压 */
+            background:#1e1f22;
+            border-left:1px solid #2f3136;
+            padding:16px;
+            overflow-y:auto;
+        }
+
+        /* 频道、聊天、顶部栏 */
+        .server-name {
+            padding:16px;
+            font-size:18px;
+            border-bottom:1px solid #2f3136;
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+        }
+        .channel-category {
+            padding:12px 16px;
+            font-size:12px;
+            color:#aaa;
+            text-transform:uppercase;
+        }
+        .channel-item {
+            padding:10px 16px;
+            font-size:14px;
+            color:#ccc;
+            cursor:pointer;
+            border-radius:4px;
+            margin:2px 8px;
+            display:flex;
+            align-items:center;
+            gap:8px;
+        }
+        .channel-item:hover,.channel-item.active {
+            background:#2f3136;
+            color:#fff;
+        }
+        .top-bar {
+            height:48px;
+            background:#1e1f22;
+            border-bottom:1px solid #2f3136;
+            display:flex;
+            align-items:center;
+            padding:0 16px;
+            justify-content:space-between;
+        }
+        .lang-select {
+            background:#2f3136;
+            color:#fff;
+            border:none;
+            padding:6px 10px;
+            border-radius:4px;
+            outline:none;
+        }
+        .content-area {
+            flex:1;
+            padding:20px;
+            overflow-y:auto;
+        }
+        .card {
+            background:#1e1f22;
+            border-radius:8px;
+            padding:16px;
+            margin-bottom:16px;
+            border:1px solid #2f3136;
+        }
+
+        /* 聊天区域 */
+        .chat-input-area {
+            background:#1e1f22;
+            padding:12px;
+            border-top:1px solid #2f3136;
+            display:flex;
+            gap:8px;
+            align-items:center;
+        }
+        .chat-insert-btn {
+            width:40px;
+            height:40px;
+            background:#2f3136;
+            border-radius:6px;
+            display:grid;
+            place-items:center;
+            cursor:pointer;
+            color:#f9a825;
+            font-size:18px;
+        }
+
+        /* 语音栏 */
+        .voice-bar {
+            position:fixed;
+            bottom:0;
+            left:72px;
+            width:260px;
+            height:60px;
+            background:#1e1f22;
+            border-top:1px solid #2f3136;
+            display:flex;
+            align-items:center;
+            padding:0 16px;
+            gap:12px;
+        }
+        .voice-btn {
+            width:36px;
+            height:36px;
+            border-radius:50%;
+            background:#2f3136;
+            display:grid;
+            place-items:center;
+            cursor:pointer;
+        }
+
+        /* K线容器 - 加固布局，防止撑开 */
+        #tvChart {
+            width:100%;
+            height:450px;
+            margin:12px 0;
+            border-radius:8px;
+            overflow:hidden;
+        }
+    </style>
 </head>
 <body>
 
-<div class="modal-overlay" id="loginModal">
-    <div class="modal-box">
-        <div style="display:flex;margin-bottom:20px;">
-            <button class="tab-btn active" onclick="switchTab('login')" data-i18n="txt_login">登录</button>
-            <button class="tab-btn" onclick="switchTab('register')" data-i18n="txt_reg">注册</button>
+<!-- 登录弹窗 -->
+<div class="auth-modal" id="authModal">
+    <div class="auth-box">
+        <div style="color:#f9a825;font-size:24px;text-align:center;margin-bottom:20px;">QuantTalk</div>
+        <div class="tab-bar">
+            <div class="tab active" id="tabLogin" onclick="switchAuthTab('login')">登录</div>
+            <div class="tab" id="tabRegister" onclick="switchAuthTab('register')">注册</div>
         </div>
         <div id="loginForm">
-            <label class="form-label" data-i18n="txt_acc">用户名/邮箱</label>
-            <input data-i18n-placeholder="txt_acc_plh">
-            <label class="form-label" data-i18n="txt_pwd">密码</label>
-            <input type="password" data-i18n-placeholder="txt_pwd_plh">
-            <button onclick="handleLogin()" data-i18n="txt_login_btn">登录</button>
-            <p class="tip" style="text-align:center;margin-top:10px;" data-i18n="or">或</p>
-            <button style="background:#3b82f6;" onclick="alert(i18n.t('web3_login'))" data-i18n="txt_web3">Web3 钱包登录</button>
+            <input id="loginEmail" placeholder="邮箱">
+            <input id="loginPwd" placeholder="密码" type="password">
+            <button id="btnLogin" onclick="handleLogin()">登录</button>
         </div>
-        <div id="registerForm" style="display:none;">
-            <label class="form-label" data-i18n="txt_uname">用户名</label>
-            <input data-i18n-placeholder="txt_uname_plh">
-            <label class="form-label" data-i18n="txt_email">邮箱</label>
-            <input data-i18n-placeholder="txt_email_plh">
-            <label class="form-label" data-i18n="txt_pwd">密码</label>
-            <input type="password" data-i18n-placeholder="txt_pwd_plh">
-            <button onclick="handleRegister()" data-i18n="txt_reg_btn">注册</button>
+        <div id="registerForm" class="hide">
+            <input id="regEmail" placeholder="邮箱">
+            <input id="regPwd" placeholder="密码" type="password">
+            <button id="btnRegister" onclick="handleRegister()">注册</button>
         </div>
     </div>
 </div>
 
-<div class="sidebar">
-    <div class="logo">QuantTalk</div>
-    <div class="menu-item active" onclick="toggleSub(1)" data-i18n="m1">交易市场</div>
-    <div class="submenu show" id="sub1">
-        <div class="submenu-item active" onclick="renderPage('trade-hall', this)" data-i18n="m1_1">交易大厅</div>
-        <div class="submenu-item" onclick="renderPage('crypto-market', this)" data-i18n="m1_2">加密货币专区</div>
-        <div class="submenu-item" onclick="renderPage('forex-metal', this)" data-i18n="m1_3">外汇贵金属</div>
-        <div class="submenu-item" onclick="renderPage('future-market', this)" data-i18n="m1_4">期货市场</div>
-        <div class="submenu-item" onclick="renderPage('kline-pro', this)" data-i18n="m1_5">专业K线分析</div>
+<!-- 左侧服务器 -->
+<div class="server-bar">
+    <div class="server-icon">QT</div>
+    <div class="server-icon" onclick="openProfile()">👤</div>
+</div>
+
+<!-- 频道栏 -->
+<div class="channel-bar">
+    <div class="server-name">
+        <span>QuantTalk</span>
+        <span style="color:#f9a825;cursor:pointer;" onclick="showCreateChannel()">+</span>
     </div>
-    <div class="menu-item" onclick="toggleSub(2)" data-i18n="m2">交易社区</div>
-    <div class="submenu" id="sub2">
-        <div class="submenu-item" onclick="renderPage('dynamic-square', this)" data-i18n="m2_1">综合动态广场</div>
-        <div class="submenu-item" onclick="renderPage('strategy-square', this)" data-i18n="m2_2">量化策略广场</div>
-        <div class="submenu-item" onclick="renderPage('backtest-center', this)" data-i18n="m2_3">回测中心</div>
-        <div class="submenu-item" onclick="renderPage('ranking-list', this)" data-i18n="m2_4">交易榜单</div>
-        <div class="submenu-item" onclick="renderPage('copy-trade', this)" data-i18n="m2_5">一键跟单</div>
-        <div class="submenu-item" onclick="renderPage('trade-live', this)" data-i18n="m2_6">交易直播</div>
+    <div style="padding:10px;">
+        <input id="searchInput" placeholder="搜索频道" oninput="filterChannels(this.value)" style="width:100%;background:#292a2d;border:1px solid #444;border-radius:6px;padding:8px;color:#fff;">
     </div>
-    <div class="menu-item" onclick="toggleSub(3)" data-i18n="m3">社区频道</div>
-    <div class="submenu" id="sub3">
-        <div class="submenu-item" onclick="renderPage('create-channel', this)" data-i18n="m3_1">+ 创建新频道</div>
-        <div class="submenu-item" onclick="renderPage('text-channel', this)" data-i18n="m3_2">文字频道</div>
-        <div class="submenu-item" onclick="renderPage('voice-channel', this)" data-i18n="m3_3">语音频道</div>
-        <div class="submenu-item" onclick="renderPage('video-channel', this)" data-i18n="m3_4">视频/共享频道</div>
-        <div class="submenu-item" onclick="renderPage('signal-channel', this)" data-i18n="m3_5">交易信号频道</div>
-        <div class="submenu-item" onclick="renderPage('official-channel', this)" data-i18n="m3_6">官方公告频道</div>
+    <div class="channel-category">交易专区</div>
+    <div class="channel-item active" onclick="openChannel('trade')">💬 BTC行情交流</div>
+    <div class="channel-item" onclick="openChannel('voice')">🔊 交易连麦</div>
+</div>
+
+<!-- 主内容区 -->
+<div class="main-content">
+    <div class="top-bar">
+        <div id="pageTitle">BTC行情交流</div>
+        <div style="display:flex;gap:12px;align-items:center;">
+            <select class="lang-select" id="langSelect" onchange="changeLang(this.value)">
+                <option value="zh-CN">简体中文</option>
+                <option value="zh-TW">繁體中文</option>
+                <option value="en">English</option>
+                <option value="ja">日本語</option>
+                <option value="ko">한국어</option>
+            </select>
+            <button id="btnProfile" onclick="openProfile()">个人中心</button>
+        </div>
     </div>
-    <div class="menu-item" onclick="toggleSub(4)" data-i18n="m4">社交消息</div>
-    <div class="submenu" id="sub4">
-        <div class="submenu-item" onclick="renderPage('private-chat', this)" data-i18n="m4_1">私信聊天</div>
-        <div class="submenu-item" onclick="renderPage('friend-list', this)" data-i18n="m4_2">好友列表</div>
-        <div class="submenu-item" onclick="renderPage('private-group', this)" data-i18n="m4_3">私密群组</div>
+
+    <div class="content-area" id="contentArea">
+        <div class="card">
+            <div id="welcomeText">欢迎进入量化交易社区</div>
+            <div id="tvChart"></div>
+        </div>
     </div>
-    <div class="menu-item" onclick="toggleSub(5)" data-i18n="m5">个人中心</div>
-    <div class="submenu" id="sub5">
-        <div class="submenu-item" onclick="renderPage('user-info', this)" data-i18n="m5_1">个人资料</div>
-        <div class="submenu-item" onclick="renderPage('lang-setting', this)" data-i18n="m5_2">语言设置</div>
-        <div class="submenu-item" onclick="renderPage('exchange-api', this)" data-i18n="m5_3">交易所API绑定</div>
-        <div class="submenu-item" onclick="renderPage('wallet-manage', this)" data-i18n="m5_4">钱包管理</div>
-        <div class="submenu-item" onclick="renderPage('bot-manage', this)" data-i18n="m5_5">量化Bot管理</div>
+
+    <div class="chat-input-area">
+        <div class="chat-insert-btn" onclick="openQuantWidget()">📊</div>
+        <input id="chatInput" placeholder="发送消息..." style="flex:1;border:none;">
+        <button id="btnSend">发送</button>
     </div>
 </div>
 
-<div class="content" id="mainContent"></div>
+<!-- 右侧面板 -->
+<div class="right-panel"></div>
+
+<!-- 语音底部栏 -->
+<div class="voice-bar hide" id="voiceBar">
+    <div class="voice-btn">🎤</div>
+    <div class="voice-btn">🔊</div>
+    <div class="voice-btn" onclick="leaveVoice()">❌</div>
+</div>
 
 <script>
-i18n.init({
-    fallbackLng: 'zh-CN',
-    debug: false,
-    interpolation: { escapeValue: false },
-    resources: {
-        "zh-CN":{translation:{
-            txt_login:"登录",txt_reg:"注册",txt_acc:"用户名/邮箱",txt_acc_plh:"请输入账号",
-            txt_pwd:"密码",txt_pwd_plh:"请输入密码",txt_uname:"用户名",txt_uname_plh:"请输入用户名",
-            txt_email:"邮箱",txt_email_plh:"请输入邮箱",txt_web3:"Web3 钱包登录",or:"或",
-            txt_login_btn:"登录",txt_reg_btn:"注册",login_ok:"登录成功",reg_ok:"注册成功",
-            web3_login:"Web3钱包签名登录",
-            m1:"交易市场",m1_1:"交易大厅",m1_2:"加密货币专区",m1_3:"外汇贵金属",m1_4:"期货市场",m1_5:"专业K线分析",
-            m2:"交易社区",m2_1:"综合动态广场",m2_2:"量化策略广场",m2_3:"回测中心",m2_4:"交易榜单",m2_5:"一键跟单",m2_6:"交易直播",
-            m3:"社区频道",m3_1:"创建新频道",m3_2:"文字频道",m3_3:"语音频道",m3_4:"视频/共享频道",m3_5:"交易信号频道",m3_6:"官方公告频道",
-            m4:"社交消息",m4_1:"私信聊天",m4_2:"好友列表",m4_3:"私密群组",
-            m5:"个人中心",m5_1:"个人资料",m5_2:"语言设置",m5_3:"交易所API绑定",m5_4:"钱包管理",m5_5:"量化Bot管理",
-            lang_title:"语言设置",lang_select:"选择系统语言",lang_tip:"多语言由运营中控台统一管理",save:"保存设置",
-            webhook_txt:"Webhook 交易推送地址",copy:"复制地址",channel_name:"频道名称",channel_type:"频道类型",create:"创建频道",
-            share_screen:"屏幕共享",camera:"开启摄像头",mic:"麦克风",mute:"静音",leave:"离开频道",send:"发送",
-            nickname:"昵称",bio:"个人简介",nickname_plh:"请输入昵称",bio_plh:"简单介绍自己",input_msg:"输入消息…",
-            select_strategy:"选择策略",backtest_period:"回测周期",start_backtest:"开始回测",
-            grid_strategy:"网格策略",martingale:"马丁策略",arbitrage:"套利策略",
-            period_1m:"近1个月",period_3m:"近3个月",period_6m:"近6个月",
-            rank_list:"交易榜单",live_rooms:"直播房间列表加载中…",
-            friend_online:"好友 1（在线）",friend_offline:"好友 2（离线）",
-            bot_type:"Bot 类型",bot_status:"运行状态",bot_start:"启动Bot",
-            api_key:"API Key",api_secret:"API Secret",exchange:"选择交易所",api_check_ok:"API 校验成功",
-            chain_type:"链类型",wallet_addr:"钱包地址",bind_wallet:"绑定钱包",master:"选择交易高手",auto_copy:"开启自动跟单",
-            msg_record:"聊天消息记录",group_chat:"群组聊天窗口",official_notice:"平台公告、更新通知",signal_push:"自动交易信号实时推送"
-        }},
-        "en":{translation:{
-            txt_login:"Login",txt_reg:"Register",txt_acc:"Username/Email",txt_acc_plh:"Enter account",
-            txt_pwd:"Password",txt_pwd_plh:"Enter password",txt_uname:"Username",txt_uname_plh:"Enter username",
-            txt_email:"Email",txt_email_plh:"Enter email",txt_web3:"Web3 Login",or:"Or",
-            txt_login_btn:"Sign In",txt_reg_btn:"Sign Up",login_ok:"Login Success",reg_ok:"Register Success",
-            web3_login:"Web3 Wallet Login",
-            m1:"Trade Market",m1_1:"Trade Hall",m1_2:"Crypto",m1_3:"Forex & Metal",m1_4:"Futures",m1_5:"Pro Kline",
-            m2:"Community",m2_1:"Dynamic Feed",m2_2:"Strategy Plaza",m2_3:"Backtest",m2_4:"Ranking",m2_5:"Copy Trade",m2_6:"Live",
-            m3:"Channels",m3_1:"Create Channel",m3_2:"Text",m3_3:"Voice",m3_4:"Video/Share",m3_5:"Signal",m3_6:"Announcement",
-            m4:"Social",m4_1:"Chat",m4_2:"Friends",m4_3:"Groups",
-            m5:"Profile",m5_1:"Info",m5_2:"Language",m5_3:"API",m5_4:"Wallet",m5_5:"Bot",
-            lang_title:"Language",lang_select:"Select Language",lang_tip:"Managed by Console",save:"Save",
-            webhook_txt:"Webhook URL",copy:"Copy",channel_name:"Name",channel_type:"Type",create:"Create",
-            share_screen:"Share",camera:"Camera",mic:"Mic",mute:"Mute",leave:"Leave",send:"Send",
-            nickname:"Nickname",bio:"Bio",nickname_plh:"Nickname",bio_plh:"Bio",input_msg:"Message…",
-            select_strategy:"Strategy",backtest_period:"Period",start_backtest:"Start",
-            grid_strategy:"Grid",martingale:"Martingale",arbitrage:"Arbitrage",
-            period_1m:"1M",period_3m:"3M",period_6m:"6M",
-            rank_list:"Rankings",live_rooms:"Loading...",
-            friend_online:"Friend 1 (Online)",friend_offline:"Friend 2 (Offline)",
-            bot_type:"Bot Type",bot_status:"Status",bot_start:"Start",
-            api_key:"API Key",api_secret:"API Secret",exchange:"Exchange",api_check_ok:"API Verified",
-            chain_type:"Chain",wallet_addr:"Address",bind_wallet:"Bind",master:"Master",auto_copy:"Start Copy",
-            msg_record:"Records",group_chat:"Group Chat",official_notice:"Announcement",signal_push:"Signal Push"
-        }}
+// ======================================
+// 1. 纯原生语言字典（无外部依赖）
+// ======================================
+const i18n = {
+    "zh-CN": {
+        login:"登录",register:"注册",loginBtn:"登录",regBtn:"注册",
+        emailTip:"请输入邮箱",pwdTip:"请输入密码",searchTip:"搜索频道",
+        centerBtn:"个人中心",sendBtn:"发送",chatTip:"发送消息...支持行情快捷指令",
+        welcomeText:"欢迎进入量化交易社区",widgetTip:"已嵌入行情/K线/策略组件"
+    },
+    "zh-TW": {
+        login:"登入",register:"註冊",loginBtn:"登入",regBtn:"註冊",
+        emailTip:"請輸入信箱",pwdTip:"請輸入密碼",searchTip:"搜尋頻道",
+        centerBtn:"個人中心",sendBtn:"傳送",chatTip:"傳送訊息...支援行情指令",
+        welcomeText:"歡迎進入量化交易社群",widgetTip:"已嵌入行情/K線/策略組件"
+    },
+    "en": {
+        login:"Login",register:"Register",loginBtn:"Login",regBtn:"Register",
+        emailTip:"Please input email",pwdTip:"Please input password",searchTip:"Search channel",
+        centerBtn:"Profile",sendBtn:"Send",chatTip:"Send message...",
+        welcomeText:"Welcome to Quant Community",widgetTip:"Quote/Kline/Strategy loaded"
+    },
+    "ja": {
+        login:"ログイン",register:"新規登録",loginBtn:"ログイン",regBtn:"新規登録",
+        emailTip:"メールを入力",pwdTip:"パスワードを入力",searchTip:"チャンネル検索",
+        centerBtn:"プロフィール",sendBtn:"送信",chatTip:"メッセージを入力",
+        welcomeText:"量化コミュニティへようこそ",widgetTip:"相場・K線・戦略読み込み完了"
+    },
+    "ko": {
+        login:"로그인",register:"회원가입",loginBtn:"로그인",regBtn:"회원가입",
+        emailTip:"이메일 입력",pwdTip:"비밀번호 입력",searchTip:"채널 검색",
+        centerBtn:"프로필",sendBtn:"보내기",chatTip:"메시지 입력",
+        welcomeText:"퀀트 커뮤니티에 오신 것을 환영합니다",widgetTip:"시세/K라인/전략 삽입 완료"
     }
-});
+};
 
-function updateAll(){
-    document.querySelectorAll('[data-i18n]').forEach(e=>e.innerText=i18n.t(e.getAttribute('data-i18n')));
-    document.querySelectorAll('[data-i18n-placeholder]').forEach(e=>e.placeholder=i18n.t(e.getAttribute('data-i18n-placeholder')));
+// 全局语言变量
+let currentLang = localStorage.getItem("appLang") || "zh-CN";
+
+// 渲染所有文字
+function renderLang() {
+    const t = i18n[currentLang];
+    document.getElementById("tabLogin").innerText = t.login;
+    document.getElementById("tabRegister").innerText = t.register;
+    document.getElementById("btnLogin").innerText = t.loginBtn;
+    document.getElementById("btnRegister").innerText = t.regBtn;
+    document.getElementById("loginEmail").placeholder = t.emailTip;
+    document.getElementById("loginPwd").placeholder = t.pwdTip;
+    document.getElementById("regEmail").placeholder = t.emailTip;
+    document.getElementById("regPwd").placeholder = t.pwdTip;
+    document.getElementById("searchInput").placeholder = t.searchTip;
+    document.getElementById("btnProfile").innerText = t.centerBtn;
+    document.getElementById("btnSend").innerText = t.sendBtn;
+    document.getElementById("chatInput").placeholder = t.chatTip;
+    document.getElementById("welcomeText").innerText = t.welcomeText;
 }
 
-function setLang(l){i18n.changeLanguage(l);updateAll();renderPage(currPage,currActiveEl);}
-
-let currPage="trade-hall";let currActiveEl=null;
-
-function toggleSub(n){
-    document.querySelectorAll('.submenu').forEach(e=>e.classList.remove('show'));
-    document.getElementById('sub'+n).classList.add('show');
-    document.querySelectorAll('.menu-item').forEach(e=>e.classList.remove('active'));
-    document.querySelectorAll('.menu-item')[n-1].classList.add('active');
+// 切换语言
+function changeLang(lng) {
+    currentLang = lng;
+    localStorage.setItem("appLang", lng);
+    renderLang();
+    // 同步下拉框选中态
+    document.getElementById("langSelect").value = lng;
 }
 
-// ==============================================
-// 完整 renderPage：所有文字 100% 跟随语言切换
-// ==============================================
-function renderPage(page,el){
-    currPage=page;currActiveEl=el;
-    document.querySelectorAll('.submenu-item').forEach(i=>i.classList.remove('active'));
-    if(el)el.classList.add('active');let h='';
+// 初始化语言
+renderLang();
+document.getElementById("langSelect").value = currentLang;
 
-    if(page==="trade-hall"){
-        h=`<div class="page-title">${i18n.t('m1_1')}</div>
-        <div class="tv-container" id="tv1"></div>
-        <div class="card"><p class="form-label">${i18n.t('webhook_txt')}</p>
-        <input value="https://quantsignalkitokito.duckdns.org/api/webhook/trade" readonly>
-        <button onclick="copyWebhook()">${i18n.t('copy')}</button></div>`;
-    }
-    if(page==="crypto-market"){h=`<div class="page-title">${i18n.t('m1_2')}</div><div class="tv-container" id="tv2"></div>`;}
-    if(page==="forex-metal"){h=`<div class="page-title">${i18n.t('m1_3')}</div><div class="tv-container" id="tv3"></div>`;}
-    if(page==="future-market"){h=`<div class="page-title">${i18n.t('m1_4')}</div><div class="tv-container" id="tv4"></div>`;}
-    if(page==="kline-pro"){h=`<div class="page-title">${i18n.t('m1_5')}</div><div class="tv-container" id="tv5"></div>`;}
+// ======================================
+// 2. TradingView K线（加固布局）
+// ======================================
+let tvChart;
+function initTVChart(){
+    tvChart = new TradingView.widget({
+        container: "tvChart",
+        width: "100%",
+        height: "100%",
+        symbol: "BINANCE:BTCUSDT",
+        interval: "15",
+        theme: "dark",
+        style: "1",
+        locale: currentLang === "zh-CN" ? "zh" : (currentLang === "zh-TW" ? "zh_TW" : currentLang),
+        toolbar_bg: "#1e1f22",
+        enable_publishing: false,
+        allow_symbol_change: true
+    });
+}
+initTVChart();
 
-    if(page==="dynamic-square"){
-        h=`<div class="page-title">${i18n.t('m2_1')}</div>
-        <div class="post-card"><h4>User</h4><p>Content</p><small>2025-01-01</small></div>
-        <div class="post-card"><h4>Trader</h4><p>BTC > 100,000 USDT</p><small>2025-01-01</small></div>`;
+// ======================================
+// 3. 核心业务逻辑（纯原生、无依赖）
+// ======================================
+// 登录/注册切换
+function switchAuthTab(tab){
+    if(tab === "login"){
+        document.getElementById("loginForm").classList.remove("hide");
+        document.getElementById("registerForm").classList.add("hide");
+        document.getElementById("tabLogin").classList.add("active");
+        document.getElementById("tabRegister").classList.remove("active");
+    } else {
+        document.getElementById("loginForm").classList.add("hide");
+        document.getElementById("registerForm").classList.remove("hide");
+        document.getElementById("tabLogin").classList.remove("active");
+        document.getElementById("tabRegister").classList.add("active");
     }
-    if(page==="strategy-square"){
-        h=`<div class="page-title">${i18n.t('m2_2')}</div><div class="grid3">
-        <div class="card"><h4>${i18n.t('grid_strategy')}</h4><p>12.5%</p><button>${i18n.t('view')}</button></div>
-        <div class="card"><h4>${i18n.t('martingale')}</h4><p>18.2%</p><button>${i18n.t('view')}</button></div>
-        <div class="card"><h4>${i18n.t('arbitrage')}</h4><p>9.8%</p><button>${i18n.t('view')}</button></div></div>`;
-    }
-    if(page==="backtest-center"){
-        h=`<div class="page-title">${i18n.t('m2_3')}</div><div class="card">
-        <label>${i18n.t('select_strategy')}</label>
-        <select>
-            <option>${i18n.t('grid_strategy')}</option>
-            <option>${i18n.t('martingale')}</option>
-        </select>
-        <label>${i18n.t('backtest_period')}</label>
-        <select>
-            <option>${i18n.t('period_1m')}</option>
-            <option>${i18n.t('period_3m')}</option>
-        </select>
-        <button>${i18n.t('start_backtest')}</button></div>`;
-    }
-    if(page==="ranking-list"){h=`<div class="page-title">${i18n.t('m2_4')}</div><div class="card"><p>${i18n.t('rank_list')}</p></div>`;}
-    if(page==="copy-trade"){
-        h=`<div class="page-title">${i18n.t('m2_5')}</div><div class="card">
-        <label>${i18n.t('master')}</label>
-        <select><option>Trader A</option><option>Trader B</option></select>
-        <button>${i18n.t('auto_copy')}</button></div>`;
-    }
-    if(page==="trade-live"){h=`<div class="page-title">${i18n.t('m2_6')}</div><div class="card"><p>${i18n.t('live_rooms')}</p></div>`;}
-
-    if(page==="create-channel"){
-        h=`<div class="page-title">${i18n.t('m3_1')}</div><div class="card">
-        <label>${i18n.t('channel_name')}</label>
-        <input placeholder="${i18n.t('channel_name')}">
-        <label>${i18n.t('channel_type')}</label>
-        <select>
-            <option>${i18n.t('m3_2')}</option>
-            <option>${i18n.t('m3_3')}</option>
-            <option>${i18n.t('m3_4')}</option>
-        </select>
-        <button>${i18n.t('create')}</button></div>`;
-    }
-    if(page==="text-channel"){
-        h=`<div class="page-title">${i18n.t('m3_2')}</div>
-        <div class="chat-box">${i18n.t('msg_record')}</div>
-        <input placeholder="${i18n.t('input_msg')}">
-        <button>${i18n.t('send')}</button></div>`;
-    }
-    if(page==="voice-channel"){
-        h=`<div class="page-title">${i18n.t('m3_3')}</div><div class="card">
-        <div class="voice-controls">
-            <button class="voice-btn active">${i18n.t('mute')}</button>
-            <button class="voice-btn">${i18n.t('mic')}</button>
-            <button class="voice-btn">${i18n.t('leave')}</button>
-        </div></div>`;
-    }
-    if(page==="video-channel"){
-        h=`<div class="page-title">${i18n.t('m3_4')}</div><div class="card" style="height:400px"></div>
-        <div class="voice-controls">
-            <button class="voice-btn">${i18n.t('camera')}</button>
-            <button class="voice-btn active">${i18n.t('share_screen')}</button>
-            <button class="voice-btn">${i18n.t('leave')}</button>
-        </div>`;
-    }
-    if(page==="signal-channel"){h=`<div class="page-title">${i18n.t('m3_5')}</div><div class="card"><p>${i18n.t('signal_push')}</p></div>`;}
-    if(page==="official-channel"){h=`<div class="page-title">${i18n.t('m3_6')}</div><div class="card"><p>${i18n.t('official_notice')}</p></div>`;}
-
-    if(page==="private-chat"){
-        h=`<div class="page-title">${i18n.t('m4_1')}</div>
-        <div class="chat-box">${i18n.t('msg_record')}</div>
-        <input placeholder="${i18n.t('input_msg')}">
-        <button>${i18n.t('send')}</button></div>`;
-    }
-    if(page==="friend-list"){
-        h=`<div class="page-title">${i18n.t('m4_2')}</div><div class="card">
-        <p>${i18n.t('friend_online')}</p>
-        <p>${i18n.t('friend_offline')}</p></div>`;
-    }
-    if(page==="private-group"){h=`<div class="page-title">${i18n.t('m4_3')}</div><div class="card"><p>${i18n.t('group_chat')}</p></div>`;}
-
-    if(page==="user-info"){
-        h=`<div class="page-title">${i18n.t('m5_1')}</div><div class="card">
-        <label>${i18n.t('nickname')}</label>
-        <input placeholder="${i18n.t('nickname_plh')}">
-        <label>${i18n.t('bio')}</label>
-        <textarea rows="3" placeholder="${i18n.t('bio_plh')}"></textarea>
-        <button>${i18n.t('save')}</button></div>`;
-    }
-    if(page==="lang-setting"){
-        h=`<div class="page-title">${i18n.t('lang_title')}</div><div class="card">
-        <label>${i18n.t('lang_select')}</label>
-        <select onchange="setLang(this.value)">
-            <option value="zh-CN" ${i18n.language=='zh-CN'?'selected':''}>中文</option>
-            <option value="en" ${i18n.language=='en'?'selected':''}>English</option>
-        </select>
-        <p class="tip">${i18n.t('lang_tip')}</p>
-        <button>${i18n.t('save')}</button></div>`;
-    }
-    if(page==="exchange-api"){
-        h=`<div class="page-title">${i18n.t('m5_3')}</div><div class="card">
-        <label>${i18n.t('exchange')}</label>
-        <select><option>Binance</option><option>OKX</option></select>
-        <label>${i18n.t('api_key')}</label>
-        <input placeholder="${i18n.t('api_key')}">
-        <label>${i18n.t('api_secret')}</label>
-        <input placeholder="${i18n.t('api_secret')}">
-        <button onclick="alert(i18n.t('api_check_ok'))">${i18n.t('save')}</button></div>`;
-    }
-    if(page==="wallet-manage"){
-        h=`<div class="page-title">${i18n.t('m5_4')}</div><div class="card">
-        <label>${i18n.t('chain_type')}</label>
-        <select><option>ETH</option><option>TRON</option></select>
-        <label>${i18n.t('wallet_addr')}</label>
-        <input placeholder="0x...">
-        <button>${i18n.t('bind_wallet')}</button></div>`;
-    }
-    if(page==="bot-manage"){
-        h=`<div class="page-title">${i18n.t('m5_5')}</div><div class="card">
-        <label>${i18n.t('bot_type')}</label>
-        <select><option>${i18n.t('grid_strategy')}</option><option>${i18n.t('martingale')}</option></select>
-        <label>${i18n.t('bot_status')}</label>
-        <input value="Stopped" readonly>
-        <button>${i18n.t('bot_start')}</button></div>`;
-    }
-
-    document.getElementById("mainContent").innerHTML=h;
-    updateAll();
-    if(page==="trade-hall")initTV("tv1","BINANCE:BTCUSDT");
-    if(page==="crypto-market")initTV("tv2","BINANCE:ETHUSDT");
-    if(page==="forex-metal")initTV("tv3","FX_IDC:XAUUSD");
-    if(page==="future-market")initTV("tv4","CME:NQ1!");
-    if(page==="kline-pro")initTV("tv5","NASDAQ:AAPL");
 }
 
-function initTV(id,s){new TradingView.widget({autosize:true,symbol:s,interval:"D",timezone:"Asia/Shanghai",theme:"dark",style:"1",locale:"zh",container_id:id});}
-function copyWebhook(){const e=document.querySelector('input[value*="duckdns"]');e.select();document.execCommand("copy");alert(i18n.t("copy")+" OK");}
-function switchTab(t){document.getElementById("loginForm").style.display=t=="login"?"block":"none";document.getElementById("registerForm").style.display=t=="login"?"none":"block";document.querySelectorAll(".tab-btn")[0].classList.toggle("active",t=="login");document.querySelectorAll(".tab-btn")[1].classList.toggle("active",t!="login");}
-function handleLogin(){alert(i18n.t("login_ok"));document.getElementById("loginModal").style.display="none";}
-function handleRegister(){alert(i18n.t("reg_ok"));switchTab("login");}
-window.onload=()=>{updateAll();renderPage("trade-hall",document.querySelector(".submenu-item.active"));}
+// 登录按钮点击
+function handleLogin(){
+    document.getElementById("authModal").classList.add("hide");
+}
+
+// 注册按钮点击
+function handleRegister(){
+    alert(i18n[currentLang].register + "成功");
+    switchAuthTab("login");
+}
+
+// 量化嵌入按钮
+function openQuantWidget(){
+    alert(i18n[currentLang].widgetTip);
+}
+
+// 其他基础功能
+function openChannel(){}
+function leaveVoice(){document.getElementById("voiceBar").classList.add("hide");}
+function openProfile(){}
+function filterChannels(){}
+function showCreateChannel(){}
 </script>
 </body>
 </html>
