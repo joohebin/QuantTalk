@@ -10,10 +10,10 @@
         body { background:#121314; color:#fff; height:100vh; display:flex; overflow:hidden; }
         .hide { display:none !important; }
 
-        /* 🔴 核心加固：给所有侧边栏加固定宽度 + flex-shrink:0，禁止被挤压 */
+        /* 🔴 核心布局：固定侧边栏，主内容区居中 */
         .server-bar  {
             width:72px;
-            flex: 0 0 72px; /* 固定宽度，不收缩不放大 */
+            flex: 0 0 72px;
             background:#1e1f22;
             display:flex;
             flex-direction:column;
@@ -23,25 +23,23 @@
         }
         .channel-bar {
             width:260px;
-            flex: 0 0 260px; /* 固定宽度，不收缩不放大 */
+            flex: 0 0 260px;
             background:#1e1f22;
             border-right:1px solid #2f3136;
             overflow-y:auto;
-            word-break: break-word; /* 防止长文字溢出 */
+            word-break: break-word;
         }
+        /* 右侧面板如果不用，直接删掉或隐藏 */
         .right-panel{
-            width:280px;
-            flex: 0 0 280px; /* 固定宽度，不收缩不放大 */
-            background:#1e1f22;
-            border-left:1px solid #2f3136;
-            padding:16px;
-            overflow-y:auto;
+            display: none;
         }
         .main-content {
-            flex: 1 1 auto; /* 只让主内容区可伸缩 */
+            flex: 1 1 auto;
             display:flex;
             flex-direction:column;
-            min-width:0; /* 允许主内容区压缩 */
+            min-width:0;
+            /* 强制让主内容区居中 */
+            margin: 0 auto;
         }
 
         .server-icon { width:48px; height:48px; border-radius:50%; background:#f9a825; margin-bottom:12px; display:grid; place-items:center; font-weight:bold; cursor:pointer; }
@@ -140,6 +138,7 @@
     </div>
 </div>
 
+<!-- 右侧面板暂时隐藏，避免占位 -->
 <div class="right-panel"></div>
 
 <div class="voice-bar hide" id="voiceBar">
@@ -149,9 +148,7 @@
 </div>
 
 <script>
-// =====================================
-// 1. 纯手写硬编码翻译 【无任何插件】
-// =====================================
+// 纯手写硬编码翻译（无任何插件）
 const langData = {
     "zh-CN": {
         login:"登录",register:"注册",emailTip:"邮箱",pwdTip:"密码",
@@ -185,7 +182,7 @@ const langData = {
     }
 };
 
-// 本地储存 干净版
+// 本地储存
 let nowLang = localStorage.getItem("qt_lang") || "zh-CN";
 
 // 全局渲染文字
@@ -215,9 +212,7 @@ document.getElementById("langSelect").onchange = function(){
 document.getElementById("langSelect").value = nowLang;
 renderAllText();
 
-// =====================================
-// 2. 登录/注册 百分百可用
-// =====================================
+// 登录/注册 百分百可用
 function switchAuthTab(tab){
     if(tab === "login"){
         document.getElementById("loginForm").classList.remove("hide");
@@ -240,9 +235,7 @@ function handleRegister(){
     switchAuthTab("login");
 }
 
-// =====================================
-// 3. K线 & 嵌入功能
-// =====================================
+// K线 & 嵌入功能
 new TradingView.widget({
     container: "tvChart",
     symbol: "BINANCE:BTCUSDT",
