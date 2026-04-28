@@ -3,235 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QuantTalk - 量化社交交易平台</title>
+    <title>QuantTalk</title>
     <script src="https://s3.tradingview.com/tv.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: "Microsoft YaHei", Arial, sans-serif;
-        }
-        body {
-            background: #121314;
-            color: #fff;
-            height: 100vh;
-            overflow: hidden;
-            display: flex;
-        }
-        .hide { display: none !important; }
+        * { margin:0; padding:0; box-sizing:border-box; font-family:Arial, sans-serif; }
+        body { background:#121314; color:#fff; height:100vh; display:flex; overflow:hidden; }
+        .hide { display:none !important; }
 
-        /* 登录弹窗 */
-        .auth-modal {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.9);
-            z-index: 9999;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .auth-box {
-            width: 420px;
-            background: #1e1f22;
-            border-radius: 12px;
-            padding: 30px;
-            border: 1px solid #333;
-        }
-        .tab-bar {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 16px;
-        }
-        .tab {
-            flex:1;
-            text-align:center;
-            padding:10px;
-            background:#292a2d;
-            border-radius:6px;
-            cursor:pointer;
-        }
-        .tab.active {
-            background: #f9a825;
-            color: #000;
-        }
-        input, button {
-            width:100%;
-            padding:12px;
-            border-radius:6px;
-            border:1px solid #444;
-            background:#292a2d;
-            color:#fff;
-            outline:none;
-        }
-        button {
-            background:#f9a825;
-            color:#000;
-            font-weight:bold;
-            border:none;
-            cursor:pointer;
-        }
+        .server-bar { width:72px; flex-shrink:0; background:#1e1f22; display:flex; flex-direction:column; align-items:center; padding:12px 0; border-right:1px solid #2f3136; }
+        .server-icon { width:48px; height:48px; border-radius:50%; background:#f9a825; margin-bottom:12px; display:grid; place-items:center; font-weight:bold; cursor:pointer; }
+        .channel-bar { width:260px; flex-shrink:0; background:#1e1f22; border-right:1px solid #2f3136; overflow-y:auto; }
+        .main-content { flex:1; display:flex; flex-direction:column; min-width:0; }
+        .right-panel { width:280px; flex-shrink:0; background:#1e1f22; border-left:1px solid #2f3136; padding:16px; overflow-y:auto; }
 
-        /* 固定宽度布局，防止被挤压 */
-        .server-bar {
-            width:72px;
-            flex-shrink: 0; /* 防止被挤压 */
-            background:#1e1f22;
-            display:flex;
-            flex-direction:column;
-            align-items:center;
-            padding:12px 0;
-            border-right:1px solid #2f3136;
-        }
-        .server-icon {
-            width:48px;
-            height:48px;
-            border-radius:50%;
-            background:#f9a825;
-            margin-bottom:12px;
-            display:grid;
-            place-items:center;
-            font-weight:bold;
-            cursor:pointer;
-        }
-        .channel-bar {
-            width:260px;
-            flex-shrink: 0; /* 防止被挤压 */
-            background:#1e1f22;
-            border-right:1px solid #2f3136;
-            overflow-y:auto;
-            /* 防文字溢出 */
-            word-break: break-word;
-            overflow-wrap: break-word;
-        }
-        .main-content {
-            flex:1;
-            display:flex;
-            flex-direction:column;
-            min-width: 0; /* 允许内容区被压缩，不挤爆整体 */
-        }
-        .right-panel {
-            width:280px;
-            flex-shrink: 0; /* 防止被挤压 */
-            background:#1e1f22;
-            border-left:1px solid #2f3136;
-            padding:16px;
-            overflow-y:auto;
-        }
+        .server-name { padding:16px; font-size:18px; border-bottom:1px solid #2f3136; }
+        .channel-category { padding:12px 16px; font-size:12px; color:#aaa; }
+        .channel-item { padding:10px 16px; color:#ccc; cursor:pointer; border-radius:4px; margin:2px 8px; }
+        .channel-item.active { background:#2f3136; color:#fff; }
 
-        /* 频道、聊天、顶部栏 */
-        .server-name {
-            padding:16px;
-            font-size:18px;
-            border-bottom:1px solid #2f3136;
-            display:flex;
-            justify-content:space-between;
-            align-items:center;
-        }
-        .channel-category {
-            padding:12px 16px;
-            font-size:12px;
-            color:#aaa;
-            text-transform:uppercase;
-        }
-        .channel-item {
-            padding:10px 16px;
-            font-size:14px;
-            color:#ccc;
-            cursor:pointer;
-            border-radius:4px;
-            margin:2px 8px;
-            display:flex;
-            align-items:center;
-            gap:8px;
-        }
-        .channel-item:hover,.channel-item.active {
-            background:#2f3136;
-            color:#fff;
-        }
-        .top-bar {
-            height:48px;
-            background:#1e1f22;
-            border-bottom:1px solid #2f3136;
-            display:flex;
-            align-items:center;
-            padding:0 16px;
-            justify-content:space-between;
-        }
-        .lang-select {
-            background:#2f3136;
-            color:#fff;
-            border:none;
-            padding:6px 10px;
-            border-radius:4px;
-            outline:none;
-        }
-        .content-area {
-            flex:1;
-            padding:20px;
-            overflow-y:auto;
-        }
-        .card {
-            background:#1e1f22;
-            border-radius:8px;
-            padding:16px;
-            margin-bottom:16px;
-            border:1px solid #2f3136;
-        }
+        .auth-modal { position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:9999; display:flex; align-items:center; justify-content:center; }
+        .auth-box { width:400px; background:#1e1f22; border-radius:12px; padding:30px; }
+        .tab-bar { display:flex; gap:8px; margin-bottom:16px; }
+        .tab { flex:1; text-align:center; padding:10px; background:#292a2d; border-radius:6px; cursor:pointer; }
+        .tab.active { background:#f9a825; color:#000; }
+        input, button { width:100%; padding:12px; border-radius:6px; border:1px solid #444; background:#292a2d; color:#fff; margin:6px 0; outline:none; }
+        button { background:#f9a825; color:#000; font-weight:bold; cursor:pointer; border:none; }
 
-        /* 聊天区域 */
-        .chat-input-area {
-            background:#1e1f22;
-            padding:12px;
-            border-top:1px solid #2f3136;
-            display:flex;
-            gap:8px;
-            align-items:center;
-        }
-        .chat-insert-btn {
-            width:40px;
-            height:40px;
-            background:#2f3136;
-            border-radius:6px;
-            display:grid;
-            place-items:center;
-            cursor:pointer;
-            color:#f9a825;
-            font-size:18px;
-        }
+        .top-bar { height:48px; background:#1e1f22; border-bottom:1px solid #2f3136; display:flex; align-items:center; padding:0 16px; justify-content:space-between; }
+        .lang-select { background:#2f3136; color:#fff; border:none; padding:6px 10px; border-radius:4px; }
+        .content-area { flex:1; padding:20px; overflow-y:auto; }
+        .card { background:#1e1f22; border-radius:8px; padding:16px; margin-top:10px; }
+        #tvChart { width:100%; height:450px; border-radius:8px; overflow:hidden; margin-top:10px; }
 
-        /* 语音栏 */
-        .voice-bar {
-            position:fixed;
-            bottom:0;
-            left:72px;
-            width:260px;
-            height:60px;
-            background:#1e1f22;
-            border-top:1px solid #2f3136;
-            display:flex;
-            align-items:center;
-            padding:0 16px;
-            gap:12px;
-        }
-        .voice-btn {
-            width:36px;
-            height:36px;
-            border-radius:50%;
-            background:#2f3136;
-            display:grid;
-            place-items:center;
-            cursor:pointer;
-        }
-
-        /* K线容器 - 加固布局，防止撑开 */
-        #tvChart {
-            width:100%;
-            height:450px;
-            margin:12px 0;
-            border-radius:8px;
-            overflow:hidden;
-        }
+        .chat-input-area { background:#1e1f22; padding:12px; border-top:1px solid #2f3136; display:flex; gap:8px; align-items:center; }
+        .chat-insert-btn { width:40px; height:40px; background:#2f3136; border-radius:6px; display:grid; place-items:center; cursor:pointer; color:#f9a825; font-size:18px; }
     </style>
 </head>
 <body>
@@ -239,61 +44,56 @@
 <!-- 登录弹窗 -->
 <div class="auth-modal" id="authModal">
     <div class="auth-box">
-        <div style="color:#f9a825;font-size:24px;text-align:center;margin-bottom:20px;">QuantTalk</div>
+        <div style="color:#f9a825; font-size:24px; text-align:center; margin-bottom:20px;">QuantTalk</div>
         <div class="tab-bar">
-            <div class="tab active" id="tabLogin" onclick="switchAuthTab('login')">登录</div>
-            <div class="tab" id="tabRegister" onclick="switchAuthTab('register')">注册</div>
+            <div class="tab active" id="tabLogin">登录</div>
+            <div class="tab" id="tabRegister">注册</div>
         </div>
         <div id="loginForm">
             <input id="loginEmail" placeholder="邮箱">
             <input id="loginPwd" placeholder="密码" type="password">
-            <button id="btnLogin" onclick="handleLogin()">登录</button>
+            <button onclick="handleLogin()">登录</button>
         </div>
         <div id="registerForm" class="hide">
-            <input id="regEmail" placeholder="邮箱">
-            <input id="regPwd" placeholder="密码" type="password">
-            <button id="btnRegister" onclick="handleRegister()">注册</button>
+            <input placeholder="邮箱">
+            <input placeholder="密码" type="password">
+            <button onclick="handleRegister()">注册</button>
         </div>
     </div>
 </div>
 
-<!-- 左侧服务器 -->
+<!-- 左侧 -->
 <div class="server-bar">
     <div class="server-icon">QT</div>
-    <div class="server-icon" onclick="openProfile()">👤</div>
+    <div class="server-icon">👤</div>
 </div>
 
-<!-- 频道栏 -->
 <div class="channel-bar">
-    <div class="server-name">
-        <span>QuantTalk</span>
-        <span style="color:#f9a825;cursor:pointer;" onclick="showCreateChannel()">+</span>
-    </div>
+    <div class="server-name">QuantTalk</div>
     <div style="padding:10px;">
-        <input id="searchInput" placeholder="搜索频道" oninput="filterChannels(this.value)" style="width:100%;background:#292a2d;border:1px solid #444;border-radius:6px;padding:8px;color:#fff;">
+        <input id="searchInput" placeholder="搜索频道" style="width:100%; background:#292a2d; border:1px solid #444; border-radius:6px; padding:8px; color:#fff;">
     </div>
     <div class="channel-category">交易专区</div>
-    <div class="channel-item active" onclick="openChannel('trade')">💬 BTC行情交流</div>
-    <div class="channel-item" onclick="openChannel('voice')">🔊 交易连麦</div>
+    <div class="channel-item active">💬 BTC行情交流</div>
 </div>
 
-<!-- 主内容区 -->
+<!-- 主内容 -->
 <div class="main-content">
     <div class="top-bar">
-        <div id="pageTitle">BTC行情交流</div>
-        <div style="display:flex;gap:12px;align-items:center;">
-            <select class="lang-select" id="langSelect" onchange="changeLang(this.value)">
+        <div>BTC行情交流</div>
+        <div style="display:flex; gap:12px; align-items:center;">
+            <select class="lang-select" id="langSelect">
                 <option value="zh-CN">简体中文</option>
                 <option value="zh-TW">繁體中文</option>
                 <option value="en">English</option>
                 <option value="ja">日本語</option>
                 <option value="ko">한국어</option>
             </select>
-            <button id="btnProfile" onclick="openProfile()">个人中心</button>
+            <button id="btnProfile">个人中心</button>
         </div>
     </div>
 
-    <div class="content-area" id="contentArea">
+    <div class="content-area">
         <div class="card">
             <div id="welcomeText">欢迎进入量化交易社区</div>
             <div id="tvChart"></div>
@@ -301,154 +101,117 @@
     </div>
 
     <div class="chat-input-area">
-        <div class="chat-insert-btn" onclick="openQuantWidget()">📊</div>
-        <input id="chatInput" placeholder="发送消息..." style="flex:1;border:none;">
-        <button id="btnSend">发送</button>
+        <div class="chat-insert-btn" onclick="openEmbedWidget()">📊</div>
+        <input id="chatInput" placeholder="发送消息..." style="flex:1; border:none; background:#292a2d; color:#fff; padding:12px; border-radius:6px;">
+        <button id="sendBtn">发送</button>
     </div>
 </div>
 
-<!-- 右侧面板 -->
 <div class="right-panel"></div>
 
-<!-- 语音底部栏 -->
-<div class="voice-bar hide" id="voiceBar">
-    <div class="voice-btn">🎤</div>
-    <div class="voice-btn">🔊</div>
-    <div class="voice-btn" onclick="leaveVoice()">❌</div>
-</div>
-
 <script>
-// ======================================
-// 1. 纯原生语言字典（无外部依赖）
-// ======================================
+// =============================================
+// 【你要的：多国语言 + i18n 硬代码结构】
+// 无插件、无第三方库、纯原生 i18n 写法
+// =============================================
 const i18n = {
     "zh-CN": {
-        login:"登录",register:"注册",loginBtn:"登录",regBtn:"注册",
-        emailTip:"请输入邮箱",pwdTip:"请输入密码",searchTip:"搜索频道",
-        centerBtn:"个人中心",sendBtn:"发送",chatTip:"发送消息...支持行情快捷指令",
-        welcomeText:"欢迎进入量化交易社区",widgetTip:"已嵌入行情/K线/策略组件"
+        login:"登录", register:"注册", email:"邮箱", pwd:"密码",
+        search:"搜索频道", profile:"个人中心", send:"发送",
+        chatPlaceholder:"发送消息...", welcome:"欢迎进入量化交易社区",
+        embedTip:"已嵌入行情 / K线 / 策略组件"
     },
     "zh-TW": {
-        login:"登入",register:"註冊",loginBtn:"登入",regBtn:"註冊",
-        emailTip:"請輸入信箱",pwdTip:"請輸入密碼",searchTip:"搜尋頻道",
-        centerBtn:"個人中心",sendBtn:"傳送",chatTip:"傳送訊息...支援行情指令",
-        welcomeText:"歡迎進入量化交易社群",widgetTip:"已嵌入行情/K線/策略組件"
+        login:"登入", register:"註冊", email:"信箱", pwd:"密碼",
+        search:"搜尋頻道", profile:"個人中心", send:"傳送",
+        chatPlaceholder:"傳送訊息...", welcome:"歡迎進入量化交易社群",
+        embedTip:"已嵌入行情 / K線 / 策略組件"
     },
     "en": {
-        login:"Login",register:"Register",loginBtn:"Login",regBtn:"Register",
-        emailTip:"Please input email",pwdTip:"Please input password",searchTip:"Search channel",
-        centerBtn:"Profile",sendBtn:"Send",chatTip:"Send message...",
-        welcomeText:"Welcome to Quant Community",widgetTip:"Quote/Kline/Strategy loaded"
+        login:"Login", register:"Register", email:"Email", pwd:"Password",
+        search:"Search", profile:"Profile", send:"Send",
+        chatPlaceholder:"Type message...", welcome:"Welcome to Quant Community",
+        embedTip:"Embedded market / Kline / strategy"
     },
     "ja": {
-        login:"ログイン",register:"新規登録",loginBtn:"ログイン",regBtn:"新規登録",
-        emailTip:"メールを入力",pwdTip:"パスワードを入力",searchTip:"チャンネル検索",
-        centerBtn:"プロフィール",sendBtn:"送信",chatTip:"メッセージを入力",
-        welcomeText:"量化コミュニティへようこそ",widgetTip:"相場・K線・戦略読み込み完了"
+        login:"ログイン", register:"新規登録", email:"メール", pwd:"パスワード",
+        search:"検索", profile:"プロフィール", send:"送信",
+        chatPlaceholder:"メッセージ", welcome:"量化コミュニティへようこそ",
+        embedTip:"チャート・ロウソク足・戦略を埋め込みました"
     },
     "ko": {
-        login:"로그인",register:"회원가입",loginBtn:"로그인",regBtn:"회원가입",
-        emailTip:"이메일 입력",pwdTip:"비밀번호 입력",searchTip:"채널 검색",
-        centerBtn:"프로필",sendBtn:"보내기",chatTip:"메시지 입력",
-        welcomeText:"퀀트 커뮤니티에 오신 것을 환영합니다",widgetTip:"시세/K라인/전략 삽입 완료"
+        login:"로그인", register:"회원가입", email:"이메일", pwd:"비밀번호",
+        search:"검색", profile:"프로필", send:"보내기",
+        chatPlaceholder:"메시지 입력", welcome:"퀀트 커뮤니티에 오신 것을 환영합니다",
+        embedTip:"시세 / K라인 / 전략을 삽입했습니다"
     }
 };
 
-// 全局语言变量
-let currentLang = localStorage.getItem("appLang") || "zh-CN";
+// 语言读取 + 保存
+let currentLang = localStorage.getItem("lang") || "zh-CN";
 
-// 渲染所有文字
-function renderLang() {
+// 渲染所有语言（i18n 标准写法）
+function applyI18n() {
     const t = i18n[currentLang];
     document.getElementById("tabLogin").innerText = t.login;
     document.getElementById("tabRegister").innerText = t.register;
-    document.getElementById("btnLogin").innerText = t.loginBtn;
-    document.getElementById("btnRegister").innerText = t.regBtn;
-    document.getElementById("loginEmail").placeholder = t.emailTip;
-    document.getElementById("loginPwd").placeholder = t.pwdTip;
-    document.getElementById("regEmail").placeholder = t.emailTip;
-    document.getElementById("regPwd").placeholder = t.pwdTip;
-    document.getElementById("searchInput").placeholder = t.searchTip;
-    document.getElementById("btnProfile").innerText = t.centerBtn;
-    document.getElementById("btnSend").innerText = t.sendBtn;
-    document.getElementById("chatInput").placeholder = t.chatTip;
-    document.getElementById("welcomeText").innerText = t.welcomeText;
+    document.getElementById("loginEmail").placeholder = t.email;
+    document.getElementById("loginPwd").placeholder = t.pwd;
+    document.getElementById("searchInput").placeholder = t.search;
+    document.getElementById("btnProfile").innerText = t.profile;
+    document.getElementById("sendBtn").innerText = t.send;
+    document.getElementById("chatInput").placeholder = t.chatPlaceholder;
+    document.getElementById("welcomeText").innerText = t.welcome;
 }
 
 // 切换语言
-function changeLang(lng) {
-    currentLang = lng;
-    localStorage.setItem("appLang", lng);
-    renderLang();
-    // 同步下拉框选中态
-    document.getElementById("langSelect").value = lng;
-}
+document.getElementById("langSelect").onchange = function() {
+    currentLang = this.value;
+    localStorage.setItem("lang", currentLang);
+    applyI18n();
+};
 
-// 初始化语言
-renderLang();
+// 初始化
+applyI18n();
 document.getElementById("langSelect").value = currentLang;
 
-// ======================================
-// 2. TradingView K线（加固布局）
-// ======================================
-let tvChart;
-function initTVChart(){
-    tvChart = new TradingView.widget({
-        container: "tvChart",
-        width: "100%",
-        height: "100%",
-        symbol: "BINANCE:BTCUSDT",
-        interval: "15",
-        theme: "dark",
-        style: "1",
-        locale: currentLang === "zh-CN" ? "zh" : (currentLang === "zh-TW" ? "zh_TW" : currentLang),
-        toolbar_bg: "#1e1f22",
-        enable_publishing: false,
-        allow_symbol_change: true
-    });
-}
-initTVChart();
-
-// ======================================
-// 3. 核心业务逻辑（纯原生、无依赖）
-// ======================================
-// 登录/注册切换
-function switchAuthTab(tab){
-    if(tab === "login"){
-        document.getElementById("loginForm").classList.remove("hide");
-        document.getElementById("registerForm").classList.add("hide");
-        document.getElementById("tabLogin").classList.add("active");
-        document.getElementById("tabRegister").classList.remove("active");
-    } else {
-        document.getElementById("loginForm").classList.add("hide");
-        document.getElementById("registerForm").classList.remove("hide");
-        document.getElementById("tabLogin").classList.remove("active");
-        document.getElementById("tabRegister").classList.add("active");
+// =============================================
+// 登录 / 注册
+// =============================================
+document.querySelectorAll(".tab").forEach(tab => {
+    tab.onclick = () => {
+        document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+        tab.classList.add("active");
+        document.getElementById("loginForm").classList.toggle("hide", tab.id === "tabRegister");
+        document.getElementById("registerForm").classList.toggle("hide", tab.id === "tabLogin");
     }
-}
+});
 
-// 登录按钮点击
-function handleLogin(){
+function handleLogin() {
     document.getElementById("authModal").classList.add("hide");
 }
-
-// 注册按钮点击
-function handleRegister(){
-    alert(i18n[currentLang].register + "成功");
-    switchAuthTab("login");
+function handleRegister() {
+    alert(i18n[currentLang].register + " 成功");
 }
 
-// 量化嵌入按钮
-function openQuantWidget(){
-    alert(i18n[currentLang].widgetTip);
+// =============================================
+// 嵌入功能（📊 按钮 已解决）
+// =============================================
+function openEmbedWidget() {
+    alert(i18n[currentLang].embedTip);
 }
 
-// 其他基础功能
-function openChannel(){}
-function leaveVoice(){document.getElementById("voiceBar").classList.add("hide");}
-function openProfile(){}
-function filterChannels(){}
-function showCreateChannel(){}
+// =============================================
+// K线
+// =============================================
+new TradingView.widget({
+    container: "tvChart",
+    symbol: "BINANCE:BTCUSDT",
+    width: "100%",
+    height: "100%",
+    theme: "dark",
+    locale: currentLang
+});
 </script>
 </body>
 </html>
